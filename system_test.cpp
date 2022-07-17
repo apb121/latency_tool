@@ -3,10 +3,14 @@
 #include <vector>
 #include <cstring>
 #include <map>
+#include <unistd.h>
 
 int main()
 {
     using namespace std;
+    int l1d_size = sysconf(_SC_LEVEL1_DCACHE_SIZE);
+    cout << l1d_size << endl;
+    return 0;
     char buf[512];
     const char* getconf_cmd = "getconf -a | grep CACHE";
     map<string, size_t> cache_info;
@@ -21,28 +25,28 @@ int main()
         char dimension_name[128];
         size_t dimension_size;
         int buf_begin = 0, str_pos = 0;
-	while (isspace(buf[buf_begin])) { buf_begin++; }
-	str_pos = buf_begin;
-        while (!isspace(buf[str_pos]) && buf[str_pos]) { str_pos++; }
-	if (!buf[str_pos])
-	{
-	  cerr << "Error reading getconf output: end of line with no dimension name." << endl;
-	  continue;
-	}
-        strncpy(dimension_name, buf + buf_begin, str_pos - buf_begin);
-        while (buf[str_pos] && isspace(buf[str_pos])) { str_pos++; }
-	if (!buf[str_pos])
-	{
-	  cerr << "Error reading getconf output: " << dimension_name << " does not specify its size." << endl;
-	  continue;
-	}
-	int str_end = str_pos;
-	while (isdigit(buf[str_end]) || isspace(buf[str_end])) { str_end++; }
-	if (buf[str_end])
-	{
-	  cerr << "Error reading getconf output: " << dimension_name << " size is not numerical." << endl;
-	  continue;
-	}
+        while (isspace(buf[buf_begin])) { buf_begin++; }
+        str_pos = buf_begin;
+              while (!isspace(buf[str_pos]) && buf[str_pos]) { str_pos++; }
+        if (!buf[str_pos])
+        {
+          cerr << "Error reading getconf output: end of line with no dimension name." << endl;
+          continue;
+        }
+              strncpy(dimension_name, buf + buf_begin, str_pos - buf_begin);
+              while (buf[str_pos] && isspace(buf[str_pos])) { str_pos++; }
+        if (!buf[str_pos])
+        {
+          cerr << "Error reading getconf output: " << dimension_name << " does not specify its size." << endl;
+          continue;
+        }
+        int str_end = str_pos;
+        while (isdigit(buf[str_end]) || isspace(buf[str_end])) { str_end++; }
+        if (buf[str_end])
+        {
+          cerr << "Error reading getconf output: " << dimension_name << " size is not numerical." << endl;
+          continue;
+        }
         cache_info[string(dimension_name)] = atoi(buf + str_pos);
         for (int i = 0; i < 128; ++i) { dimension_name[i] = '\0'; }
     }
