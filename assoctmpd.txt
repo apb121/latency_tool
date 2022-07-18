@@ -1,0 +1,24 @@
+# started on Sun Jul 17 19:36:04 2022
+
+49318,,L1-dcache-load-misses,0.04%,1543554,100.00,,
+# started on Sun Jul 17 19:36:07 2022
+
+49927,,L1-dcache-load-misses,0.04%,1554332,100.00,,
+# started on Sun Jul 17 19:36:09 2022
+
+50364,,L1-dcache-load-misses,0.09%,1548166,100.00,,
+# started on Sun Jul 17 19:36:12 2022
+
+50960,,L1-dcache-load-misses,0.10%,1564563,100.00,,
+# started on Sun Jul 17 19:36:14 2022
+
+55714,,L1-dcache-load-misses,0.09%,1571472,100.00,,
+# started on Sun Jul 17 19:36:17 2022
+
+59250,,L1-dcache-load-misses,0.07%,1580809,100.00,,
+# started on Sun Jul 17 19:36:19 2022
+
+62467,,L1-dcache-load-misses,0.06%,1588928,100.00,,
+# started on Sun Jul 17 19:36:22 2022
+
+64785,,L1-dcache-load-misses,0.05%,1597208,100.00,,

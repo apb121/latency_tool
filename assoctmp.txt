@@ -1,24 +1,24 @@
-# started on Sun Jul 17 18:44:41 2022
+# started on Sun Jul 17 19:02:45 2022
 
-52734,,L1-icache-load-misses,0.13%,864801,100.00,,
-# started on Sun Jul 17 18:44:43 2022
+40535,,L1-icache-load-misses,0.08%,1222106,100.00,,
+# started on Sun Jul 17 19:02:47 2022
 
-54839,,L1-icache-load-misses,0.15%,1000572,100.00,,
-# started on Sun Jul 17 18:44:45 2022
+41084,,L1-icache-load-misses,0.09%,1230825,100.00,,
+# started on Sun Jul 17 19:02:49 2022
 
-63587,,L1-icache-load-misses,0.14%,832171,100.00,,
-# started on Sun Jul 17 18:44:46 2022
+43943,,L1-icache-load-misses,0.11%,1236515,100.00,,
+# started on Sun Jul 17 19:02:51 2022
 
-75150,,L1-icache-load-misses,0.11%,1100978,100.00,,
-# started on Sun Jul 17 18:44:49 2022
+72531,,L1-icache-load-misses,0.85%,1098817,100.00,,
+# started on Sun Jul 17 19:02:53 2022
 
-83180,,L1-icache-load-misses,0.06%,1172403,100.00,,
-# started on Sun Jul 17 18:44:51 2022
+92851,,L1-icache-load-misses,0.17%,1033352,100.00,,
+# started on Sun Jul 17 19:02:55 2022
 
-90788,,L1-icache-load-misses,0.08%,1148611,100.00,,
-# started on Sun Jul 17 18:44:53 2022
+61875,,L1-icache-load-misses,0.50%,1275946,100.00,,
+# started on Sun Jul 17 19:02:57 2022
 
-99314,,L1-icache-load-misses,0.07%,1040334,100.00,,
-# started on Sun Jul 17 18:44:56 2022
+63742,,L1-icache-load-misses,0.06%,1296589,100.00,,
+# started on Sun Jul 17 19:02:59 2022
 
-106182,,L1-icache-load-misses,0.08%,1163607,100.00,,
+66031,,L1-icache-load-misses,0.06%,1311188,100.00,,

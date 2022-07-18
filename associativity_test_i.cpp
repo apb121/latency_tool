@@ -4,7 +4,7 @@
 
 #define NUM_FUNCTIONS 32
 //#define NUM_CALLS 1441440
-#define NUM_CALLS 1680
+#define NUM_CALLS 16800
 
 using namespace std;
 

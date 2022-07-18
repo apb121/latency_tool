@@ -1,0 +1,55 @@
+# started on Sun Jul 17 22:20:45 2022
+
+2217870,,L1-dcache-loads,0.01%,1525121,100.00,,
+51154,,L1-dcache-load-misses,0.06%,1525121,100.00,2.31,of all L1-dcache accesses
+2211522,ns,duration_time,0.09%,2211522,100.00,,
+# started on Sun Jul 17 22:20:47 2022
+
+2237524,,L1-dcache-loads,0.01%,1545600,100.00,,
+67409,,L1-dcache-load-misses,0.03%,1545600,100.00,3.01,of all L1-dcache accesses
+2229519,ns,duration_time,0.05%,2229518,100.00,,
+# started on Sun Jul 17 22:20:50 2022
+
+2237393,,L1-dcache-loads,0.01%,1504263,100.00,,
+67504,,L1-dcache-load-misses,0.06%,1504263,100.00,3.02,of all L1-dcache accesses
+2176624,ns,duration_time,0.18%,2176623,100.00,,
+# started on Sun Jul 17 22:20:52 2022
+
+2255919,,L1-dcache-loads,0.01%,1573700,100.00,,
+75740,,L1-dcache-load-misses,0.03%,1573700,100.00,3.36,of all L1-dcache accesses
+2252811,ns,duration_time,0.06%,2252811,100.00,,
+# started on Sun Jul 17 22:20:54 2022
+
+2288818,,L1-dcache-loads,0.01%,1643180,100.00,,
+82242,,L1-dcache-load-misses,0.03%,1643180,100.00,3.59,of all L1-dcache accesses
+2335766,ns,duration_time,0.16%,2335765,100.00,,
+# started on Sun Jul 17 22:20:57 2022
+
+2356863,,L1-dcache-loads,0.01%,1769808,100.00,,
+89589,,L1-dcache-load-misses,0.03%,1769808,100.00,3.80,of all L1-dcache accesses
+2452042,ns,duration_time,0.05%,2452041,100.00,,
+# started on Sun Jul 17 22:21:00 2022
+
+2489444,,L1-dcache-loads,0.01%,1988573,100.00,,
+101748,,L1-dcache-load-misses,0.04%,1988573,100.00,4.09,of all L1-dcache accesses
+2674618,ns,duration_time,0.04%,2674617,100.00,,
+# started on Sun Jul 17 22:21:03 2022
+
+2767537,,L1-dcache-loads,0.01%,2417353,100.00,,
+123111,,L1-dcache-load-misses,0.07%,2417353,100.00,4.45,of all L1-dcache accesses
+3133199,ns,duration_time,0.43%,3133198,100.00,,
+# started on Sun Jul 17 22:21:06 2022
+
+2778803,,L1-dcache-loads,0.01%,2433124,100.00,,
+123916,,L1-dcache-load-misses,0.05%,2433124,100.00,4.46,of all L1-dcache accesses
+3132443,ns,duration_time,0.09%,3132443,100.00,,
+# started on Sun Jul 17 22:21:10 2022
+
+2798280,,L1-dcache-loads,0.03%,2457393,100.00,,
+127068,,L1-dcache-load-misses,0.08%,2457393,100.00,4.54,of all L1-dcache accesses
+3153491,ns,duration_time,0.08%,3153491,100.00,,
+# started on Sun Jul 17 22:21:13 2022
+
+2828824,,L1-dcache-loads,0.01%,2489443,100.00,,
+128303,,L1-dcache-load-misses,0.04%,2489443,100.00,4.54,of all L1-dcache accesses
+3188745,ns,duration_time,0.04%,3188745,100.00,,
