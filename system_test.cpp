@@ -259,6 +259,7 @@ int associativity_test_d()
   return (min(max_stddev_index, first_spike) + 1) * 2;
   //__builtin_unreachable(); //not good
 }
+
 int critical_stride_test_d()
 {
   char buf[65536];
@@ -283,10 +284,15 @@ int critical_stride_test_d()
   assoc_file.open("./cstmpd.txt");
   string atstr;
   int assoc = -1;
-  int assoc_arr[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  int assoc_arr_cacheloads[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  double assoc_arr_cacheloads_stddev[11] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  int assoc_arr_cacheloadmisses[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  double assoc_arr_cacheloadmisses_stddev[11] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  int assoc_arr_ns[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  double assoc_arr_ns_stddev[11] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   int i = 0;
   size_t end = atstr.find("%"), start = end - 1;
-  while (getline(assoc_file, atstr))
+  while (getline(assoc_file, atstr) && i < 33)
   {
     if (atstr.size() == 0 || atstr[0] == '#')
     {
@@ -297,7 +303,37 @@ int critical_stride_test_d()
     {
       continue;
     }
-    assoc_arr[i] = stoi(atstr.substr(0, found));
+    if (i % 3 == 0)
+    {
+      cout << "=== " + to_string(pow(2, (i / 3) + 6)) + " ===" << endl; 
+      cout << "stoi: " << stoi(atstr.substr(0, found)) << endl;
+      assoc_arr_cacheloads[i / 3] = stoi(atstr.substr(0, found));
+      size_t end = atstr.find("%"), start = end - 1;
+      while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+      start++;
+      cout << "stod: " << stod(atstr.substr(start, end - start)) << endl;
+      assoc_arr_cacheloads_stddev[i / 3] = stod(atstr.substr(start, end - start));
+    }
+    else if (i % 3 == 1)
+    {
+      cout << "stoi: " << stoi(atstr.substr(0, found)) << endl;
+      assoc_arr_cacheloadmisses[i / 3] = stoi(atstr.substr(0, found));
+      size_t end = atstr.find("%"), start = end - 1;
+      while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+      start++;
+      cout << "stod: " << stod(atstr.substr(start, end - start)) << endl;
+      assoc_arr_cacheloadmisses_stddev[i / 3] = stod(atstr.substr(start, end - start));
+    }
+    else if (i % 3 == 2)
+    {
+      cout << "stoi: " << stoi(atstr.substr(0, found)) << endl;
+      assoc_arr_ns[i / 3] = stoi(atstr.substr(0, found));
+      size_t end = atstr.find("%"), start = end - 1;
+      while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+      start++;
+      cout << "stod: " << stod(atstr.substr(start, end - start)) << endl;
+      assoc_arr_ns_stddev[i / 3] = stod(atstr.substr(start, end - start));
+    }
     /*
     int diff_max = 0;
     int diff_max_index = -1;
@@ -310,11 +346,106 @@ int critical_stride_test_d()
         diff_max_index = i - 1;
       }
     }
-    i++;
     */
+    i++;
   }
-  return pow(2, (i - 1) + 5);
+  double max_cachemiss_stddev = 0;
+  int max_cachemiss_stddev_index = -1;
+  for (int i = 0; i < 11; i++)
+  {
+    cout << ": " << assoc_arr_cacheloadmisses_stddev[i] << endl;
+    if (assoc_arr_cacheloadmisses_stddev[i] > max_cachemiss_stddev)
+    {
+      max_cachemiss_stddev = assoc_arr_cacheloadmisses_stddev[i];
+      max_cachemiss_stddev_index = i;
+    }
+  }
+  cout << max_cachemiss_stddev_index << endl;
+  return pow(2, (max_cachemiss_stddev_index + 2) + 6);
 }
+
+int critical_stride_test_i()
+{
+  char buf[65536];
+  string cmd_compile_1 = "g++ -g -falign-functions=";
+  string cmd_compile_2 = " ./critical_stride_test_i.cpp -o ./critical_stride_test_i_";
+  string cmd_no_arg = "perf stat -x , --append -o cstmpi.txt -e L1-icache-load-misses -r 1000 ./critical_stride_test_i_";
+  string cmd_rm_assoctmp = "rm ./cstmpi.txt";
+  for (int i = 64; i <= 65536; i *= 2)
+  {
+    string cmd_compile_full = cmd_compile_1 + to_string(i) + cmd_compile_2 + to_string(i);
+    int ret_compile = system(cmd_compile_full.c_str());
+    if (ret_compile)
+    {
+      cout << "Compilation failed!" << endl;
+    }
+  }
+  int ret_rm_assoctmp = system(cmd_rm_assoctmp.c_str());
+  for (int i = 64; i <= 65536; i *= 2)
+  {
+    string cmd_full = cmd_no_arg + to_string(i);
+    FILE* cmd_stream;
+    cout << "running i=" << i << endl;
+    cmd_stream = popen(cmd_full.c_str(), "r");
+    pclose(cmd_stream);
+  }
+  ifstream assoc_file;
+  assoc_file.open("./cstmpi.txt");
+  string atstr;
+  int assoc = -1;
+  int assoc_arr_cacheloadmisses[11] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+  double assoc_arr_cacheloadmisses_stddev[11] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  int i = 0;
+  size_t end = atstr.find("%"), start = end - 1;
+  while (getline(assoc_file, atstr) && i < 11)
+  {
+    if (atstr.size() == 0 || atstr[0] == '#')
+    {
+      continue;
+    }
+    size_t found = atstr.find_first_not_of("0123456789");
+    if (found == 0)
+    {
+      continue;
+    }
+    cout << "=== " + to_string(pow(2, i + 6)) + " ===" << endl; 
+    cout << "stoi: " << stoi(atstr.substr(0, found)) << endl;
+    assoc_arr_cacheloadmisses[i] = stoi(atstr.substr(0, found));
+    size_t end = atstr.find("%"), start = end - 1;
+    while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+    start++;
+    cout << "stod: " << stod(atstr.substr(start, end - start)) << endl;
+    assoc_arr_cacheloadmisses_stddev[i] = stod(atstr.substr(start, end - start));
+    /*
+    int diff_max = 0;
+    int diff_max_index = -1;
+    if (i > 1 && i <= 7)
+    {
+      assoc_diff[i - 1] = (assoc_diff[i - 1] - assoc_diff[i - 2]) - (assoc_diff[i] - assoc_diff[i - 1]);
+      if ((assoc_diff[i - 1]) > diff_max)
+      {
+        diff_max = assoc_diff[i - 1];
+        diff_max_index = i - 1;
+      }
+    }
+    */
+    i++;
+  }
+  double max_cachemiss_stddev = 0;
+  int max_cachemiss_stddev_index = -1;
+  for (int i = 0; i < 11; i++)
+  {
+    cout << ": " << assoc_arr_cacheloadmisses_stddev[i] << endl;
+    if (assoc_arr_cacheloadmisses_stddev[i] > max_cachemiss_stddev)
+    {
+      max_cachemiss_stddev = assoc_arr_cacheloadmisses_stddev[i];
+      max_cachemiss_stddev_index = i;
+    }
+  }
+  cout << max_cachemiss_stddev_index << endl;
+  return pow(2, max_cachemiss_stddev_index + 6);
+}
+
 
 struct string_struct
 {
@@ -710,20 +841,21 @@ int main()
       sysconf(_SC_LEVEL4_CACHE_LINESIZE),
       sysconf(_SC_LEVEL4_CACHE_ASSOC));
 
-  cout << "Suggested instruction-cache associativity: " << associativity_test_i() << endl;
+  //cout << "Suggested instruction-cache associativity: " << associativity_test_i() << endl;
 
-  cout << "Suggested data-cache associativity: " << associativity_test_d() << endl;
+  //cout << "Suggested data-cache associativity: " << associativity_test_d() << endl;
 
-  //int critical_stride = critical_stride_test_d();
-  //cout << "Suggested data-cache critical stide: " << critical_stride << endl;
+  //cout << "Suggested data-cache critical stride: " << critical_stride_test_d() << endl;
+
+  cout << "Suggested data-cache critical stride: " << critical_stride_test_i() << endl;
 
   //detect_types();
 
-  cout << "(compiler) Cache: " << sizeof(Cache) << endl;
+  //cout << "(compiler) Cache: " << sizeof(Cache) << endl;
 
-  cout << "(compiler) string_struct: " << sizeof(string_struct) << endl;
+  //cout << "(compiler) string_struct: " << sizeof(string_struct) << endl;
 
-  cout << "(compiler) UDType: " << sizeof(UDType) << endl;
+  //cout << "(compiler) UDType: " << sizeof(UDType) << endl;
 
   return 0;
 }
