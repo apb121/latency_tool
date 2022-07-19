@@ -134,6 +134,7 @@ int associativity_test_i()
   */
   double max_stddev = 0.0;
   int max_stddev_index = -1;
+  int first_spike = 9;
   for (int i = 0; i < 8; i++)
   {
     //cout << "assoc stddev [i] = " << assoc_arr_65536_stddev[i] << endl;
@@ -142,6 +143,10 @@ int associativity_test_i()
       max_stddev = assoc_arr_65536_stddev[i];
       max_stddev_index = i;
     }
+    if (assoc_arr_65536[7 - i] > (assoc_arr_noalign[7 - i] * 2))
+    {
+      first_spike = 7 - i;
+    }
     /*
     if (assoc_arr_65536[i] > assoc_arr_noalign[i] * 2/* || assoc_arr_65536_stddev[i] > assoc_arr_noalign_stddev[i] * 2)
     {
@@ -149,7 +154,7 @@ int associativity_test_i()
     }
     */
   }
-  return (max_stddev_index + 1) * 2;
+  return (min(max_stddev_index, first_spike) + 1) * 2;
   //__builtin_unreachable(); //not good
 }
 
@@ -231,6 +236,7 @@ int associativity_test_d()
   */
   double max_stddev = 0.0;
   int max_stddev_index = -1;
+  int first_spike = 9;
   for (int i = 0; i < 8; i++)
   {
     if (assoc_arr_65536_stddev[i] > max_stddev)
@@ -239,6 +245,10 @@ int associativity_test_d()
       max_stddev = assoc_arr_65536_stddev[i];
       max_stddev_index = i;
     }
+    if (assoc_arr_65536[7 - i] > (assoc_arr_16[7 - i] * 2))
+    {
+      first_spike = 7 - i;
+    }
     /*
     if (assoc_arr_65536[i] > assoc_arr_noalign[i] * 2/* || assoc_arr_65536_stddev[i] > assoc_arr_noalign_stddev[i] * 2)
     {
@@ -246,7 +256,7 @@ int associativity_test_d()
     }
     */
   }
-  return (max_stddev_index + 1) * 2;
+  return (min(max_stddev_index, first_spike) + 1) * 2;
   //__builtin_unreachable(); //not good
 }
 int critical_stride_test_d()
@@ -274,8 +284,8 @@ int critical_stride_test_d()
   string atstr;
   int assoc = -1;
   int assoc_arr[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-  int assoc_diff[8] = {0, 0, 0, 0, 0, 0, 0, 0};
   int i = 0;
+  size_t end = atstr.find("%"), start = end - 1;
   while (getline(assoc_file, atstr))
   {
     if (atstr.size() == 0 || atstr[0] == '#')
@@ -288,6 +298,7 @@ int critical_stride_test_d()
       continue;
     }
     assoc_arr[i] = stoi(atstr.substr(0, found));
+    /*
     int diff_max = 0;
     int diff_max_index = -1;
     if (i > 1 && i <= 7)
@@ -300,6 +311,7 @@ int critical_stride_test_d()
       }
     }
     i++;
+    */
   }
   return pow(2, (i - 1) + 5);
 }
