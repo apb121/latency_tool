@@ -47,34 +47,50 @@ struct Cache
   }
   int i = 4;
 };
-/*
+
 int associativity_test_i()
 {
   char buf[65536];
-  string cmd_compile = "g++ -g -falign-functions=65536 ./associativity_test_i.cpp -o ./associativity_test_i";
-  string cmd_no_arg = "perf stat -x , --append -o assoctmpi.txt -e L1-icache-load-misses -r 1000 ./associativity_test_i ";
+  string cmd_compile_65536 = "g++ -g -falign-functions=65536 ./associativity_test_i.cpp -o ./associativity_test_i_65536 ";
+  string cmd_compile_noalign = "g++ -g ./associativity_test_i.cpp -o ./associativity_test_i_noalign ";
+  string cmd_no_arg_65536 = "perf stat -x , --append -o assoctmpi.txt -e L1-icache-load-misses -r 1000 ./associativity_test_i_65536 ";
+  string cmd_no_arg_noalign = "perf stat -x , --append -o assoctmpi.txt -e L1-icache-load-misses -r 1000 ./associativity_test_i_noalign ";
   string cmd_rm_assoctmp = "rm ./assoctmpi.txt";
-  int ret_compile = system(cmd_compile.c_str());
+  int ret_compile = system(cmd_compile_65536.c_str());
   if (ret_compile)
   {
-    cout << "Compilation failed!" << endl;
+    cout << "First compilation failed!" << endl;
+  }
+  ret_compile = system(cmd_compile_noalign.c_str());
+  if (ret_compile)
+  {
+    cout << "Second compilation failed!" << endl;
   }
   int ret_rm_assoctmp = system(cmd_rm_assoctmp.c_str());
+  
   for (int i = 2; i <= 16; i += 2)
   {
-    string cmd_full = cmd_no_arg + to_string(i);
+    string cmd_full_65536 = cmd_no_arg_65536 + to_string(i);
+    string cmd_full_noalign = cmd_no_arg_noalign + to_string(i);
     FILE* cmd_stream;
-    cout << "running i=" << i << endl;
-    cmd_stream = popen(cmd_full.c_str(), "r");
+    cout << "(65536) running i=" << i << endl;
+    string echo = "echo \"#" + to_string(i) + "\\n\" >> assoctmpi.txt";
+    system(echo.c_str());
+    cmd_stream = popen(cmd_full_65536.c_str(), "r");
+    pclose(cmd_stream);
+    cout << "(noalign) running i=" << i << endl;
+    cmd_stream = popen(cmd_full_noalign.c_str(), "r");
     pclose(cmd_stream);
   }
+  
   ifstream assoc_file;
   assoc_file.open("./assoctmpi.txt");
   string atstr;
   int assoc = -1;
-  int assoc_arr[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  int assoc_arr_65536[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  int assoc_arr_noalign[8] = {0, 0, 0, 0, 0, 0, 0, 0};
   int i = 0;
-  while (getline(assoc_file, atstr))
+  while (getline(assoc_file, atstr) && i < 16)
   {
     if (atstr.size() == 0 || atstr[0] == '#')
     {
@@ -85,16 +101,34 @@ int associativity_test_i()
     {
       continue;
     }
-    assoc_arr[i] = stoi(atstr.substr(0, found));
-    if (i > 1 && assoc_arr[i] - assoc_arr[i - 1] < assoc_arr[i - 1] - assoc_arr[i - 2])
+    if (i % 2 == 0)
     {
-      //int ret_rm_assoctmp = system(cmd_rm_assoctmp.c_str());
-      return (i * 2);
+      cout << "stoi: " << stoi(atstr.substr(0, found)) << endl;
+      assoc_arr_65536[i / 2] = stoi(atstr.substr(0, found));
+    }
+    else
+    {
+      cout << "stoi: " << stoi(atstr.substr(0, found)) << endl;
+      assoc_arr_noalign[i / 2] = stoi(atstr.substr(0, found));
     }
     i++;
   }
+  int diff, total_diff, avg_diff, total;
+  for (int i = 0; i < 8; i++)
+  {
+    diff = abs(assoc_arr_65536[i] - assoc_arr_noalign[i]);
+    total_diff += diff;
+  }
+  avg_diff = total_diff / 8;
+  for (int i = 0; i < 8; i++)
+  {
+    if (assoc_arr_65536[i] - assoc_arr_noalign[i] > avg_diff)
+    {
+      return i * 2;
+    }
+  }
 }
-
+/*
 int associativity_test_d()
 {
   char buf[65536];
@@ -441,6 +475,8 @@ void detect_types()
   class_file.open("./class_test.cpp");
   char buf[512];
   vector<UDType> type_info;
+  regex class_declaration("");
+  smatch class_match;
   while (class_file >> buf)
   {
     if (strcmp(buf, "struct") == 0 || strcmp(buf, "class") == 0)
@@ -471,11 +507,11 @@ void detect_types()
       //regex variable_declaration("\b(?:(?:auto *|const *|unsigned *|signed *|register *|volatile *|static *|void *|short *|long *|char *|int *|float *|double *|_Bool *|complex *)+)(?: +\*?\*? *)([a-zA-Z_][a-zA-Z0-9_]*) *[\[;,=)]");
       //regex variable_declaration("(?:(?:auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *|array *<.*> *|vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=)])|(((\\[ *[0-9]* *\\])+)))"); //^( *\\(.*\\) *(const)? *\\{.*\\})
       regex variable_declaration("(?:(?:auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *|array *<.*> *|vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=)])|(((\\[ *[0-9]* *\\])+)))");
-      smatch sm;
+      smatch variable_match;
       UDType new_ud_type;
-      while (regex_search(class_info, sm, variable_declaration))
+      while (regex_search(class_info, variable_match, variable_declaration))
       {
-        string declaration = sm.str();
+        string declaration = variable_match.str();
         int end = declaration.length() - 1;
         regex array_length("(\\[ *[0-9]* *\\] *)+");
         smatch array_match;
@@ -532,7 +568,7 @@ void detect_types()
             cout << "Sorry, this programme can't deal with the 'auto' keyword at the moment!" << endl;
           }
         }
-        class_info = sm.suffix();
+        class_info = variable_match.suffix();
       }
       cout << " ================== " << endl << endl;
       cout << type_name << ": " << endl;
@@ -589,14 +625,14 @@ int main()
       sysconf(_SC_LEVEL4_CACHE_LINESIZE),
       sysconf(_SC_LEVEL4_CACHE_ASSOC));
 
-  //cout << "Suggested instruction-cache associativity: " << associativity_test_i() << endl;
+  cout << "Suggested instruction-cache associativity: " << associativity_test_i() << endl;
 
   //cout << "Suggested data-cache associativity: " << associativity_test_d() << endl;
 
   //int critical_stride = critical_stride_test_d();
   //cout << "Suggested data-cache critical stide: " << critical_stride << endl;
 
-  detect_types();
+  //detect_types();
 
   cout << "(compiler) Cache: " << sizeof(Cache) << endl;
 

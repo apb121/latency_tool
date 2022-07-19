@@ -4,7 +4,7 @@
 
 #define NUM_FUNCTIONS 32
 //#define NUM_CALLS 1441440
-#define NUM_CALLS 16800
+#define NUM_CALLS 168000
 
 using namespace std;
 
@@ -299,6 +299,7 @@ void function_31()
 int main(int argc, char** argv)
 {
     int num_functions = atoi(argv[1]);
+    /*
     function<void()> f[32]
     {
         function_0,
@@ -334,12 +335,25 @@ int main(int argc, char** argv)
         function_30,
         function_31
     };
-    for (int i = 0; i < NUM_CALLS / num_functions; ++i)
+    */
+    for (int i = 0; i < NUM_CALLS / NUM_FUNCTIONS; i++)
     {
-        for (int j = 0; j < num_functions; ++j)
-        {
-            f[j]();
-        }
+        if (num_functions > 0) {function_0();} else continue;
+        if (num_functions > 1) {function_1();} else continue;
+        if (num_functions > 2) {function_2();} else continue;
+        if (num_functions > 3) {function_3();} else continue;
+        if (num_functions > 4) {function_4();} else continue;
+        if (num_functions > 5) {function_5();} else continue;
+        if (num_functions > 6) {function_6();} else continue;
+        if (num_functions > 7) {function_7();} else continue;
+        if (num_functions > 8) {function_8();} else continue;
+        if (num_functions > 9) {function_9();} else continue;
+        if (num_functions > 10) {function_10();} else continue;
+        if (num_functions > 11) {function_11();} else continue;
+        if (num_functions > 12) {function_12();} else continue;
+        if (num_functions > 13) {function_13();} else continue;
+        if (num_functions > 14) {function_14();} else continue;
+        if (num_functions > 15) {function_15();} else continue;
     }
     return 0;
 }
