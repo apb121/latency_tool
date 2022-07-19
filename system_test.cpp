@@ -132,14 +132,25 @@ int associativity_test_i()
   }
   avg_diff = total_diff / 8;
   */
+  double max_stddev = 0.0;
+  int max_stddev_index = -1;
   for (int i = 0; i < 8; i++)
   {
-    if (assoc_arr_65536[i] > assoc_arr_noalign[i] * 2/* || assoc_arr_65536_stddev[i] > assoc_arr_noalign_stddev[i] * 2*/)
+    //cout << "assoc stddev [i] = " << assoc_arr_65536_stddev[i] << endl;
+    if (assoc_arr_65536_stddev[i] > max_stddev)
+    {
+      max_stddev = assoc_arr_65536_stddev[i];
+      max_stddev_index = i;
+    }
+    /*
+    if (assoc_arr_65536[i] > assoc_arr_noalign[i] * 2/* || assoc_arr_65536_stddev[i] > assoc_arr_noalign_stddev[i] * 2)
     {
       return (i + 1) * 2;
     }
+    */
   }
-  __builtin_unreachable(); //not good
+  return (max_stddev_index + 1) * 2;
+  //__builtin_unreachable(); //not good
 }
 
 int associativity_test_d()
@@ -195,6 +206,7 @@ int associativity_test_d()
       assoc_arr_65536[i / 2] = stoi(atstr.substr(0, found));
       while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
       start++;
+      cout << "stod: " << stod(atstr.substr(start, end - start)) << endl;
       assoc_arr_65536_stddev[i / 2] = stod(atstr.substr(start, end - start));
     }
     else
@@ -203,6 +215,7 @@ int associativity_test_d()
       assoc_arr_16[i / 2] = stoi(atstr.substr(0, found));
       while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
       start++;
+      cout << "stod: " << stod(atstr.substr(start, end - start)) << endl;
       assoc_arr_16_stddev[i / 2] = stod(atstr.substr(start, end - start));
     }
     i++;
@@ -216,14 +229,25 @@ int associativity_test_d()
   }
   avg_diff = total_diff / 8;
   */
+  double max_stddev = 0.0;
+  int max_stddev_index = -1;
   for (int i = 0; i < 8; i++)
   {
-    if (/*assoc_arr_65536[i] > assoc_arr_16[i] *2 || */assoc_arr_65536_stddev[i] > assoc_arr_16_stddev[i] *2)
+    if (assoc_arr_65536_stddev[i] > max_stddev)
+    {
+      //cout << "assoc stddev [i] = " << assoc_arr_65536_stddev[i] << endl;
+      max_stddev = assoc_arr_65536_stddev[i];
+      max_stddev_index = i;
+    }
+    /*
+    if (assoc_arr_65536[i] > assoc_arr_noalign[i] * 2/* || assoc_arr_65536_stddev[i] > assoc_arr_noalign_stddev[i] * 2)
     {
       return (i + 1) * 2;
     }
+    */
   }
-  __builtin_unreachable(); //not good
+  return (max_stddev_index + 1) * 2;
+  //__builtin_unreachable(); //not good
 }
 int critical_stride_test_d()
 {
