@@ -82,13 +82,14 @@ int associativity_test_i()
     cmd_stream = popen(cmd_full_noalign.c_str(), "r");
     pclose(cmd_stream);
   }
-  
   ifstream assoc_file;
   assoc_file.open("./assoctmpi.txt");
   string atstr;
   int assoc = -1;
   int assoc_arr_65536[8] = {0, 0, 0, 0, 0, 0, 0, 0};
   int assoc_arr_noalign[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  double assoc_arr_65536_stddev[8] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  double assoc_arr_noalign_stddev[8] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   int i = 0;
   while (getline(assoc_file, atstr) && i < 16)
   {
@@ -101,18 +102,28 @@ int associativity_test_i()
     {
       continue;
     }
+    size_t end = atstr.find("%"), start = end - 1;
     if (i % 2 == 0)
     {
       cout << "stoi: " << stoi(atstr.substr(0, found)) << endl;
       assoc_arr_65536[i / 2] = stoi(atstr.substr(0, found));
+      while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+      start++;
+      cout << "stod: " << stod(atstr.substr(start, end - start)) << endl;
+      assoc_arr_65536_stddev[i / 2] = stod(atstr.substr(start, end - start));
     }
     else
     {
       cout << "stoi: " << stoi(atstr.substr(0, found)) << endl;
       assoc_arr_noalign[i / 2] = stoi(atstr.substr(0, found));
+      while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+      start++;
+      cout << "stod: " << stod(atstr.substr(start, end - start)) << endl;
+      assoc_arr_noalign_stddev[i / 2] = stod(atstr.substr(start, end - start));
     }
     i++;
   }
+  /*
   int diff, total_diff, avg_diff, total;
   for (int i = 0; i < 8; i++)
   {
@@ -120,15 +131,17 @@ int associativity_test_i()
     total_diff += diff;
   }
   avg_diff = total_diff / 8;
+  */
   for (int i = 0; i < 8; i++)
   {
-    if (assoc_arr_65536[i] - assoc_arr_noalign[i] > avg_diff)
+    if (assoc_arr_65536[i] > assoc_arr_noalign[i] * 2/* || assoc_arr_65536_stddev[i] > assoc_arr_noalign_stddev[i] * 2*/)
     {
-      return i * 2;
+      return (i + 1) * 2;
     }
   }
+  __builtin_unreachable(); //not good
 }
-/*
+
 int associativity_test_d()
 {
   char buf[65536];
@@ -143,19 +156,28 @@ int associativity_test_d()
   int ret_rm_assoctmp = system(cmd_rm_assoctmp.c_str());
   for (int i = 2; i <= 16; i += 2)
   {
-    string cmd_full = cmd_no_arg + to_string(i);
+    string cmd_full_65536 = cmd_no_arg + to_string(i) + " 65536";
+    string cmd_full_16 = cmd_no_arg + to_string(i) + " 16";
     FILE* cmd_stream;
-    cout << "running i=" << i << endl;
-    cmd_stream = popen(cmd_full.c_str(), "r");
+    string echo = "echo \"#" + to_string(i) + "\\n\" >> assoctmpd.txt";
+    system(echo.c_str());
+    cout << "(65536) running i=" << i << endl;
+    cmd_stream = popen(cmd_full_65536.c_str(), "r");
+    pclose(cmd_stream);
+    cout << "(16) running i=" << i << endl;
+    cmd_stream = popen(cmd_full_16.c_str(), "r");
     pclose(cmd_stream);
   }
   ifstream assoc_file;
   assoc_file.open("./assoctmpd.txt");
   string atstr;
   int assoc = -1;
-  int assoc_arr[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  int assoc_arr_65536[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  int assoc_arr_16[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  double assoc_arr_65536_stddev[8] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  double assoc_arr_16_stddev[8] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
   int i = 0;
-  while (getline(assoc_file, atstr))
+  while (getline(assoc_file, atstr) && i < 16)
   {
     if (atstr.size() == 0 || atstr[0] == '#')
     {
@@ -166,16 +188,43 @@ int associativity_test_d()
     {
       continue;
     }
-    assoc_arr[i] = stoi(atstr.substr(0, found));
-    if (i > 1 && assoc_arr[i] - assoc_arr[i - 1] < assoc_arr[i - 1] - assoc_arr[i - 2])
+    size_t end = atstr.find("%"), start = end - 1;
+    if (i % 2 == 0)
     {
-      //int ret_rm_assoctmp = system(cmd_rm_assoctmp.c_str());
-      return (i * 2);
+      cout << "stoi: " << stoi(atstr.substr(0, found)) << endl;
+      assoc_arr_65536[i / 2] = stoi(atstr.substr(0, found));
+      while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+      start++;
+      assoc_arr_65536_stddev[i / 2] = stod(atstr.substr(start, end - start));
+    }
+    else
+    {
+      cout << "stoi: " << stoi(atstr.substr(0, found)) << endl;
+      assoc_arr_16[i / 2] = stoi(atstr.substr(0, found));
+      while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+      start++;
+      assoc_arr_16_stddev[i / 2] = stod(atstr.substr(start, end - start));
     }
     i++;
   }
+  /*
+  int diff, total_diff, avg_diff, total;
+  for (int i = 0; i < 8; i++)
+  {
+    diff = abs(assoc_arr_65536[i] - assoc_arr_16[i]);
+    total_diff += diff;
+  }
+  avg_diff = total_diff / 8;
+  */
+  for (int i = 0; i < 8; i++)
+  {
+    if (/*assoc_arr_65536[i] > assoc_arr_16[i] *2 || */assoc_arr_65536_stddev[i] > assoc_arr_16_stddev[i] *2)
+    {
+      return (i + 1) * 2;
+    }
+  }
+  __builtin_unreachable(); //not good
 }
-*/
 int critical_stride_test_d()
 {
   char buf[65536];
@@ -627,7 +676,7 @@ int main()
 
   cout << "Suggested instruction-cache associativity: " << associativity_test_i() << endl;
 
-  //cout << "Suggested data-cache associativity: " << associativity_test_d() << endl;
+  cout << "Suggested data-cache associativity: " << associativity_test_d() << endl;
 
   //int critical_stride = critical_stride_test_d();
   //cout << "Suggested data-cache critical stide: " << critical_stride << endl;
