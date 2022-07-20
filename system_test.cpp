@@ -431,6 +431,7 @@ int critical_stride_test_i()
     */
     i++;
   }
+  /*
   double max_cachemiss_stddev = 0;
   int max_cachemiss_stddev_index = -1;
   for (int i = 0; i < 11; i++)
@@ -444,6 +445,18 @@ int critical_stride_test_i()
   }
   cout << max_cachemiss_stddev_index << endl;
   return pow(2, max_cachemiss_stddev_index + 6);
+  */
+  int last_jump = -1;
+  for (int i = 0; i < 11; i++)
+  {
+    cout << ": " << assoc_arr_cacheloadmisses[i] << endl;
+    if (i >= 1 && (assoc_arr_cacheloadmisses[i] > (assoc_arr_cacheloadmisses[i - 1] * 2)))
+    {
+      last_jump = i;
+    }
+  }
+  cout << last_jump << endl;
+  return pow(2, last_jump + 6);
 }
 
 
@@ -841,11 +854,11 @@ int main()
       sysconf(_SC_LEVEL4_CACHE_LINESIZE),
       sysconf(_SC_LEVEL4_CACHE_ASSOC));
 
-  //cout << "Suggested data-cache associativity: " << associativity_test_d() << endl;
+  cout << "Suggested data-cache associativity: " << associativity_test_d() << endl;
 
-  //cout << "Suggested instruction-cache associativity: " << associativity_test_i() << endl;
+  cout << "Suggested instruction-cache associativity: " << associativity_test_i() << endl;
 
-  //cout << "Suggested data-cache critical stride: " << critical_stride_test_d() << endl;
+  cout << "Suggested data-cache critical stride: " << critical_stride_test_d() << endl;
 
   cout << "Suggested instruction-cache critical stride: " << critical_stride_test_i() << endl;
 

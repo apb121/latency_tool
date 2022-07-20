@@ -1,33 +1,33 @@
-# started on Wed Jul 20 01:46:27 2022
+# started on Wed Jul 20 15:14:24 2022
 
-28417,,L1-icache-load-misses,0.19%,1131803,100.00,,
-# started on Wed Jul 20 01:46:30 2022
+58103,,L1-icache-load-misses,0.21%,1261425,100.00,,
+# started on Wed Jul 20 15:14:26 2022
 
-29549,,L1-icache-load-misses,0.09%,1787471,100.00,,
-# started on Wed Jul 20 01:46:32 2022
+65747,,L1-icache-load-misses,0.16%,1330074,100.00,,
+# started on Wed Jul 20 15:14:29 2022
 
-30944,,L1-icache-load-misses,0.09%,1732158,100.00,,
-# started on Wed Jul 20 01:46:35 2022
+61690,,L1-icache-load-misses,0.21%,1329504,100.00,,
+# started on Wed Jul 20 15:14:31 2022
 
-28752,,L1-icache-load-misses,0.08%,1706869,100.00,,
-# started on Wed Jul 20 01:46:37 2022
+58158,,L1-icache-load-misses,0.23%,1241856,100.00,,
+# started on Wed Jul 20 15:14:33 2022
 
-33852,,L1-icache-load-misses,0.12%,1783985,100.00,,
-# started on Wed Jul 20 01:46:40 2022
+75176,,L1-icache-load-misses,0.15%,1383533,100.00,,
+# started on Wed Jul 20 15:14:35 2022
 
-168522,,L1-icache-load-misses,0.19%,2297639,100.00,,
-# started on Wed Jul 20 01:46:43 2022
+91912,,L1-icache-load-misses,0.15%,1284231,100.00,,
+# started on Wed Jul 20 15:14:37 2022
 
-196827,,L1-icache-load-misses,0.06%,2431101,100.00,,
-# started on Wed Jul 20 01:46:46 2022
+503876,,L1-icache-load-misses,0.15%,1659975,100.00,,
+# started on Wed Jul 20 15:14:40 2022
 
-190565,,L1-icache-load-misses,0.05%,2434968,100.00,,
-# started on Wed Jul 20 01:46:50 2022
+383004,,L1-icache-load-misses,0.15%,1422863,100.00,,
+# started on Wed Jul 20 15:14:43 2022
 
-198565,,L1-icache-load-misses,0.04%,2512860,100.00,,
-# started on Wed Jul 20 01:46:53 2022
+523370,,L1-icache-load-misses,0.09%,1856273,100.00,,
+# started on Wed Jul 20 15:14:45 2022
 
-197326,,L1-icache-load-misses,0.05%,3088347,100.00,,
-# started on Wed Jul 20 01:46:57 2022
+536802,,L1-icache-load-misses,0.09%,1896719,100.00,,
+# started on Wed Jul 20 15:14:48 2022
 
-195610,,L1-icache-load-misses,0.06%,3309284,100.00,,
+533510,,L1-icache-load-misses,0.14%,1863673,100.00,,

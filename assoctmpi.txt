@@ -1,64 +1,64 @@
 #2
 
-# started on Wed Jul 20 01:30:57 2022
+# started on Wed Jul 20 15:13:05 2022
 
-28791,,L1-icache-load-misses,0.09%,1336072,100.00,,
-# started on Wed Jul 20 01:30:59 2022
+55603,,L1-icache-load-misses,0.20%,948188,100.00,,
+# started on Wed Jul 20 15:13:07 2022
 
-29136,,L1-icache-load-misses,0.08%,1317403,100.00,,
+52029,,L1-icache-load-misses,0.22%,979004,100.00,,
 #4
 
-# started on Wed Jul 20 01:31:01 2022
+# started on Wed Jul 20 15:13:09 2022
 
-28852,,L1-icache-load-misses,0.10%,1686793,100.00,,
-# started on Wed Jul 20 01:31:04 2022
+62199,,L1-icache-load-misses,0.19%,1123901,100.00,,
+# started on Wed Jul 20 15:13:11 2022
 
-28541,,L1-icache-load-misses,0.08%,1487926,100.00,,
+59903,,L1-icache-load-misses,0.19%,1125110,100.00,,
 #6
 
-# started on Wed Jul 20 01:31:06 2022
+# started on Wed Jul 20 15:13:13 2022
 
-29983,,L1-icache-load-misses,0.63%,1909999,100.00,,
-# started on Wed Jul 20 01:31:09 2022
+61434,,L1-icache-load-misses,0.19%,1494881,100.00,,
+# started on Wed Jul 20 15:13:16 2022
 
-28227,,L1-icache-load-misses,0.09%,1713509,100.00,,
+57777,,L1-icache-load-misses,0.21%,1272859,100.00,,
 #8
 
-# started on Wed Jul 20 01:31:12 2022
+# started on Wed Jul 20 15:13:18 2022
 
-50237,,L1-icache-load-misses,1.14%,3162174,100.00,,
-# started on Wed Jul 20 01:31:16 2022
+134998,,L1-icache-load-misses,0.48%,1755462,100.00,,
+# started on Wed Jul 20 15:13:21 2022
 
-29639,,L1-icache-load-misses,0.07%,1975599,100.00,,
+57924,,L1-icache-load-misses,0.27%,1421240,100.00,,
 #10
 
-# started on Wed Jul 20 01:31:18 2022
+# started on Wed Jul 20 15:13:23 2022
 
-172599,,L1-icache-load-misses,0.35%,4235398,100.00,,
-# started on Wed Jul 20 01:31:24 2022
+769952,,L1-icache-load-misses,0.59%,2602139,100.00,,
+# started on Wed Jul 20 15:13:27 2022
 
-28138,,L1-icache-load-misses,0.25%,1814035,100.00,,
+58004,,L1-icache-load-misses,0.20%,1621788,100.00,,
 #12
 
-# started on Wed Jul 20 01:31:26 2022
+# started on Wed Jul 20 15:13:29 2022
 
-272455,,L1-icache-load-misses,0.47%,4739134,100.00,,
-# started on Wed Jul 20 01:31:32 2022
+991792,,L1-icache-load-misses,0.23%,2985271,100.00,,
+# started on Wed Jul 20 15:13:33 2022
 
-28998,,L1-icache-load-misses,0.13%,2385019,100.00,,
+60089,,L1-icache-load-misses,0.20%,1731281,100.00,,
 #14
 
-# started on Wed Jul 20 01:31:35 2022
+# started on Wed Jul 20 15:13:36 2022
 
-349216,,L1-icache-load-misses,0.23%,5360045,100.00,,
-# started on Wed Jul 20 01:31:41 2022
+1120888,,L1-icache-load-misses,0.17%,3419294,100.00,,
+# started on Wed Jul 20 15:13:40 2022
 
-28141,,L1-icache-load-misses,0.10%,2615498,100.00,,
+60493,,L1-icache-load-misses,0.19%,1867946,100.00,,
 #16
 
-# started on Wed Jul 20 01:31:45 2022
+# started on Wed Jul 20 15:13:43 2022
 
-440878,,L1-icache-load-misses,0.17%,6037050,100.00,,
-# started on Wed Jul 20 01:31:52 2022
+1324974,,L1-icache-load-misses,0.15%,3789357,100.00,,
+# started on Wed Jul 20 15:13:48 2022
 
-29693,,L1-icache-load-misses,0.08%,2854459,100.00,,
+69713,,L1-icache-load-misses,0.17%,2076250,100.00,,
