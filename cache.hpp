@@ -1,6 +1,7 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <cmath>
 
 class Cache
 {
@@ -58,7 +59,7 @@ class L1d_cache : public L1_cache
     }
     int empirical_assoc_test()
     {
-        std::cout << "Calculating data-cache associativity empirically" << std::flush;
+        std::cout << "Assessing data-cache associativity empirically" << std::flush;
         std::string cmd_compile = "g++ -g ./associativity_test_d.cpp -o ./associativity_test_d";
         std::string cmd_no_arg = "perf stat -x , --append -o assoctmpd.txt -e L1-dcache-load-misses -r 1000 ./associativity_test_d ";
         std::string cmd_rm_assoctmp = "rm ./assoctmpd.txt";
@@ -144,7 +145,7 @@ class L1d_cache : public L1_cache
     }
     int empirical_stride_test()
     {
-        std::cout << "Calculating data-cache critical stride empirically" << std::flush;
+        std::cout << "Assessing data-cache critical stride empirically" << std::flush;
         std::string cmd_compile = "g++ -g ./critical_stride_test_d.cpp -o ./critical_stride_test_d";
         std::string cmd_no_arg = "perf stat -x , --append -o cstmpd.txt -e L1-dcache-loads,L1-dcache-load-misses,duration_time -r 1000 ./critical_stride_test_d ";
         std::string cmd_rm_assoctmp = "rm ./cstmpd.txt";
@@ -246,7 +247,7 @@ class L1i_cache : public L1_cache
     }
     int empirical_assoc_test()
     {
-        std::cout << "Calculating instruction-cache associativity empirically" << std::flush;
+        std::cout << "Assessing instruction-cache associativity empirically" << std::flush;
         std::string cmd_compile_65536 = "g++ -g -falign-functions=65536 ./associativity_test_i.cpp -o ./associativity_test_i_65536 ";
         std::string cmd_compile_noalign = "g++ -g ./associativity_test_i.cpp -o ./associativity_test_i_noalign ";
         std::string cmd_no_arg_65536 = "perf stat -x , --append -o assoctmpi.txt -e L1-icache-load-misses -r 1000 ./associativity_test_i_65536 ";
@@ -340,7 +341,7 @@ class L1i_cache : public L1_cache
     }
     int empirical_stride_test()
     {
-        std::cout << "Calculating instruction-cache critical stride empirically" << std::flush;
+        std::cout << "Assessing instruction-cache critical stride empirically" << std::flush;
         std::string cmd_compile_1 = "g++ -g -falign-functions=";
         std::string cmd_compile_2 = " ./critical_stride_test_i.cpp -o ./critical_stride_test_i_";
         std::string cmd_no_arg = "perf stat -x , --append -o cstmpi.txt -e L1-icache-load-misses -r 1000 ./critical_stride_test_i_";
