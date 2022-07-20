@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "cache.hpp"
+#include "cache_info.hpp"
 #include "class_parser.hpp"
 
 using namespace std;
@@ -53,6 +53,7 @@ int main()
     File class_size_test("./class_test.cpp");
 
     class_size_test.detect_types();
+
     class_size_test.suggest_optimised_orderings();
 
     return 0;

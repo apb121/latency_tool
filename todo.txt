@@ -1,0 +1,23 @@
+code stuff
+
+-- class parser
+    -- add template functionality to class/variable search
+        -- suggest specialisations?
+    -- classes as members of other classes
+    -- many-level recursive array<>s
+    -- comma separated lists of variables
+-- empirical cache tests
+    -- more sophisticated stddev checking for spikes?
+-- nm function functionality
+    -- which functions call each other
+    -- which functions are called near to each other
+-- makefile functionality
+-- identify discontiguous data structures
+
+report stuff
+
+--emphasise the difficulty of catching appropriate cases of variable declarations and rejecting inappropriate cases
+    -- inline functions
+    -- function parameters
+    -- complex cases (see notebook)
+--try to optimise OOP coursework!
