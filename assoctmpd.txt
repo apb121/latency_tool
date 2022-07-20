@@ -1,64 +1,64 @@
 #2
 
-# started on Wed Jul 20 15:12:28 2022
+# started on Wed Jul 20 16:54:22 2022
 
-50050,,L1-dcache-load-misses,0.09%,1264878,100.00,,
-# started on Wed Jul 20 15:12:30 2022
+49432,,L1-dcache-load-misses,0.25%,1319868,100.00,,
+# started on Wed Jul 20 16:54:25 2022
 
-50730,,L1-dcache-load-misses,0.08%,1308243,100.00,,
+51053,,L1-dcache-load-misses,0.23%,1360813,100.00,,
 #4
 
-# started on Wed Jul 20 15:12:33 2022
+# started on Wed Jul 20 16:54:27 2022
 
-50729,,L1-dcache-load-misses,0.08%,1269216,100.00,,
-# started on Wed Jul 20 15:12:35 2022
+49932,,L1-dcache-load-misses,0.22%,1285222,100.00,,
+# started on Wed Jul 20 16:54:29 2022
 
-50044,,L1-dcache-load-misses,0.07%,1292702,100.00,,
+48153,,L1-dcache-load-misses,0.23%,1243665,100.00,,
 #6
 
-# started on Wed Jul 20 15:12:37 2022
+# started on Wed Jul 20 16:54:31 2022
 
-50931,,L1-dcache-load-misses,0.07%,1367245,100.00,,
-# started on Wed Jul 20 15:12:39 2022
+49438,,L1-dcache-load-misses,0.24%,1261207,100.00,,
+# started on Wed Jul 20 16:54:34 2022
 
-53140,,L1-dcache-load-misses,0.06%,1432570,100.00,,
+50934,,L1-dcache-load-misses,0.22%,1279295,100.00,,
 #8
 
-# started on Wed Jul 20 15:12:42 2022
+# started on Wed Jul 20 16:54:36 2022
 
-51504,,L1-dcache-load-misses,0.73%,1371223,100.00,,
-# started on Wed Jul 20 15:12:44 2022
+50666,,L1-dcache-load-misses,0.79%,1259551,100.00,,
+# started on Wed Jul 20 16:54:38 2022
 
-50582,,L1-dcache-load-misses,0.08%,1253061,100.00,,
+50126,,L1-dcache-load-misses,0.20%,1604710,100.00,,
 #10
 
-# started on Wed Jul 20 15:12:46 2022
+# started on Wed Jul 20 16:54:40 2022
 
-153176,,L1-dcache-load-misses,0.09%,1353564,100.00,,
-# started on Wed Jul 20 15:12:49 2022
+151221,,L1-dcache-load-misses,0.12%,1291966,100.00,,
+# started on Wed Jul 20 16:54:43 2022
 
-49365,,L1-dcache-load-misses,0.08%,1406945,100.00,,
+49367,,L1-dcache-load-misses,0.22%,1302191,100.00,,
 #12
 
-# started on Wed Jul 20 15:12:51 2022
+# started on Wed Jul 20 16:54:45 2022
 
-154313,,L1-dcache-load-misses,0.09%,1456573,100.00,,
-# started on Wed Jul 20 15:12:53 2022
+144071,,L1-dcache-load-misses,0.11%,1242593,100.00,,
+# started on Wed Jul 20 16:54:47 2022
 
-51772,,L1-dcache-load-misses,0.08%,1358833,100.00,,
+51485,,L1-dcache-load-misses,0.20%,1353124,100.00,,
 #14
 
-# started on Wed Jul 20 15:12:55 2022
+# started on Wed Jul 20 16:54:50 2022
 
-155066,,L1-dcache-load-misses,0.07%,1397544,100.00,,
-# started on Wed Jul 20 15:12:58 2022
+151981,,L1-dcache-load-misses,0.09%,1351013,100.00,,
+# started on Wed Jul 20 16:54:52 2022
 
-51502,,L1-dcache-load-misses,0.06%,1315921,100.00,,
+50426,,L1-dcache-load-misses,0.20%,1279164,100.00,,
 #16
 
-# started on Wed Jul 20 15:13:00 2022
+# started on Wed Jul 20 16:54:54 2022
 
-153205,,L1-dcache-load-misses,0.06%,1366199,100.00,,
-# started on Wed Jul 20 15:13:02 2022
+153303,,L1-dcache-load-misses,0.09%,1350570,100.00,,
+# started on Wed Jul 20 16:54:57 2022
 
-50837,,L1-dcache-load-misses,0.09%,1338755,100.00,,
+47105,,L1-dcache-load-misses,0.21%,1246722,100.00,,
