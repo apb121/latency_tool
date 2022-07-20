@@ -1,33 +1,33 @@
-# started on Wed Jul 20 00:31:50 2022
+# started on Wed Jul 20 01:46:27 2022
 
-38587,,L1-icache-load-misses,0.10%,749144,100.00,,
-# started on Wed Jul 20 00:31:51 2022
+28417,,L1-icache-load-misses,0.19%,1131803,100.00,,
+# started on Wed Jul 20 01:46:30 2022
 
-38724,,L1-icache-load-misses,0.11%,747372,100.00,,
-# started on Wed Jul 20 00:31:52 2022
+29549,,L1-icache-load-misses,0.09%,1787471,100.00,,
+# started on Wed Jul 20 01:46:32 2022
 
-41978,,L1-icache-load-misses,0.10%,831813,100.00,,
-# started on Wed Jul 20 00:31:54 2022
+30944,,L1-icache-load-misses,0.09%,1732158,100.00,,
+# started on Wed Jul 20 01:46:35 2022
 
-40032,,L1-icache-load-misses,0.11%,763985,100.00,,
-# started on Wed Jul 20 00:31:55 2022
+28752,,L1-icache-load-misses,0.08%,1706869,100.00,,
+# started on Wed Jul 20 01:46:37 2022
 
-44514,,L1-icache-load-misses,0.09%,748834,100.00,,
-# started on Wed Jul 20 00:31:56 2022
+33852,,L1-icache-load-misses,0.12%,1783985,100.00,,
+# started on Wed Jul 20 01:46:40 2022
 
-73152,,L1-icache-load-misses,0.06%,776332,100.00,,
-# started on Wed Jul 20 00:31:57 2022
+168522,,L1-icache-load-misses,0.19%,2297639,100.00,,
+# started on Wed Jul 20 01:46:43 2022
 
-369124,,L1-icache-load-misses,0.33%,876404,100.00,,
-# started on Wed Jul 20 00:31:58 2022
+196827,,L1-icache-load-misses,0.06%,2431101,100.00,,
+# started on Wed Jul 20 01:46:46 2022
 
-494068,,L1-icache-load-misses,0.08%,966451,100.00,,
-# started on Wed Jul 20 00:31:59 2022
+190565,,L1-icache-load-misses,0.05%,2434968,100.00,,
+# started on Wed Jul 20 01:46:50 2022
 
-497040,,L1-icache-load-misses,0.07%,1060999,100.00,,
-# started on Wed Jul 20 00:32:01 2022
+198565,,L1-icache-load-misses,0.04%,2512860,100.00,,
+# started on Wed Jul 20 01:46:53 2022
 
-516883,,L1-icache-load-misses,0.05%,1175629,100.00,,
-# started on Wed Jul 20 00:32:02 2022
+197326,,L1-icache-load-misses,0.05%,3088347,100.00,,
+# started on Wed Jul 20 01:46:57 2022
 
-499693,,L1-icache-load-misses,0.06%,1367525,100.00,,
+195610,,L1-icache-load-misses,0.06%,3309284,100.00,,

@@ -841,13 +841,13 @@ int main()
       sysconf(_SC_LEVEL4_CACHE_LINESIZE),
       sysconf(_SC_LEVEL4_CACHE_ASSOC));
 
-  //cout << "Suggested instruction-cache associativity: " << associativity_test_i() << endl;
-
   //cout << "Suggested data-cache associativity: " << associativity_test_d() << endl;
+
+  //cout << "Suggested instruction-cache associativity: " << associativity_test_i() << endl;
 
   //cout << "Suggested data-cache critical stride: " << critical_stride_test_d() << endl;
 
-  cout << "Suggested data-cache critical stride: " << critical_stride_test_i() << endl;
+  cout << "Suggested instruction-cache critical stride: " << critical_stride_test_i() << endl;
 
   //detect_types();
 
