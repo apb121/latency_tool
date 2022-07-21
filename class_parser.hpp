@@ -38,10 +38,57 @@ struct UDType
     {
 
     }
+    std::string get_name()
+    {
+      return name;
+    }
     void detect_variables()
     {
-        std::string class_info_copy = class_info;
-        std::regex variable_declaration("(?:(?:auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=)])|(((\\[ *[0-9]* *\\])+)))");
+        std::string class_info_copy;
+        int pos = 0;
+        while (class_info[pos] != '{') { pos++; }
+        pos++;
+        int curly_bracket_depth = 1;
+        int round_bracket_depth = 0;
+        bool in_double = false, in_single = false;
+        while (pos < class_info.length() && curly_bracket_depth > 0)
+        {
+          if (class_info[pos] == '"' && class_info[pos - 1] != '\'' && !in_single)
+          {
+            in_double = !in_double;
+          }
+          if (class_info[pos] == '\'' && class_info[pos - 1] != '\'' && !in_double)
+          {
+            in_single = !in_single;
+          }
+          if (class_info[pos] == '{' && !in_double && !in_single)
+          {
+            //class_info += (":::DEPTH:" + std::to_string(curly_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
+            curly_bracket_depth++;
+          }
+          if (class_info[pos] == '(' && !in_double && !in_single)
+          {
+            //class_info += (":::DEPTH:" + std::to_string(round_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
+            round_bracket_depth++;
+          }
+          if (curly_bracket_depth == 1 && round_bracket_depth == 0)
+          {
+            class_info_copy += class_info[pos];
+          }
+          if (class_info[pos] == '}' && !in_double && !in_single)
+          {
+            //class_info += (":::DEPTH:" + std::to_string(curly_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
+            curly_bracket_depth--;
+          }
+          if (class_info[pos] == ')' && !in_double && !in_single)
+          {
+            //class_info += (":::DEPTH:" + std::to_string(round_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
+            round_bracket_depth--;
+          }
+          pos++;
+        }
+        //std::cout << "CLASS INFO COPY: " << class_info_copy << std::endl;
+        std::regex variable_declaration("(?:(?:virtual *|auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=)])|(((\\[ *[0-9]* *\\])+)))");
         std::smatch variable_match;
         while (regex_search(class_info_copy, variable_match, variable_declaration))
         {
@@ -51,6 +98,11 @@ struct UDType
             std::smatch array_match;
             std::string array_match_str = "";
             std::string declaration_remaining = declaration;
+            if (declaration_remaining.substr(0, 7) == "virtual")
+            {
+              class_info_copy = variable_match.suffix();
+              continue;
+            }
             while (regex_search(declaration_remaining, array_match, array_length))
             {
                 if (array_match.suffix().str().find(">") == std::string::npos)
@@ -93,6 +145,7 @@ struct UDType
                 if (variable_type.find("auto") == std::string::npos)
                 {
                     size_t variable_size = get_type_size(variable_type, array_match_str);
+                    // std::cout << "name: " << variable_name << "; size: " << variable_size << "; type: " << variable_type << "; alignment: " << variable_type_alignment << std::endl;
                     types_list.push_back({variable_name, variable_size, variable_type, variable_type_alignment});
                 }
                 else
@@ -106,6 +159,11 @@ struct UDType
     }
     size_t calculate_size()
     {
+        if (types_list.size() == 0)
+        {
+          std::cout << "This class has no data members of its own!" << std::endl;
+          return 0;
+        }
         size_t curr_align = 0;
         for (int i = 0; i < types_list.size() - 1; ++i)
         {
@@ -124,6 +182,11 @@ struct UDType
     }
     size_t calculate_size(std::vector<variable_info> proposed_types_list)
     {
+        if (proposed_types_list.size() == 0)
+        {
+          // std::cout << "This class has no data members of its own!" << std::endl;
+          return 0;
+        }
         size_t curr_align = 0;
         for (int i = 0; i < proposed_types_list.size() - 1; ++i)
         {
@@ -142,6 +205,12 @@ struct UDType
     }
     std::vector<variable_info> suggest_optimised_ordering()
     {
+        if (types_list.size() == 0)
+        {
+          // std::cout << "This class has no data members of its own!" << std::endl;
+          std::vector<variable_info> v;
+          return v;
+        }
         std::vector<variable_info> new_ordering = types_list;
         int min_size = calculate_size();
         do
@@ -168,47 +237,97 @@ class File
     {
 
     }
+    std::vector<UDType> get_types()
+    {
+      return user_defined_types;
+    }
     void detect_types()
     {
         std::ifstream class_file;
         class_file.open(file_name);
-        char buf[512];
-        std::vector<UDType> type_info;
-        std::regex class_declaration("");
-        std::smatch class_match;
-        while (class_file >> buf)
+        if(!class_file.is_open())
         {
-            if (strcmp(buf, "struct") == 0 || strcmp(buf, "class") == 0)
+          std::cout << "File could not be opened!" << std::endl;
+          exit(1);
+        }
+        char c;
+        std::string full_file;
+        c = class_file.get();
+        while (!class_file.eof())
+        {
+          full_file += c;
+          c = class_file.get();
+        }
+        std::vector<UDType> type_info;
+        std::regex class_regex("(class|struct)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{");
+        std::smatch class_match;
+        std::string file_remaining = full_file;
+        std::string class_info;
+        // std::cout << "=== CLASSES ===" << std::endl;
+        while (regex_search(file_remaining, class_match, class_regex))
+        {
+          class_info = class_match.str();
+          file_remaining = class_match.suffix();
+          int pos = 0;
+          int curly_bracket_depth = 1;
+          bool in_double = false;
+          bool in_single = false;
+          while (pos < file_remaining.length() && curly_bracket_depth > 0)
+          {
+            if (file_remaining[pos] == '"' && file_remaining[pos - 1] != '\'' && !in_single)
             {
-                class_file >> buf;
-                std::string type_name(buf);
-                std::string class_info;
-                char c;
-                class_file.get(c);
-                while (c != '{') { class_file.get(c); }
-                class_info += c;
-                int curly_bracket_depth = 1;
-                int round_bracket_depth = 0;
-                while (curly_bracket_depth > 0)
-                {
-                    class_file.get(c);
-                    if (c == '{') { curly_bracket_depth++; }
-                    if (c == '(') { round_bracket_depth++; }
-                    if (curly_bracket_depth == 1 && round_bracket_depth == 0)
-                    {
-                        class_info += c;
-                    }
-                    if (c == '}') { curly_bracket_depth--; }
-                    if (c == ')') { round_bracket_depth--; }
-                }
-                UDType new_ud_type(type_name, class_info);
-                new_ud_type.detect_variables();
-                user_defined_types.push_back(new_ud_type);
+              in_double = !in_double;
             }
+            if (file_remaining[pos] == '\'' && file_remaining[pos - 1] != '\'' && !in_double)
+            {
+              in_single = !in_single;
+            }
+            if (file_remaining[pos] == '{' && !in_double && !in_single)
+            {
+              //class_info += (":::DEPTH:" + std::to_string(curly_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
+              curly_bracket_depth++;
+            }
+            if (file_remaining[pos] == '}' && !in_double && !in_single)
+            {
+              //class_info += (":::DEPTH:" + std::to_string(curly_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
+              curly_bracket_depth--;
+            }
+            class_info += file_remaining[pos];
+            pos++;
+          }
+          while (pos < file_remaining.length() && file_remaining[pos] != ';')
+          {
+            class_info += file_remaining[pos];
+            pos++;
+          }
+          if (file_remaining[pos] == ';')
+          {
+            class_info += file_remaining[pos];
+            pos++;
+            int name_start = 0, name_end = 0;
+            while (isspace(class_info[name_start])) { name_start++; }
+            name_end = name_start;
+            while (!isspace(class_info[name_end])) { name_end++; }
+            name_start = name_end;
+            while (isspace(class_info[name_start])) { name_start++; }
+            name_end = name_start;
+            while (!isspace(class_info[name_end]) && class_info[name_end] != '{' && class_info[name_end] != ':') { name_end++; }
+            // std::cout << "CLASS NAME IS: " << class_info.substr(name_start, name_end - name_start) << std::endl;
+            // std::cout << "CLASS INFO IS: " << class_info << std::endl;
+            UDType new_ud_type(class_info.substr(name_start, name_end - name_start), class_info);
+            file_remaining = file_remaining.substr(pos);
+            new_ud_type.detect_variables();
+            user_defined_types.push_back(new_ud_type);
+          }
+          else
+          {
+            break;
+          }
         }
     }
     void suggest_optimised_orderings()
     {
+        std::cout << "This file has " << user_defined_types.size() << " members." << std::endl << std::flush;
         for (int i = 0; i < user_defined_types.size(); ++i)
         {
             std::cout << " ================== " << std::endl << std::endl;
@@ -234,7 +353,7 @@ class File
             if (optimised_size == current_size)
             {
                 std::cout << "This type is already optimally ordered for size!" << std::endl;
-                return;
+                continue;
             }
 
             std::cout << "Proposed ordering:" << std::endl;
@@ -440,3 +559,8 @@ size_t get_type_size(std::string type, std::string array_match)
   }
   return size;
 }
+
+class A : public UDType
+{
+  int i = 4;
+};

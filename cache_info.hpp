@@ -32,7 +32,14 @@ class Cache
       std::cout << "The critical stride of the " << name << " cache is " << critical_stride << " bytes." << std::endl;
     }
   }
-  const int get_linesize() const { return linesize; }
+  const int get_linesize() const
+  {
+    for (int i = 0; i < 5; ++i)
+    {
+        
+    }
+    return linesize;
+}
   const int get_assoc() const { return assoc; }
   const int get_size() const { return size; }
 };
