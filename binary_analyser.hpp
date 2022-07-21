@@ -11,12 +11,17 @@ class Function
     std::string name;
     std::string file_location;
     public:
-    std::vector<size_t> competes_with; //competes for cache sets with
-    std::vector<size_t> coexecutes_with; //often executed in conjunction with (according to the objdump)
+    std::set<size_t> competes_with; //competes for cache sets with
+    std::set<size_t> coexecutes_with; //often executed in conjunction with (according to the objdump)
     Function(size_t address, size_t size, std::string name, std::string file_location)
         : address(address), size(size), name(name), file_location(file_location)
     {
 
+    }
+    Function()
+    {
+        std::cout << "This constructor should not be called!" << std::endl;
+        exit(1);
     }
     size_t get_address() { return address; }
     size_t get_size() { return size; }
@@ -27,7 +32,7 @@ class Function
 class Binary
 {
     std::string file_name;
-    std::vector<Function> functions_list;
+    std::map<size_t, Function> functions_list;
     std::vector<UDType> user_types;
     public:
     Binary(std::string file_name, std::vector<UDType> user_types)
@@ -123,73 +128,70 @@ class Binary
             size_t size = atoi(buf[1]);
 
             /* nm includes duplicates... */
-            if (functions_list.size() > 0)
-            {
-                if (functions_list[functions_list.size() - 1].get_file_location() != location)
-                {
-                    functions_list.push_back(Function(address, size, name, location));
-                }
-            }
-            else
-            {
-                functions_list.push_back(Function(address, size, name, location));
-            }
+
+            functions_list.insert({address, Function(address, size, name, location)});
             
             nm_file >> std::ws;
         }
-        for (int i = 0; i < functions_list.size(); ++i)
+        /*
+        for (auto i : functions_list) //int i = 0; i < functions_list.size(); ++i)
         {
             std::cout << "================" << std::endl;
-            std::cout << "Name: " << functions_list[i].get_name() << std::endl;
-            std::cout << "Address: " << functions_list[i].get_address()  << std::endl;
-            std::cout << "Size: " << functions_list[i].get_size() << std::endl;
-            std::cout << "Location: " << functions_list[i].get_file_location() << std::endl;
+            std::cout << "Name: " << i.second.get_name() << std::endl;
+            std::cout << "Address: " << i.second.get_address()  << std::endl;
+            std::cout << "Size: " << i.second.get_size() << std::endl;
+            std::cout << "Location: " << i.second.get_file_location() << std::endl;
         }
+        */
     }
     void populate_competition_vectors(int critical_stride)
     {
         int span[critical_stride];
-        for (int i = 0; i < functions_list.size(); ++i)
+        // std::cout << "FUNCTION LIST SIZE: " << functions_list.size() << std::endl;
+        for (auto& i : functions_list) //int i = 0; i < functions_list.size(); ++i)
         {
             for (int j = 0; j < critical_stride; ++j)
             {
                 span[j] = 0;
             }
-            size_t start = functions_list[i].get_address() ;
-            for (int j = 0; j < functions_list[i].get_size(); ++j)
+            size_t start = i.second.get_address();
+            for (int j = 0; j < i.second.get_size(); ++j)
             {
                 span[(start + j) % critical_stride] = 1;
             }
-            for (int j = 0; j < functions_list.size(); ++j)
+            for (auto j : functions_list) //int j = 0; j < functions_list.size(); ++j)
             {
-                if (j == i) { continue; }
-                for (int k = 0; k < functions_list[j].get_size(); ++k)
+                if (j.second.get_address() == i.second.get_address()) { continue; }
+                for (int k = 0; k < j.second.get_size(); ++k)
                 {
-                    if (span[(functions_list[j].get_address()  + k) % critical_stride] == 1)
+                    if (span[(j.second.get_address() + k) % critical_stride] == 1)
                     {
-                        functions_list[i].competes_with.push_back(functions_list[j].get_address()); //the other way around is added because all pairs are checked twice anyway
-                        //functions_list[j].competes_with.push_back(functions_list[i].get_address() );
+                        i.second.competes_with.insert(j.second.get_address()); //the other way around is added because all pairs are checked twice anyway
                         break;
                     }
                 }
             }
+            //std::cout << "After assigning: " << i.second.competes_with.size() << std::endl;
         }
-        for (int i = 0; i < functions_list.size(); ++i)
+        /*
+        for (auto i : functions_list) //int i = 0; i < functions_list.size(); ++i)
         {
-            std::cout << "===" + functions_list[i].get_name() + "===" << std::endl;
+            std::cout << "===" + i.second.get_name() + "===" << std::endl;
             std::cout << "competes with" << std::endl;
-            for (int j = 0; j < functions_list[i].competes_with.size(); ++j)
+            std::cout << "I COMPETES WITH LIST SIZE: " << i.second.competes_with.size() << std::endl;
+            for (auto j : i.second.competes_with)
             {
-                std::cout << functions_list[i].competes_with[j] << std::endl;
+                std::cout << j << std::endl;
             }
         }
+        */
     }
     void populate_coexecution_vectors()
     {
         /*
         for (int i = 0; i < functions_list.size(); ++i)
         {
-            std::cout << functions_list[i].get_name() << std::endl;
+            std::cout << i.get_name() << std::endl;
         }
         return;
         */
@@ -208,43 +210,43 @@ class Binary
         while(getline(objdump_file, line))
         {
             int pos = 0;
-            while (isspace(line[pos])) { pos++; }
+            while (pos < line.length() && isspace(line[pos])) { pos++; }
             if (!isdigit(line[pos])) { continue; }
             line = line.substr(pos);
             int end = line.find_first_not_of("0123456789abcdef");
             std::string address = line.substr(0, end);
             pos = end;
-            while (isspace(line[pos]) || line[pos] == ':') { pos++; }
+            while (pos < line.length() && isspace(line[pos]) || line[pos] == ':') { pos++; }
             int ins_start = pos;
-            while (!isspace(line[pos])) { pos++; }
+            while (pos < line.length() && !isspace(line[pos])) { pos++; }
             int ins_end = pos;
             std::string instruction = line.substr(ins_start, ins_end - ins_start);
             std::string call_dest;
             if (instruction == "call")
             {
                 pos = line.find("call") + 4;
-                while (isspace(line[pos])) { pos++; }
+                while (pos < line.length() && isspace(line[pos])) { pos++; }
                 int dest_start = pos;
-                while (!isspace(line[pos])) { pos++; }
+                while (pos < line.length() && !isspace(line[pos])) { pos++; }
                 int dest_end = pos;
                 call_dest = line.substr(dest_start, dest_end - dest_start);
                 if (call_dest.find_first_not_of("0123456789abcdef") == std::string::npos)
                 {
                     // std::cout << "Address: " << address << " calls " << call_dest << std::endl;
-                    for (int i = 0; i < functions_list.size(); ++i)
+                    for (auto& i : functions_list) //int i = 0; i < functions_list.size(); ++i)
                     {
                         long dec_addr_src = strtol(address.c_str(), nullptr, 16);
-                        if ((dec_addr_src >= functions_list[i].get_address()) && (dec_addr_src < functions_list[i].get_address() + functions_list[i].get_size()))
+                        if ((dec_addr_src >= i.second.get_address()) && (dec_addr_src < i.second.get_address() + i.second.get_size()))
                         {
-                            for (int j = 0; j < functions_list.size(); ++j)
+                            for (auto& j : functions_list) //int j = 0; j < functions_list.size(); ++j)
                             {
-                                if (j == i) { continue; }
+                                if (j.first == i.first) { continue; }
                                 long dec_addr_dest = strtol(call_dest.c_str(), nullptr, 16);
-                                if (functions_list[j].get_address() == dec_addr_dest)
+                                if (j.second.get_address() == dec_addr_dest)
                                 {
-                                    functions_list[i].coexecutes_with.push_back(dec_addr_dest);
-                                    std::cout << functions_list[i].get_name() << " calls " << functions_list[j].get_name() << std::endl;
-                                    functions_list[j].coexecutes_with.push_back(dec_addr_src);
+                                    i.second.coexecutes_with.insert(dec_addr_dest);
+                                    //std::cout << i.second.get_name() << " calls " << j.second.get_name() << std::endl;
+                                    j.second.coexecutes_with.insert(i.second.get_address());
                                 }
                             }
                         }
@@ -252,5 +254,14 @@ class Binary
                 }
             }
         }
+        /*
+        for (auto& i : functions_list)
+        {
+            for (auto& j : i.second.coexecutes_with)
+            {
+                std::cout << i.second.get_name() << " coexecutes with " << functions_list[j].get_name() << std::endl;
+            }
+        }
+        */
     }
 };

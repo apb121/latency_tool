@@ -327,7 +327,6 @@ class File
     }
     void suggest_optimised_orderings()
     {
-        std::cout << "This file has " << user_defined_types.size() << " members." << std::endl << std::flush;
         for (int i = 0; i < user_defined_types.size(); ++i)
         {
             std::cout << " ================== " << std::endl << std::endl;

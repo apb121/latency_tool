@@ -62,16 +62,16 @@ int main()
     File binary_analyser("./binary_analyser.hpp");
 
     class_test.detect_types();
-    class_test.suggest_optimised_orderings();
+    // class_test.suggest_optimised_orderings();
     
     class_parser.detect_types();
-    class_parser.suggest_optimised_orderings();
+    // class_parser.suggest_optimised_orderings();
 
     cache_info.detect_types();
-    cache_info.suggest_optimised_orderings();
+    // cache_info.suggest_optimised_orderings();
 
     binary_analyser.detect_types();
-    binary_analyser.suggest_optimised_orderings();
+    // binary_analyser.suggest_optimised_orderings();
 
     vector<UDType> all_types;
     vector<UDType> types = class_parser.get_types();
