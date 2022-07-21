@@ -1,5 +1,7 @@
 code stuff
 
+-- !! see what the compiler says about the size of structs that contain each other
+
 -- source code (class) parser
     -- inherit size from parent classes, increase size by any size of new data members...
     -- (NB regex is equivalent to FSM and therefore can't handle arbitrarily recursive structures that require counting)
@@ -15,14 +17,9 @@ code stuff
 -- binary analyser
     -- makefile functionality?
     -- nm function functionality
-        -- nm -v -C -l --radix=d --print-size <filename>
-            -- only take lines with T
-                -- first >>: location; second >> size (with --print-size flag); third >>: type; fourth up to ')' >> name; last: filepath is the last part: .../filename:line_number (with -l flag)
-        -- !! combine with class names analyser to find user defined functions
-        -- which functions call each other
         -- which functions are called near to each other
         -- consider: overloading
-    -- objdump -d -C -Mintel --no-show-raw-insn <filename>
+        -- consider: templates!
     -- better to use objdump for many reasons
         -- a lot of function calls (e.g. to constructors, assignment operators, etc.) are not explicit in source code
 -- identify discontiguous data structures
@@ -33,4 +30,5 @@ report stuff
     -- inline functions
     -- function parameters
     -- complex cases (see notebook)
+    -- using nm and objdump
 --try to optimise OOP coursework!
