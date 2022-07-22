@@ -85,6 +85,7 @@ int main()
     b.get_functions();
     b.populate_competition_vectors(4096);
     b.populate_coexecution_vectors();
+    b.find_problem_function_groups();
 
     return 0;
 }

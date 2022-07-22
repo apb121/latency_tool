@@ -2,6 +2,14 @@ code stuff
 
 -- !! see what the compiler says about the size of structs that contain each other
 
+-- count how many times functions call each other!!
+-- count how much functions overlap!!
+-- suggestions
+    -- inline some functions (then they will not conflict!)
+    -- move functions around (put function that are called together together)
+    -- combine functions
+    -- try -falign-functions=...
+    -- forcibly stop some functions coming into the cache with non temporal code accesses??
 -- source code (class) parser
     -- inherit size from parent classes, increase size by any size of new data members...
     -- (NB regex is equivalent to FSM and therefore can't handle arbitrarily recursive structures that require counting)
@@ -24,6 +32,7 @@ code stuff
         -- consider: templates!
     -- better to use objdump for many reasons
         -- a lot of function calls (e.g. to constructors, assignment operators, etc.) are not explicit in source code
+            -- particularly useful because it can identify slow-downs that could never been seen just by looking at the source code. constructors might conflict!
 -- identify discontiguous data structures
 
 report stuff

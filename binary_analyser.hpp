@@ -3,7 +3,6 @@
 #include <fstream>
 #include <vector>
 
-// address, size, name, location
 class Function
 {
     size_t address;
@@ -13,6 +12,7 @@ class Function
     public:
     std::set<size_t> competes_with; //competes for cache sets with
     std::set<size_t> coexecutes_with; //often executed in conjunction with (according to the objdump)
+    std::set<size_t> competes_and_coexecutes_with;
     Function(size_t address, size_t size, std::string name, std::string file_location)
         : address(address), size(size), name(name), file_location(file_location)
     {
@@ -20,7 +20,7 @@ class Function
     }
     Function()
     {
-        std::cout << "This constructor should not be called!" << std::endl;
+        std::cout << "If we get here, we've got a problem!" << std::endl;
         exit(1);
     }
     size_t get_address() { return address; }
@@ -263,5 +263,67 @@ class Binary
             }
         }
         */
+
+        // level 2 ?
+
+        for (auto& i : functions_list)
+        {
+            for (auto& j : i.second.coexecutes_with)
+            {
+                for (auto& k : functions_list[j].coexecutes_with)
+                {
+                    i.second.coexecutes_with.insert(k);
+                }
+            }
+        }
+    }
+    void find_problem_function_groups()
+    {
+        for (auto& i : functions_list)
+        {
+            /*
+            std::cout << i.second.get_name() << " competes with: " << std::endl;
+            for (auto com : i.second.competes_with)
+            {
+                std::cout << functions_list[com].get_name() << std::endl;
+            }
+            std::cout << i.second.get_name() << " coexecutes with: " << std::endl;
+            for (auto com : i.second.coexecutes_with)
+            {
+                std::cout << functions_list[com].get_name() << std::endl;
+            }
+            */
+            std::set_intersection(
+                i.second.competes_with.begin(), i.second.competes_with.end(),
+                i.second.coexecutes_with.begin(), i.second.coexecutes_with.end(),
+                std::inserter(i.second.competes_and_coexecutes_with, i.second.competes_and_coexecutes_with.begin())
+            );
+            for (auto& j : i.second.competes_and_coexecutes_with)
+            {
+                int i_range[4096];
+                int j_range[4096];
+                for (int d = 0; d < 4096; d++)
+                {
+                    i_range[d] = 0; j_range[d] = 0;
+                }
+                for (int c = 0; c < i.second.get_size(); c++)
+                {
+                    i_range[(i.second.get_address() + c) % 4096] = 1;
+                }
+                for (int c = 0; c < functions_list[j].get_size(); c++)
+                {
+                    j_range[(functions_list[j].get_address() + c) % 4096] = 1;
+                }
+                int count = 0;
+                for (int cc = 0; cc < 4096; cc++)
+                {
+                    if (i_range[cc] && j_range[cc])
+                    {
+                        ++count;
+                    }
+                }
+                std::cout << i.second.get_name() << " competes and coexecutes with: " << functions_list[j].get_name() << " across " << count << " bytes!" << std::endl << std::flush;
+            }
+        }
     }
 };
