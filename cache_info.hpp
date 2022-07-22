@@ -84,10 +84,8 @@ class L1d_cache : public L1_cache
             FILE* cmd_stream;
             std::string echo = "echo \"#" + std::to_string(i) + "\\n\" >> assoctmpd.txt";
             system(echo.c_str());
-            //std::cout << "(65536) running i=" << i << std::endl;
             cmd_stream = popen(cmd_full_65536.c_str(), "r");
             pclose(cmd_stream);
-            //std::cout << "(16) running i=" << i << std::endl;
             cmd_stream = popen(cmd_full_16.c_str(), "r");
             pclose(cmd_stream);
         }
@@ -105,31 +103,27 @@ class L1d_cache : public L1_cache
         {
             if (atstr.size() == 0 || atstr[0] == '#')
             {
-            continue;
+                continue;
             }
             size_t found = atstr.find_first_not_of("0123456789");
             if (found == 0)
             {
-            continue;
+                continue;
             }
             size_t end = atstr.find("%"), start = end - 1;
             if (i % 2 == 0)
             {
-            //std::cout << "stoi: " << stoi(atstr.substr(0, found)) << std::endl;
-            assoc_arr_65536[i / 2] = stoi(atstr.substr(0, found));
-            while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
-            start++;
-            //std::cout << "stod: " << stod(atstr.substr(start, end - start)) << std::endl;
-            assoc_arr_65536_stddev[i / 2] = stod(atstr.substr(start, end - start));
+                assoc_arr_65536[i / 2] = stoi(atstr.substr(0, found));
+                while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+                start++;
+                assoc_arr_65536_stddev[i / 2] = stod(atstr.substr(start, end - start));
             }
             else
             {
-            //std::cout << "stoi: " << stoi(atstr.substr(0, found)) << std::endl;
-            assoc_arr_16[i / 2] = stoi(atstr.substr(0, found));
-            while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
-            start++;
-            //std::cout << "stod: " << stod(atstr.substr(start, end - start)) << std::endl;
-            assoc_arr_16_stddev[i / 2] = stod(atstr.substr(start, end - start));
+                assoc_arr_16[i / 2] = stoi(atstr.substr(0, found));
+                while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+                start++;
+                assoc_arr_16_stddev[i / 2] = stod(atstr.substr(start, end - start));
             }
             i++;
         }
@@ -167,7 +161,6 @@ class L1d_cache : public L1_cache
             std::cout << "." << std::flush;
             std::string cmd_full = cmd_no_arg + std::to_string(i);
             FILE* cmd_stream;
-            //std::cout << "running i=" << i << std::endl;
             cmd_stream = popen(cmd_full.c_str(), "r");
             pclose(cmd_stream);
         }
@@ -188,43 +181,36 @@ class L1d_cache : public L1_cache
         {
             if (atstr.size() == 0 || atstr[0] == '#')
             {
-            continue;
+                continue;
             }
             size_t found = atstr.find_first_not_of("0123456789");
             if (found == 0)
             {
-            continue;
+                continue;
             }
             if (i % 3 == 0)
             {
-            //std::cout << "=== " + std::to_string(pow(2, (i / 3) + 6)) + " ===" << std::endl; 
-            //std::cout << "stoi: " << stoi(atstr.substr(0, found)) << std::endl;
-            assoc_arr_cacheloads[i / 3] = stoi(atstr.substr(0, found));
-            size_t end = atstr.find("%"), start = end - 1;
-            while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
-            start++;
-            //std::cout << "stod: " << stod(atstr.substr(start, end - start)) << std::endl;
-            assoc_arr_cacheloads_stddev[i / 3] = stod(atstr.substr(start, end - start));
+                assoc_arr_cacheloads[i / 3] = stoi(atstr.substr(0, found));
+                size_t end = atstr.find("%"), start = end - 1;
+                while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+                start++;
+                assoc_arr_cacheloads_stddev[i / 3] = stod(atstr.substr(start, end - start));
             }
             else if (i % 3 == 1)
             {
-            //std::cout << "stoi: " << stoi(atstr.substr(0, found)) << std::endl;
-            assoc_arr_cacheloadmisses[i / 3] = stoi(atstr.substr(0, found));
-            size_t end = atstr.find("%"), start = end - 1;
-            while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
-            start++;
-            //std::cout << "stod: " << stod(atstr.substr(start, end - start)) << std::endl;
-            assoc_arr_cacheloadmisses_stddev[i / 3] = stod(atstr.substr(start, end - start));
+                assoc_arr_cacheloadmisses[i / 3] = stoi(atstr.substr(0, found));
+                size_t end = atstr.find("%"), start = end - 1;
+                while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+                start++;
+                assoc_arr_cacheloadmisses_stddev[i / 3] = stod(atstr.substr(start, end - start));
             }
             else if (i % 3 == 2)
             {
-            //std::cout << "stoi: " << stoi(atstr.substr(0, found)) << std::endl;
-            assoc_arr_ns[i / 3] = stoi(atstr.substr(0, found));
-            size_t end = atstr.find("%"), start = end - 1;
-            while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
-            start++;
-            //std::cout << "stod: " << stod(atstr.substr(start, end - start)) << std::endl;
-            assoc_arr_ns_stddev[i / 3] = stod(atstr.substr(start, end - start));
+                assoc_arr_ns[i / 3] = stoi(atstr.substr(0, found));
+                size_t end = atstr.find("%"), start = end - 1;
+                while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+                start++;
+                assoc_arr_ns_stddev[i / 3] = stod(atstr.substr(start, end - start));
             }
             i++;
         }
@@ -232,14 +218,12 @@ class L1d_cache : public L1_cache
         int max_cachemiss_stddev_index = -1;
         for (int i = 0; i < 11; i++)
         {
-            //std::cout << ": " << assoc_arr_cacheloadmisses_stddev[i] << std::endl;
             if (assoc_arr_cacheloadmisses_stddev[i] > max_cachemiss_stddev)
             {
             max_cachemiss_stddev = assoc_arr_cacheloadmisses_stddev[i];
             max_cachemiss_stddev_index = i;
             }
         }
-        //std::cout << max_cachemiss_stddev_index << std::endl;
         return pow(2, (max_cachemiss_stddev_index + 2) + 6);
     }
 };
@@ -278,12 +262,10 @@ class L1i_cache : public L1_cache
             std::string cmd_full_65536 = cmd_no_arg_65536 + std::to_string(i);
             std::string cmd_full_noalign = cmd_no_arg_noalign + std::to_string(i);
             FILE* cmd_stream;
-            //std::cout << "(65536) running i=" << i << std::endl;
             std::string echo = "echo \"#" + std::to_string(i) + "\\n\" >> assoctmpi.txt";
             system(echo.c_str());
             cmd_stream = popen(cmd_full_65536.c_str(), "r");
             pclose(cmd_stream);
-            //std::cout << "(noalign) running i=" << i << std::endl;
             cmd_stream = popen(cmd_full_noalign.c_str(), "r");
             pclose(cmd_stream);
         }
@@ -301,31 +283,27 @@ class L1i_cache : public L1_cache
         {
             if (atstr.size() == 0 || atstr[0] == '#')
             {
-            continue;
+                continue;
             }
             size_t found = atstr.find_first_not_of("0123456789");
             if (found == 0)
             {
-            continue;
+                continue;
             }
             size_t end = atstr.find("%"), start = end - 1;
             if (i % 2 == 0)
             {
-            //std::cout << "stoi: " << stoi(atstr.substr(0, found)) << std::endl;
-            assoc_arr_65536[i / 2] = stoi(atstr.substr(0, found));
-            while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
-            start++;
-            //std::cout << "stod: " << stod(atstr.substr(start, end - start)) << std::endl;
-            assoc_arr_65536_stddev[i / 2] = stod(atstr.substr(start, end - start));
+                assoc_arr_65536[i / 2] = stoi(atstr.substr(0, found));
+                while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+                start++;
+                assoc_arr_65536_stddev[i / 2] = stod(atstr.substr(start, end - start));
             }
             else
             {
-            //std::cout << "stoi: " << stoi(atstr.substr(0, found)) << std::endl;
-            assoc_arr_noalign[i / 2] = stoi(atstr.substr(0, found));
-            while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
-            start++;
-            //std::cout << "stod: " << stod(atstr.substr(start, end - start)) << std::endl;
-            assoc_arr_noalign_stddev[i / 2] = stod(atstr.substr(start, end - start));
+                assoc_arr_noalign[i / 2] = stoi(atstr.substr(0, found));
+                while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
+                start++;
+                assoc_arr_noalign_stddev[i / 2] = stod(atstr.substr(start, end - start));
             }
             i++;
         }
@@ -336,12 +314,12 @@ class L1i_cache : public L1_cache
         {
             if (assoc_arr_65536_stddev[i] > max_stddev)
             {
-            max_stddev = assoc_arr_65536_stddev[i];
-            max_stddev_index = i;
+                max_stddev = assoc_arr_65536_stddev[i];
+                max_stddev_index = i;
             }
             if (assoc_arr_65536[7 - i] > (assoc_arr_noalign[7 - i] * 2))
             {
-            first_spike = 7 - i;
+                first_spike = 7 - i;
             }
         }
         return (std::min(max_stddev_index, first_spike) + 1) * 2;
@@ -359,7 +337,7 @@ class L1i_cache : public L1_cache
             int ret_compile = system(cmd_compile_full.c_str());
             if (ret_compile)
             {
-            std::cout << "Compilation failed!" << std::endl;
+                std::cout << "Compilation failed!" << std::endl;
             }
         }
         int ret_rm_assoctmp = system(cmd_rm_assoctmp.c_str());
@@ -368,7 +346,6 @@ class L1i_cache : public L1_cache
             std::cout << "." << std::flush;
             std::string cmd_full = cmd_no_arg + std::to_string(i);
             FILE* cmd_stream;
-            //std::cout << "running i=" << i << std::endl;
             cmd_stream = popen(cmd_full.c_str(), "r");
             pclose(cmd_stream);
         }
@@ -385,33 +362,28 @@ class L1i_cache : public L1_cache
         {
             if (atstr.size() == 0 || atstr[0] == '#')
             {
-            continue;
+                continue;
             }
             size_t found = atstr.find_first_not_of("0123456789");
             if (found == 0)
             {
-            continue;
+                continue;
             }
-            //std::cout << "=== " + std::to_string(pow(2, i + 6)) + " ===" << std::endl; 
-            //std::cout << "stoi: " << stoi(atstr.substr(0, found)) << std::endl;
             assoc_arr_cacheloadmisses[i] = stoi(atstr.substr(0, found));
             size_t end = atstr.find("%"), start = end - 1;
             while (isdigit(atstr[start]) || atstr[start] == '.') { start--; }
             start++;
-            //std::cout << "stod: " << stod(atstr.substr(start, end - start)) << std::endl;
             assoc_arr_cacheloadmisses_stddev[i] = stod(atstr.substr(start, end - start));
             i++;
         }
         int last_jump = -1;
         for (int i = 0; i < 11; i++)
         {
-            //std::cout << ": " << assoc_arr_cacheloadmisses[i] << std::endl;
             if (i >= 1 && (assoc_arr_cacheloadmisses[i] > (assoc_arr_cacheloadmisses[i - 1] * 2)))
             {
-            last_jump = i;
+                last_jump = i;
             }
         }
-        //std::cout << last_jump << std::endl;
         return pow(2, last_jump + 6);
     }
 };

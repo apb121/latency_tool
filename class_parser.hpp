@@ -63,12 +63,10 @@ struct UDType
           }
           if (class_info[pos] == '{' && !in_double && !in_single)
           {
-            //class_info += (":::DEPTH:" + std::to_string(curly_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
             curly_bracket_depth++;
           }
           if (class_info[pos] == '(' && !in_double && !in_single)
           {
-            //class_info += (":::DEPTH:" + std::to_string(round_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
             round_bracket_depth++;
           }
           if (curly_bracket_depth == 1 && round_bracket_depth == 0)
@@ -77,17 +75,14 @@ struct UDType
           }
           if (class_info[pos] == '}' && !in_double && !in_single)
           {
-            //class_info += (":::DEPTH:" + std::to_string(curly_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
             curly_bracket_depth--;
           }
           if (class_info[pos] == ')' && !in_double && !in_single)
           {
-            //class_info += (":::DEPTH:" + std::to_string(round_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
             round_bracket_depth--;
           }
           pos++;
         }
-        //std::cout << "CLASS INFO COPY: " << class_info_copy << std::endl;
         std::regex variable_declaration("(?:(?:virtual *|auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=)])|(((\\[ *[0-9]* *\\])+)))");
         std::smatch variable_match;
         while (regex_search(class_info_copy, variable_match, variable_declaration))
@@ -145,7 +140,6 @@ struct UDType
                 if (variable_type.find("auto") == std::string::npos)
                 {
                     size_t variable_size = get_type_size(variable_type, array_match_str);
-                    // std::cout << "name: " << variable_name << "; size: " << variable_size << "; type: " << variable_type << "; alignment: " << variable_type_alignment << std::endl;
                     types_list.push_back({variable_name, variable_size, variable_type, variable_type_alignment});
                 }
                 else
@@ -184,7 +178,6 @@ struct UDType
     {
         if (proposed_types_list.size() == 0)
         {
-          // std::cout << "This class has no data members of its own!" << std::endl;
           return 0;
         }
         size_t curr_align = 0;
@@ -207,7 +200,6 @@ struct UDType
     {
         if (types_list.size() == 0)
         {
-          // std::cout << "This class has no data members of its own!" << std::endl;
           std::vector<variable_info> v;
           return v;
         }
@@ -263,7 +255,6 @@ class File
         std::smatch class_match;
         std::string file_remaining = full_file;
         std::string class_info;
-        // std::cout << "=== CLASSES ===" << std::endl;
         while (regex_search(file_remaining, class_match, class_regex))
         {
           class_info = class_match.str();
@@ -284,12 +275,10 @@ class File
             }
             if (file_remaining[pos] == '{' && !in_double && !in_single)
             {
-              //class_info += (":::DEPTH:" + std::to_string(curly_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
               curly_bracket_depth++;
             }
             if (file_remaining[pos] == '}' && !in_double && !in_single)
             {
-              //class_info += (":::DEPTH:" + std::to_string(curly_bracket_depth) + ":" + std::to_string(in_double) + ":" + std::to_string(in_single) + ":");
               curly_bracket_depth--;
             }
             class_info += file_remaining[pos];
@@ -312,8 +301,6 @@ class File
             while (isspace(class_info[name_start])) { name_start++; }
             name_end = name_start;
             while (!isspace(class_info[name_end]) && class_info[name_end] != '{' && class_info[name_end] != ':') { name_end++; }
-            // std::cout << "CLASS NAME IS: " << class_info.substr(name_start, name_end - name_start) << std::endl;
-            // std::cout << "CLASS INFO IS: " << class_info << std::endl;
             UDType new_ud_type(class_info.substr(name_start, name_end - name_start), class_info);
             file_remaining = file_remaining.substr(pos);
             new_ud_type.detect_variables();

@@ -134,22 +134,11 @@ class Binary
             
             nm_file >> std::ws;
         }
-        /*
-        for (auto i : functions_list) //int i = 0; i < functions_list.size(); ++i)
-        {
-            std::cout << "================" << std::endl;
-            std::cout << "Name: " << i.second.get_name() << std::endl;
-            std::cout << "Address: " << i.second.get_address()  << std::endl;
-            std::cout << "Size: " << i.second.get_size() << std::endl;
-            std::cout << "Location: " << i.second.get_file_location() << std::endl;
-        }
-        */
     }
     void populate_competition_vectors(int critical_stride)
     {
         int span[critical_stride];
-        // std::cout << "FUNCTION LIST SIZE: " << functions_list.size() << std::endl;
-        for (auto& i : functions_list) //int i = 0; i < functions_list.size(); ++i)
+        for (auto& i : functions_list)
         {
             for (int j = 0; j < critical_stride; ++j)
             {
@@ -160,7 +149,7 @@ class Binary
             {
                 span[(start + j) % critical_stride] = 1;
             }
-            for (auto j : functions_list) //int j = 0; j < functions_list.size(); ++j)
+            for (auto j : functions_list)
             {
                 if (j.second.get_address() == i.second.get_address()) { continue; }
                 for (int k = 0; k < j.second.get_size(); ++k)
@@ -172,30 +161,10 @@ class Binary
                     }
                 }
             }
-            //std::cout << "After assigning: " << i.second.competes_with.size() << std::endl;
         }
-        /*
-        for (auto i : functions_list) //int i = 0; i < functions_list.size(); ++i)
-        {
-            std::cout << "===" + i.second.get_name() + "===" << std::endl;
-            std::cout << "competes with" << std::endl;
-            std::cout << "I COMPETES WITH LIST SIZE: " << i.second.competes_with.size() << std::endl;
-            for (auto j : i.second.competes_with)
-            {
-                std::cout << j << std::endl;
-            }
-        }
-        */
     }
     void populate_coexecution_vectors()
     {
-        /*
-        for (int i = 0; i < functions_list.size(); ++i)
-        {
-            std::cout << i.get_name() << std::endl;
-        }
-        return;
-        */
         std::string objdump_cmd = "objdump -d -C -Mintel --no-show-raw-insn " + file_name + " >> objdumptmp.txt";
         std::string objdump_rm = "rm objdumptmp.txt";
         system(objdump_rm.c_str());
@@ -233,20 +202,18 @@ class Binary
                 call_dest = line.substr(dest_start, dest_end - dest_start);
                 if (call_dest.find_first_not_of("0123456789abcdef") == std::string::npos)
                 {
-                    // std::cout << "Address: " << address << " calls " << call_dest << std::endl;
-                    for (auto& i : functions_list) //int i = 0; i < functions_list.size(); ++i)
+                    for (auto& i : functions_list)
                     {
                         long dec_addr_src = strtol(address.c_str(), nullptr, 16);
                         if ((dec_addr_src >= i.second.get_address()) && (dec_addr_src < i.second.get_address() + i.second.get_size()))
                         {
-                            for (auto& j : functions_list) //int j = 0; j < functions_list.size(); ++j)
+                            for (auto& j : functions_list)
                             {
                                 if (j.first == i.first) { continue; }
                                 long dec_addr_dest = strtol(call_dest.c_str(), nullptr, 16);
                                 if (j.second.get_address() == dec_addr_dest)
                                 {
                                     i.second.coexecutes_with.insert(dec_addr_dest);
-                                    //std::cout << i.second.get_name() << " calls " << j.second.get_name() << std::endl;
                                     j.second.coexecutes_with.insert(i.second.get_address());
                                 }
                             }
@@ -255,15 +222,6 @@ class Binary
                 }
             }
         }
-        /*
-        for (auto& i : functions_list)
-        {
-            for (auto& j : i.second.coexecutes_with)
-            {
-                std::cout << i.second.get_name() << " coexecutes with " << functions_list[j].get_name() << std::endl;
-            }
-        }
-        */
         // level 2 ?
 
         int num_extra_levels = 1; // number of levels of indirection of coexecution
@@ -286,58 +244,12 @@ class Binary
     {
         for (auto& i : functions_list)
         {
-            /*
-            std::cout << i.second.get_name() << " competes with: " << std::endl;
-            for (auto com : i.second.competes_with)
-            {
-                std::cout << functions_list[com].get_name() << std::endl;
-            }
-            std::cout << i.second.get_name() << " coexecutes with: " << std::endl;
-            for (auto com : i.second.coexecutes_with)
-            {
-                std::cout << functions_list[com].get_name() << std::endl;
-            }
-            */
             std::set_intersection(
                 i.second.competes_with.begin(), i.second.competes_with.end(),
                 i.second.coexecutes_with.begin(), i.second.coexecutes_with.end(),
                 std::inserter(i.second.competes_and_coexecutes_with, i.second.competes_and_coexecutes_with.begin())
             );
-            /*
-            for (auto& j : i.second.competes_and_coexecutes_with)
-            {
-                int i_range[4096];
-                int j_range[4096];
-                for (int d = 0; d < 4096; d++)
-                {
-                    i_range[d] = 0; j_range[d] = 0;
-                }
-                for (int c = 0; c < i.second.get_size(); c++)
-                {
-                    i_range[(i.second.get_address() + c) % 4096] = 1;
-                }
-                for (int c = 0; c < functions_list[j].get_size(); c++)
-                {
-                    j_range[(functions_list[j].get_address() + c) % 4096] = 1;
-                }
-                int count = 0;
-                for (int cc = 0; cc < 4096; cc++)
-                {
-                    if (i_range[cc] && j_range[cc])
-                    {
-                        ++count;
-                    }
-                }
-                std::cout << i.second.get_name() << " competes and coexecutes with: " << functions_list[j].get_name() << " across " << count << " bytes!" << std::endl << std::flush;
-            }
-            */
         }
-        // set up vector of vectors to hold lists of competing and coexecuting functions
-        // enter recursive function
-        // each recursive call takes a: starting node, current list of nodes, depth, max depth, pointer to current overlap-representation
-        // here outside the function, fill the 4096 vector with all 1s
-        // (keep doing this with increasing maximum depths until there are zero groups of that size)
-            // (there may be a better way of doing this without having to keep finding the same groups for larger numbers...)
 
         // after the function...
         // hopefully find a way to evalute the problematic-ness of the group
@@ -362,41 +274,15 @@ class Binary
         }
         std::cout << "Ok..." << std::endl;
         std::cout << problem_groups.size() << std::endl;
-        /*
-        for (auto& i : problem_groups)
-        {
-            std::cout << "Group: " << std::endl;
-            for (auto& j : i)
-            {
-                std::cout << functions_list[j].get_name() << ", " << std::endl;
-            }
-        }
-        */
     }
     void rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth, int* overlap)
     {
-        // std::cout << "current group size on recurring: " << current_group.size() << std::endl;
         for (auto& next_func : functions_list[current_addr].competes_and_coexecutes_with)
         {
-            // std::cout << "next_func: " << functions_list[next_func].get_name() << std::endl;
             if (current_group.find(next_func) != current_group.end())
             {
-                // std::cout << "fails here 1" << std::endl;
                 continue;
             }
-            /*
-            bool competes_and_coexecutes_with_all = true;
-            for (auto i : current_group_o)
-            {
-                if (functions_list[i].competes_and_coexecutes_with_u.find(next_func) == functions_list[i].competes_and_coexecutes_with_u.end())
-                {
-                    // std::cout << "fails here 2" << std::endl;
-                    competes_and_coexecutes_with_all = false;
-                    break;
-                }
-            }
-            if (!competes_and_coexecutes_with_all) { continue; }
-            */
             int new_overlap[4096];
             int next_func_span[4096];
             for (int i = 0; i < 4096; ++i)
@@ -423,37 +309,17 @@ class Binary
             }
             if (any_overlap)
             {
-                // std::cout << "found overlap between: " << functions_list[current_addr].get_name() << " and " << functions_list[next_func].get_name() << std::endl;
-                // std::cout << "current group size before inserting: " << current_group.size() << std::endl;
                 current_group.insert(next_func);
-                // std::cout << "current group size after inserting: " << current_group.size() << std::endl;
-                //also what if depth = max?
                 if (current_group.size() == max_depth)
                 {
-                    // std::cout << "this completes a group" << std::endl;
                     problem_groups.insert(current_group);
                 }
                 else
                 {
                     rec_problem_find(next_func, current_group, max_depth, new_overlap);
                 }
-                // remove current node
-                // std::cout << "current group size before erasing: " << current_group.size() << std::endl;
                 current_group.erase(current_group.find(next_func));
-                // std::cout << "current group size after erasing: " << current_group.size() << std::endl;
             }
         }
-        // std::cout << "leaving: " << current_group.size() << std::endl;
-        // loop through the competes and coexecutes with set for current function
-            // (make sure not to look at any twice. perhaps use a set of current 'vector' of nodes rather than a vector!)
-            // use && operator with overlap-representation to see if any overlap
-            // if there is overlap
-                // add to set/vector of nodes
-                // if the max depth is reached
-                    // add to class's representation of problem groups
-                    // continue (without recurring)
-                // else
-                    // recur
-            // before exit from recursion, remove current function from set of nodes
     }
 };
