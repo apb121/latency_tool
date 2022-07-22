@@ -32,14 +32,7 @@ class Cache
       std::cout << "The critical stride of the " << name << " cache is " << critical_stride << " bytes." << std::endl;
     }
   }
-  const int get_linesize() const
-  {
-    for (int i = 0; i < 5; ++i)
-    {
-        
-    }
-    return linesize;
-}
+  const int get_linesize() const { return linesize; }
   const int get_assoc() const { return assoc; }
   const int get_size() const { return size; }
 };
@@ -52,7 +45,7 @@ class L1_cache : public Cache
     {
 
     }
-    virtual int empirical_assoc_test() = 0;
+    virtual int empirical_assoc_test() = 0; // these are interesting from the perspective of the class parser!
     virtual int empirical_stride_test() = 0;
 };
 
@@ -66,6 +59,9 @@ class L1d_cache : public L1_cache
     }
     int empirical_assoc_test()
     {
+        /*  
+            assesses data cache associativity empirically
+        */
         std::cout << "Assessing data-cache associativity empirically" << std::flush;
         std::string cmd_compile = "g++ -g ./associativity_test_d.cpp -o ./associativity_test_d";
         std::string cmd_no_arg = "perf stat -x , --append -o assoctmpd.txt -e L1-dcache-load-misses -r 1000 ./associativity_test_d ";
@@ -75,6 +71,9 @@ class L1d_cache : public L1_cache
         {
             std::cout << "Compilation failed!" << std::endl;
         }
+        /*  
+            varying the number of regions that compete for the cache
+        */
         int ret_rm_assoctmp = system(cmd_rm_assoctmp.c_str());
         for (int i = 2; i <= 16; i += 2)
         {
@@ -84,7 +83,7 @@ class L1d_cache : public L1_cache
             FILE* cmd_stream;
             std::string echo = "echo \"#" + std::to_string(i) + "\\n\" >> assoctmpd.txt";
             system(echo.c_str());
-            cmd_stream = popen(cmd_full_65536.c_str(), "r");
+            cmd_stream = popen(cmd_full_65536.c_str(), "r"); // these POSIX functions will only work on Linux systems
             pclose(cmd_stream);
             cmd_stream = popen(cmd_full_16.c_str(), "r");
             pclose(cmd_stream);
@@ -134,18 +133,26 @@ class L1d_cache : public L1_cache
         {
             if (assoc_arr_65536_stddev[i] > max_stddev)
             {
-            max_stddev = assoc_arr_65536_stddev[i];
-            max_stddev_index = i;
+                max_stddev = assoc_arr_65536_stddev[i];
+                max_stddev_index = i;
             }
             if (assoc_arr_65536[7 - i] > (assoc_arr_16[7 - i] * 2))
             {
-            first_spike = 7 - i;
+                first_spike = 7 - i;
             }
         }
+        /*  
+            the best estinate is given by taking the minimum
+            of the biggest standard deviation and
+            the first big spike in number of cache misses
+        */
         return (std::min(max_stddev_index, first_spike) + 1) * 2;
     }
     int empirical_stride_test()
     {
+        /*  
+            assesses data cache critical stride empirically
+        */
         std::cout << "Assessing data-cache critical stride empirically" << std::flush;
         std::string cmd_compile = "g++ -g ./critical_stride_test_d.cpp -o ./critical_stride_test_d";
         std::string cmd_no_arg = "perf stat -x , --append -o cstmpd.txt -e L1-dcache-loads,L1-dcache-load-misses,duration_time -r 1000 ./critical_stride_test_d ";
@@ -155,6 +162,9 @@ class L1d_cache : public L1_cache
         {
             std::cout << "Compilation failed!" << std::endl;
         }
+        /*  
+            varying the alignment to force the data onto
+        */
         int ret_rm_assoctmp = system(cmd_rm_assoctmp.c_str());
         for (int i = 64; i <= 65536; i *= 2)
         {
@@ -220,10 +230,14 @@ class L1d_cache : public L1_cache
         {
             if (assoc_arr_cacheloadmisses_stddev[i] > max_cachemiss_stddev)
             {
-            max_cachemiss_stddev = assoc_arr_cacheloadmisses_stddev[i];
-            max_cachemiss_stddev_index = i;
+                max_cachemiss_stddev = assoc_arr_cacheloadmisses_stddev[i];
+                max_cachemiss_stddev_index = i;
             }
         }
+        /*  
+            the biggest cache miss standard deviation
+            is found on a quarter of the critical stride
+        */
         return pow(2, (max_cachemiss_stddev_index + 2) + 6);
     }
 };
@@ -238,6 +252,9 @@ class L1i_cache : public L1_cache
     }
     int empirical_assoc_test()
     {
+        /*  
+            assesses instruction cache associativity empirically
+        */
         std::cout << "Assessing instruction-cache associativity empirically" << std::flush;
         std::string cmd_compile_65536 = "g++ -g -falign-functions=65536 ./associativity_test_i.cpp -o ./associativity_test_i_65536 ";
         std::string cmd_compile_noalign = "g++ -g ./associativity_test_i.cpp -o ./associativity_test_i_noalign ";
@@ -255,7 +272,9 @@ class L1i_cache : public L1_cache
             std::cout << "Second compilation failed!" << std::endl;
         }
         int ret_rm_assoctmp = system(cmd_rm_assoctmp.c_str());
-        
+        /*  
+            varying the number of functions competing for the cache
+        */
         for (int i = 2; i <= 16; i += 2)
         {
             std::cout << "." << std::flush;
@@ -322,10 +341,19 @@ class L1i_cache : public L1_cache
                 first_spike = 7 - i;
             }
         }
+        /*  
+            similarly to the data cache,
+            the best estimate is the minimum
+            of the biggest standard deviation
+            and the first spike in number of cache misses
+        */
         return (std::min(max_stddev_index, first_spike) + 1) * 2;
     }
     int empirical_stride_test()
     {
+        /*  
+            assesses instruction cache critical stride empirically
+        */
         std::cout << "Assessing instruction-cache critical stride empirically" << std::flush;
         std::string cmd_compile_1 = "g++ -g -falign-functions=";
         std::string cmd_compile_2 = " ./critical_stride_test_i.cpp -o ./critical_stride_test_i_";
@@ -340,6 +368,9 @@ class L1i_cache : public L1_cache
                 std::cout << "Compilation failed!" << std::endl;
             }
         }
+        /*  
+            varying the alignment to force the functions onto
+        */
         int ret_rm_assoctmp = system(cmd_rm_assoctmp.c_str());
         for (int i = 64; i <= 65536; i *= 2)
         {
@@ -384,6 +415,10 @@ class L1i_cache : public L1_cache
                 last_jump = i;
             }
         }
+        /*  
+            the best estimate is the last big jump 
+            in number of cache misses
+        */
         return pow(2, last_jump + 6);
     }
 };

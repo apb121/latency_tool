@@ -34,7 +34,12 @@ code stuff
     -- need to incorporate:
         -- how many times functions call each other
         -- how much functions overlap
-    -- neat stuff: compare aligned functions perfomance with nCr (e.g., groups of size 3 from 17 competing and coexecuting functions (1 extra level of indirection) leads to 680 groups found!)
+    -- interesting demonstrations of function group identifier
+        -- compare aligned functions perfomance with nCr (e.g., groups of size 3 from 17 competing and coexecuting functions (1 extra level of indirection) leads to 680 groups found!)
+        -- compare critical stride tests 1024, 2048, and 4096!
+            -- note also that for 1024, you get groups at 4-function intervals!
+        -- cool: for the critical stride 1024 test and looking for groups of 9 ... there is 1! (for groups of 8 there are 12 groups)
+        -- when commenting out the function "for (auto& i : problem_groups)", the number of 6-large groups of competing functions goes down from 14 to 6
 -- identify discontiguous data structures
 
 report stuff

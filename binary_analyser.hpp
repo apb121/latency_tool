@@ -20,6 +20,13 @@ class Function
     }
     Function()
     {
+        /*
+            this function is required when [] is called
+            with a non-existent key in the functions_list member
+            of the Binary class.
+            this should never happen, so it is a problem
+            if this code is reached!
+        */
         std::cout << "If we get here, we've got a problem!" << std::endl;
         exit(1);
     }
@@ -54,6 +61,20 @@ class Binary
         std::ifstream nm_file;
         char buf[5][512];
         nm_file.open("nmtmp.txt");
+        /*
+            identifies functions from the disassembled binary.
+            this is better than using the source code for numerous reasons;
+            for example, it will identify compiler-generated functions that
+            might cause cache issues, such as
+            -- default constructors
+            -- copy constructors
+            -- move constructors
+            -- default/copy/move operator overloads (e.g., assignment)
+            -- destructors
+            -- (templated functions)
+            it will also avoid wasting time on functions that are written
+            but are never called. these do not make their way into the binary
+        */
         while (!nm_file.eof())
         {
             nm_file >> buf[0];
@@ -69,6 +90,10 @@ class Binary
                 continue;
             }
             nm_file >> buf[2];
+            /*
+                type T: functions in the code section
+                type W: weak object, e.g., function in a class
+            */
             if (buf[2][0] != 'T' && buf[2][0] != 'W')
             {
                 while (nm_file.get() != '\n' && !nm_file.eof()) {};
@@ -104,6 +129,10 @@ class Binary
                 while (nm_file.get() != '\n' && !nm_file.eof()) {};
                 continue;
             }
+            /*
+                identify functions of user-defined classes.
+                uses the output of the class parser and the :: operator
+            */
             bool UDT_func = false;
             for (int i = 0; i < user_types.size(); ++i)
             {
@@ -128,7 +157,7 @@ class Binary
             size_t address = atoi(buf[0]);
             size_t size = atoi(buf[1]);
 
-            /* nm includes duplicates... */
+            /* (nm includes duplicates for some reason...) */
 
             functions_list.insert({address, Function(address, size, name, location)});
             
@@ -137,6 +166,9 @@ class Binary
     }
     void populate_competition_vectors(int critical_stride)
     {
+        /*
+            identify functions that compete with each other for cache sets
+        */
         int span[critical_stride];
         for (auto& i : functions_list)
         {
@@ -156,7 +188,7 @@ class Binary
                 {
                     if (span[(j.second.get_address() + k) % critical_stride] == 1)
                     {
-                        i.second.competes_with.insert(j.second.get_address()); //the other way around is added because all pairs are checked twice anyway
+                        i.second.competes_with.insert(j.second.get_address());
                         break;
                     }
                 }
@@ -165,6 +197,11 @@ class Binary
     }
     void populate_coexecution_vectors()
     {
+        /*
+            identify functions that call/are called by each other
+            (these are assumed to execute together and therefore
+            cache set conflicts become a problem)
+        */
         std::string objdump_cmd = "objdump -d -C -Mintel --no-show-raw-insn " + file_name + " >> objdumptmp.txt";
         std::string objdump_rm = "rm objdumptmp.txt";
         system(objdump_rm.c_str());
@@ -222,9 +259,16 @@ class Binary
                 }
             }
         }
-        // level 2 ?
 
-        int num_extra_levels = 1; // number of levels of indirection of coexecution
+        /*
+            specify different levels of indirection in coexecution.
+            e.g., with one level of indirection, if A() calls B()
+            and B() calls C(), A is deemed to coexecute with C.
+            similarly, if D() calls E() and D() also calls F(),
+            E will be deemed to coexecute with F.
+        */
+
+        int num_extra_levels = 1;
 
         for (int level = 0; level < num_extra_levels; ++level)
         {
@@ -242,6 +286,14 @@ class Binary
     }
     void find_problem_function_groups()
     {
+        /*
+            find groups of functions that both
+            (a) coexecute with each other
+            (b) compete for cache sets
+            the group-size at which this becomes dangerous
+            depends on the associativity of the cache
+        */
+
         for (auto& i : functions_list)
         {
             std::set_intersection(
@@ -251,26 +303,42 @@ class Binary
             );
         }
 
-        // after the function...
-        // hopefully find a way to evalute the problematic-ness of the group
-            // size of group
-            // number of coexecutions
-            // amount of overlap
-
         std::set<size_t> current_group;
 
         for (auto& i : functions_list)
         {
             std::cout << "Outer search: " << functions_list[i.first].get_name() << ": " << i.first << std::endl;
             current_group.insert(i.first);
-            rec_problem_find(i.first, current_group, 5);
+            rec_problem_find(i.first, current_group, 6);
             current_group.erase(current_group.find(i.first));
         }
+        
         std::cout << "Ok..." << std::endl;
         std::cout << problem_groups.size() << std::endl;
+        
+        for (auto& i : problem_groups)
+        {
+            std::cout << "===Group===" << std::endl;
+            for (auto& j : i)
+            {
+                std::cout << functions_list[j].get_name() << std::endl;
+            }
+            std::cout << std::endl;
+        }
+
+        // after the function...
+        // hopefully find a way to evalute the problematic-ness of the group
+            // size of group
+            // number of coexecutions
+            // amount of overlap
     }
     void rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth)
     {
+        /*
+            recursively find groups of functions which
+            coexecute with each other and
+            compete for cache sets
+        */
         for (auto& next_func : functions_list[current_addr].competes_and_coexecutes_with)
         {
             if (current_group.find(next_func) != current_group.end())

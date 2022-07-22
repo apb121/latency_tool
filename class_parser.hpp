@@ -46,11 +46,16 @@ struct UDType
     {
         std::string class_info_copy;
         int pos = 0;
-        while (class_info[pos] != '{') { pos++; }
+        while (class_info[pos] != '{') { pos++; } // get to the start of the class
         pos++;
         int curly_bracket_depth = 1;
         int round_bracket_depth = 0;
         bool in_double = false, in_single = false;
+
+        /* discard any code embedded in curly or round brackets. this cannot contain data members */
+
+        // (what about slash-star comments...)
+
         while (pos < class_info.length() && curly_bracket_depth > 0)
         {
           if (class_info[pos] == '"' && class_info[pos - 1] != '\'' && !in_single)
@@ -71,7 +76,7 @@ struct UDType
           }
           if (curly_bracket_depth == 1 && round_bracket_depth == 0)
           {
-            class_info_copy += class_info[pos];
+            class_info_copy += class_info[pos]; // build copy
           }
           if (class_info[pos] == '}' && !in_double && !in_single)
           {
@@ -83,12 +88,26 @@ struct UDType
           }
           pos++;
         }
+
+        /*  
+            find variable declarations.
+            note: the virtual keyword is present
+            because it is easier to discard later
+            than exclude in the regex
+        */
+
         std::regex variable_declaration("(?:(?:virtual *|auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=)])|(((\\[ *[0-9]* *\\])+)))");
         std::smatch variable_match;
         while (regex_search(class_info_copy, variable_match, variable_declaration))
         {
             std::string declaration = variable_match.str();
             int end = declaration.length() - 1;
+
+            /*  
+                identify square bracket array length indicators.
+                note: does not yet work with var[] = {..., ..., ..., etc.}
+            */
+
             std::regex array_length("(\\[ *[0-9]* *\\] *)+");
             std::smatch array_match;
             std::string array_match_str = "";
@@ -100,6 +119,10 @@ struct UDType
             }
             while (regex_search(declaration_remaining, array_match, array_length))
             {
+                /*
+                    check if square brackets are inside template
+                    e.g., vector<char[5]> vs vector<char>[5]
+                */
                 if (array_match.suffix().str().find(">") == std::string::npos)
                 {
                     array_match_str = array_match.str();
@@ -107,14 +130,23 @@ struct UDType
                 }
                 declaration_remaining = array_match.suffix();
             }
+            /*  
+                extract the variable name
+            */
             while (!isalnum(declaration[end]) && declaration[end] != '_') { end--; }
             int name_begin = end;
             while (isalnum(declaration[name_begin]) || (declaration[name_begin] == '_')) { name_begin--; }
             name_begin++;
             std::string variable_name = declaration.substr(name_begin, (end - name_begin) + 1);
+            /*  
+                extract the variable type
+            */
             int start = 0;
             while (isspace(declaration[start])) { start++; }
             std::string variable_type = declaration.substr(start, name_begin - start);
+            /*  
+                check for any arrays inside template parameters
+            */
             std::regex array_regex_recurse("< *.* *,");
             std::smatch array_regex_recurse_match;
             std::string variable_type_alignment = variable_type;
@@ -128,6 +160,9 @@ struct UDType
                 {
                     array_match_str = array_match.str();
                 }
+                /*  
+                    find the type inside the template parameter
+                */
                 int type_begin = 1;
                 while (isspace(array_regex_recurse_match_str[type_begin])) { type_begin++; }
                 int type_end = array_regex_recurse_match_str.length() - (array_match_str.length() + 1);
@@ -135,6 +170,10 @@ struct UDType
                 std::string type_match_str = array_regex_recurse_match_str.substr(type_begin, (type_end - type_begin));
                 variable_type_alignment = type_match_str;
             }
+            /*  
+                static data members are not relevant to size.
+                dealing with auto seems intractable right now
+            */
             if (variable_type.find("static") == std::string::npos)
             {
                 if (variable_type.find("auto") == std::string::npos)
@@ -174,6 +213,9 @@ struct UDType
         while (curr_align % 8 != 0) { curr_align++; }
         return (total_size = curr_align);
     }
+
+    // probably try to make this hacky overloading better...
+    
     size_t calculate_size(std::vector<variable_info> proposed_types_list)
     {
         if (proposed_types_list.size() == 0)
@@ -196,6 +238,9 @@ struct UDType
         while (curr_align % 8 != 0) { curr_align++; }
         return (total_size = curr_align);
     }
+
+    // somewhat brute force...
+
     std::vector<variable_info> suggest_optimised_ordering()
     {
         if (types_list.size() == 0)
@@ -251,6 +296,13 @@ class File
           c = class_file.get();
         }
         std::vector<UDType> type_info;
+        /*  
+            detect classes and structs.
+            this regex detects the *start* of a class/struct
+            because regexes (as finite-state-machine equivalent formal languages)
+            are not able to count bracket recursions,
+            the end of the class is found separately below
+        */
         std::regex class_regex("(class|struct)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{");
         std::smatch class_match;
         std::string file_remaining = full_file;
@@ -291,6 +343,9 @@ class File
           }
           if (file_remaining[pos] == ';')
           {
+            /*  
+                here a class/struct has been properly detected
+            */
             class_info += file_remaining[pos];
             pos++;
             int name_start = 0, name_end = 0;
@@ -308,10 +363,16 @@ class File
           }
           else
           {
+            /*  
+                this is not a class
+            */
             break;
           }
         }
     }
+
+    // definitely make the following more user friendly...
+
     void suggest_optimised_orderings()
     {
         for (int i = 0; i < user_defined_types.size(); ++i)
@@ -356,6 +417,8 @@ class File
         }
     }
 };
+
+// add to the following as deemed necessary...
 
 size_t get_type_size(std::string type, std::string array_match)
 {
@@ -545,6 +608,8 @@ size_t get_type_size(std::string type, std::string array_match)
   }
   return size;
 }
+
+// just a test...
 
 class A : public UDType
 {
