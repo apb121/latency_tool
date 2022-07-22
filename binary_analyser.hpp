@@ -258,24 +258,18 @@ class Binary
             // amount of overlap
 
         std::set<size_t> current_group;
-        int overlap[4096];
 
         for (auto& i : functions_list)
         {
             std::cout << "Outer search: " << functions_list[i.first].get_name() << ": " << i.first << std::endl;
-            for (int j = 0; j < 4096; ++j) { overlap[j] = 0; }
             current_group.insert(i.first);
-            for (int j = 0; j < functions_list[i.first].get_size(); ++j)
-            {
-                overlap[(functions_list[i.first].get_address() + j) % 4096] = 1;
-            }
-            rec_problem_find(i.first, current_group, 5, overlap);
+            rec_problem_find(i.first, current_group, 5);
             current_group.erase(current_group.find(i.first));
         }
         std::cout << "Ok..." << std::endl;
         std::cout << problem_groups.size() << std::endl;
     }
-    void rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth, int* overlap)
+    void rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth)
     {
         for (auto& next_func : functions_list[current_addr].competes_and_coexecutes_with)
         {
@@ -283,31 +277,17 @@ class Binary
             {
                 continue;
             }
-            int new_overlap[4096];
-            int next_func_span[4096];
-            for (int i = 0; i < 4096; ++i)
+            bool competes_and_coexecutes_with_all = true;
+            for (auto& group_funcs : current_group)
             {
-                next_func_span[i] = 0;
-                new_overlap[i] = overlap[i]; // reset overlap representation for next recursion
-            }
-            for (int i = 0; i < functions_list[next_func].get_size(); ++i)
-            {
-                next_func_span[(next_func + i) % 4096] = 1; // overlap of proposed recursion
-            }
-            bool any_overlap = false;
-            for (int i = 0; i < 4096; ++i) // replace with critical stride size
-            {
-                if (new_overlap[i] > 0 && next_func_span[i] > 0)
+                if (functions_list[group_funcs].competes_and_coexecutes_with.find(next_func) == functions_list[group_funcs].competes_and_coexecutes_with.end())
                 {
-                    new_overlap[i] = 1; // overlap of proposed recursion and existing group
-                    any_overlap = true;
-                }
-                else
-                {
-                    overlap[i] = 0;
+                    competes_and_coexecutes_with_all = false;
+                    break;
                 }
             }
-            if (any_overlap)
+            if (!competes_and_coexecutes_with_all) { continue; }
+            if (competes_and_coexecutes_with_all)
             {
                 current_group.insert(next_func);
                 if (current_group.size() == max_depth)
@@ -316,7 +296,7 @@ class Binary
                 }
                 else
                 {
-                    rec_problem_find(next_func, current_group, max_depth, new_overlap);
+                    rec_problem_find(next_func, current_group, max_depth);
                 }
                 current_group.erase(current_group.find(next_func));
             }
