@@ -33,6 +33,7 @@ class Binary
 {
     std::string file_name;
     std::map<size_t, Function> functions_list;
+    std::set<std::set<size_t>> problem_groups;
     std::vector<UDType> user_types;
     public:
     Binary(std::string file_name, std::vector<UDType> user_types)
@@ -263,16 +264,20 @@ class Binary
             }
         }
         */
-
         // level 2 ?
 
-        for (auto& i : functions_list)
+        int num_extra_levels = 1; // number of levels of indirection of coexecution
+
+        for (int level = 0; level < num_extra_levels; ++level)
         {
-            for (auto& j : i.second.coexecutes_with)
+            for (auto& i : functions_list)
             {
-                for (auto& k : functions_list[j].coexecutes_with)
+                for (auto& j : i.second.coexecutes_with)
                 {
-                    i.second.coexecutes_with.insert(k);
+                    for (auto& k : functions_list[j].coexecutes_with)
+                    {
+                        i.second.coexecutes_with.insert(k);
+                    }
                 }
             }
         }
@@ -298,6 +303,7 @@ class Binary
                 i.second.coexecutes_with.begin(), i.second.coexecutes_with.end(),
                 std::inserter(i.second.competes_and_coexecutes_with, i.second.competes_and_coexecutes_with.begin())
             );
+            /*
             for (auto& j : i.second.competes_and_coexecutes_with)
             {
                 int i_range[4096];
@@ -324,6 +330,130 @@ class Binary
                 }
                 std::cout << i.second.get_name() << " competes and coexecutes with: " << functions_list[j].get_name() << " across " << count << " bytes!" << std::endl << std::flush;
             }
+            */
         }
+        // set up vector of vectors to hold lists of competing and coexecuting functions
+        // enter recursive function
+        // each recursive call takes a: starting node, current list of nodes, depth, max depth, pointer to current overlap-representation
+        // here outside the function, fill the 4096 vector with all 1s
+        // (keep doing this with increasing maximum depths until there are zero groups of that size)
+            // (there may be a better way of doing this without having to keep finding the same groups for larger numbers...)
+
+        // after the function...
+        // hopefully find a way to evalute the problematic-ness of the group
+            // size of group
+            // number of coexecutions
+            // amount of overlap
+
+        std::set<size_t> current_group;
+        int overlap[4096];
+
+        for (auto& i : functions_list)
+        {
+            std::cout << "Outer search: " << functions_list[i.first].get_name() << ": " << i.first << std::endl;
+            for (int j = 0; j < 4096; ++j) { overlap[j] = 0; }
+            current_group.insert(i.first);
+            for (int j = 0; j < functions_list[i.first].get_size(); ++j)
+            {
+                overlap[(functions_list[i.first].get_address() + j) % 4096] = 1;
+            }
+            rec_problem_find(i.first, current_group, 5, overlap);
+            current_group.erase(current_group.find(i.first));
+        }
+        std::cout << "Ok..." << std::endl;
+        std::cout << problem_groups.size() << std::endl;
+        /*
+        for (auto& i : problem_groups)
+        {
+            std::cout << "Group: " << std::endl;
+            for (auto& j : i)
+            {
+                std::cout << functions_list[j].get_name() << ", " << std::endl;
+            }
+        }
+        */
+    }
+    void rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth, int* overlap)
+    {
+        // std::cout << "current group size on recurring: " << current_group.size() << std::endl;
+        for (auto& next_func : functions_list[current_addr].competes_and_coexecutes_with)
+        {
+            // std::cout << "next_func: " << functions_list[next_func].get_name() << std::endl;
+            if (current_group.find(next_func) != current_group.end())
+            {
+                // std::cout << "fails here 1" << std::endl;
+                continue;
+            }
+            /*
+            bool competes_and_coexecutes_with_all = true;
+            for (auto i : current_group_o)
+            {
+                if (functions_list[i].competes_and_coexecutes_with_u.find(next_func) == functions_list[i].competes_and_coexecutes_with_u.end())
+                {
+                    // std::cout << "fails here 2" << std::endl;
+                    competes_and_coexecutes_with_all = false;
+                    break;
+                }
+            }
+            if (!competes_and_coexecutes_with_all) { continue; }
+            */
+            int new_overlap[4096];
+            int next_func_span[4096];
+            for (int i = 0; i < 4096; ++i)
+            {
+                next_func_span[i] = 0;
+                new_overlap[i] = overlap[i]; // reset overlap representation for next recursion
+            }
+            for (int i = 0; i < functions_list[next_func].get_size(); ++i)
+            {
+                next_func_span[(next_func + i) % 4096] = 1; // overlap of proposed recursion
+            }
+            bool any_overlap = false;
+            for (int i = 0; i < 4096; ++i) // replace with critical stride size
+            {
+                if (new_overlap[i] > 0 && next_func_span[i] > 0)
+                {
+                    new_overlap[i] = 1; // overlap of proposed recursion and existing group
+                    any_overlap = true;
+                }
+                else
+                {
+                    overlap[i] = 0;
+                }
+            }
+            if (any_overlap)
+            {
+                // std::cout << "found overlap between: " << functions_list[current_addr].get_name() << " and " << functions_list[next_func].get_name() << std::endl;
+                // std::cout << "current group size before inserting: " << current_group.size() << std::endl;
+                current_group.insert(next_func);
+                // std::cout << "current group size after inserting: " << current_group.size() << std::endl;
+                //also what if depth = max?
+                if (current_group.size() == max_depth)
+                {
+                    // std::cout << "this completes a group" << std::endl;
+                    problem_groups.insert(current_group);
+                }
+                else
+                {
+                    rec_problem_find(next_func, current_group, max_depth, new_overlap);
+                }
+                // remove current node
+                // std::cout << "current group size before erasing: " << current_group.size() << std::endl;
+                current_group.erase(current_group.find(next_func));
+                // std::cout << "current group size after erasing: " << current_group.size() << std::endl;
+            }
+        }
+        // std::cout << "leaving: " << current_group.size() << std::endl;
+        // loop through the competes and coexecutes with set for current function
+            // (make sure not to look at any twice. perhaps use a set of current 'vector' of nodes rather than a vector!)
+            // use && operator with overlap-representation to see if any overlap
+            // if there is overlap
+                // add to set/vector of nodes
+                // if the max depth is reached
+                    // add to class's representation of problem groups
+                    // continue (without recurring)
+                // else
+                    // recur
+            // before exit from recursion, remove current function from set of nodes
     }
 };

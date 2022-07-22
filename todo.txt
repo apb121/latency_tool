@@ -2,8 +2,6 @@ code stuff
 
 -- !! see what the compiler says about the size of structs that contain each other
 
--- count how many times functions call each other!!
--- count how much functions overlap!!
 -- suggestions
     -- inline some functions (then they will not conflict!)
     -- move functions around (put function that are called together together)
@@ -33,6 +31,10 @@ code stuff
     -- better to use objdump for many reasons
         -- a lot of function calls (e.g. to constructors, assignment operators, etc.) are not explicit in source code
             -- particularly useful because it can identify slow-downs that could never been seen just by looking at the source code. constructors might conflict!
+    -- need to incorporate:
+        -- how many times functions call each other
+        -- how much functions overlap
+    -- neat stuff: compare aligned functions perfomance with nCr (e.g., groups of size 3 from 17 competing and coexecuting functions (1 extra level of indirection) leads to 680 groups found!)
 -- identify discontiguous data structures
 
 report stuff

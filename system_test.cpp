@@ -81,7 +81,7 @@ int main()
     types = binary_analyser.get_types();
     all_types.insert(all_types.end(), types.begin(), types.end());
 
-    Binary b("system_test", all_types);
+    Binary b("associativity_test_i_4096", all_types);
     b.get_functions();
     b.populate_competition_vectors(4096);
     b.populate_coexecution_vectors();
