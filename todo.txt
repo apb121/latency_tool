@@ -3,6 +3,9 @@ code stuff
 -- !! see what the compiler says about the size of structs that contain each other
 
 -- overall programme stuff 
+    -- factor stuff in all the hpps into hpps and cpps
+        -- make a makefile!
+            -- perhaps think about this in the context of adding makefile functionality to the programme...
     -- give the user the option to combine the system variables and known, manually-input specific values ??
     -- make it so that not having the size of one of the caches is not fatal (just do data/instructions if the other is missing)
     -- factor out all the stuff in main if possible
