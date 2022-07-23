@@ -1,8 +1,9 @@
 code stuff
 
--- !! see what the compiler says about the size of structs that contain each other
+-- make a readme!
 
 -- overall programme stuff 
+    -- might be better if the binary is the first file?
     -- factor stuff in all the hpps into hpps and cpps
         -- make a makefile!
             -- perhaps think about this in the context of adding makefile functionality to the programme...
@@ -15,7 +16,7 @@ code stuff
     -- calculate number of coexecutions of a problem group... (to evaluate problematicness with overlap extent and overall size of group)
     -- have a think about the binary only flag and doing all functions (i.e., including 'W' rather than just 'T') 
 -- suggestions
-    -- inline some functions (then they will not conflict!)
+    -- inline some functions (then they will not conflict! may also have other advantages...)
     -- move functions around (put function that are called together together)
     -- combine functions
     -- try -falign-functions=...
