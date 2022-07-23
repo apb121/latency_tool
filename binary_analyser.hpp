@@ -30,7 +30,7 @@ class Function
             this should never happen, so it is a problem
             if this code is reached!
         */
-        std::cout << "If we get here, we've got a problem!" << std::endl;
+        std::cout << "If we get here, we have a problem!" << std::endl;
         exit(1);
     }
     size_t get_address() { return address; }
@@ -48,11 +48,11 @@ class Binary
     public:
     Binary(std::string file_name, std::vector<UDType> user_types)
         : file_name(file_name), user_types(user_types) {}
-    void get_functions(UserOptions& uo);
-    void populate_competition_vectors(UserOptions& uo);
-    void populate_coexecution_vectors(UserOptions& uo);
-    void find_problem_function_groups(UserOptions& uo);
-    void rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth);
+    int get_functions(UserOptions& uo);
+    int populate_competition_vectors(UserOptions& uo);
+    int populate_coexecution_vectors(UserOptions& uo);
+    int find_problem_function_groups(UserOptions& uo);
+    int rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth);
 };
 
 #endif

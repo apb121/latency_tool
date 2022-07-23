@@ -114,7 +114,6 @@ int UserOptions::parse_flags(int argc, char** argv)
         return 1;
       }
       coex = coex_level;
-      std::cout << "Setting coex to " << coex_level << std::endl;
     }
     else if (strncmp(argv[i], "-t", 2) == 0 || strncmp(argv[i], "--com", 3) == 0)
     {
@@ -135,7 +134,32 @@ int UserOptions::parse_flags(int argc, char** argv)
         return 1;
       }
       comp = comp_level;
-      std::cout << "Setting comp to " << comp_level << std::endl;
+    }
+    else if (strncmp(argv[i], "-e", 2) == 0 || strncmp(argv[i], "--use", 3) == 0)
+    {
+
+      flags.set(1, true);
+      flags.set(2, true);
+    }
+    else if (strncmp(argv[i], "-r", 2) == 0 || strncmp(argv[i], "--ran", 3) == 0)
+    {
+      std::regex r_flag_regex("((-r=)|(--ranking-length=))([0-9]+)");
+      if (!regex_match(argv[i], r_flag_regex))
+      {
+        std::cerr << "Invalid --ranking-length flag format." << std::endl;
+        return 1;
+      }
+      std::regex rank_length_regex("[0-9]+");
+      std::smatch rank_match;
+      std::string flag(argv[i]);
+      regex_search(flag, rank_match, rank_length_regex);
+      int rank_len = stoi(rank_match.str());
+      if (rank_len < 1) // some large number
+      {
+        std::cerr << "Invalid ranking length." << std::endl;
+        return 1;
+      }
+      ranking_length = rank_len;
     }
     else if (strncmp(argv[i], "-", 1) == 0)
     {

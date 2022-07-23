@@ -1,23 +1,36 @@
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 #include "binary_analyser.hpp"
 #include "user_options.hpp"
 #include "class_parser.hpp"
 
-void Binary::get_functions(UserOptions& uo)
+int Binary::get_functions(UserOptions& uo)
 {
-    std::string nm_cmd = "nm -v -C -l --radix=d --print-size " + file_name + " >> nmtmp.txt";
-    std::string nm_rm = "rm nmtmp.txt";
-    system(nm_rm.c_str());
-    int ret_nm = system(nm_cmd.c_str());
-    if (ret_nm)
+    std::string nm_cmd = "nm -v -C -l --radix=d --print-size " + file_name + " > ./temp_files/nmtmp.txt";
+    if (uo.flags.test(1))
     {
-        std::cout << "nm failed!" << std::endl;
+        std::ifstream exist_test("./temp_files/nmtmp.txt");
+        if (!exist_test.good())
+        {
+            exist_test.close();
+            std::cout << std::endl << std::endl << "There is no existing temp (nm) file for the binary!" << std::endl;
+            return -1;
+        }
     }
-    std::ifstream nm_file;
+    else
+    {
+        int ret_nm = system(nm_cmd.c_str());
+        if (ret_nm)
+        {
+            std::cout << "nm failed!" << std::endl;
+            return 0-1;
+        }
+    }
     char buf[5][512];
-    nm_file.open("nmtmp.txt");
+    std::ifstream nm_file;
+    nm_file.open("./temp_files/nmtmp.txt");
     /*
         identifies functions from the disassembled binary.
         this is better than using the source code for numerous reasons;
@@ -120,14 +133,20 @@ void Binary::get_functions(UserOptions& uo)
         
         nm_file >> std::ws;
     }
+    return 0;
 }
 
-void Binary::populate_competition_vectors(UserOptions& uo)
+int Binary::populate_competition_vectors(UserOptions& uo)
 {
     /*
         identify functions that compete with each other for cache sets
     */
     int critical_stride = uo.proc.l1i->get_critical_stride();
+    if (critical_stride <= 0)
+    {
+        std::cout << "Error populating competition vectors: invalid critical stride of " << critical_stride << std::endl;
+        return -1;
+    }
     int* span = new int[critical_stride];
     for (auto& i : functions_list)
     {
@@ -158,25 +177,38 @@ void Binary::populate_competition_vectors(UserOptions& uo)
         }
     }
     delete [] span;
+    return 0;
 }
 
-void Binary::populate_coexecution_vectors(UserOptions& uo)
+int Binary::populate_coexecution_vectors(UserOptions& uo)
 {
     /*
         identify functions that call/are called by each other
         (these are assumed to execute together and therefore
         cache set conflicts become a problem)
     */
-    std::string objdump_cmd = "objdump -d -C -Mintel --no-show-raw-insn " + file_name + " >> objdumptmp.txt";
-    std::string objdump_rm = "rm objdumptmp.txt";
-    system(objdump_rm.c_str());
-    int ret_objdump = system(objdump_cmd.c_str());
-    if (ret_objdump)
+    std::string objdump_cmd = "objdump -d -C -Mintel --no-show-raw-insn " + file_name + " > ./temp_files/objdumptmp.txt";
+    std::string objdump_rm = "rm ./temp_files/objdumptmp.txt";
+    if (uo.flags.test(1))
     {
-        std::cout << "objdump failed!" << std::endl;
+        std::ifstream exist_test("./temp_files/objdumptmp.txt");
+        if (!exist_test.good())
+        {
+            exist_test.close();
+            std::cout << std::endl << std::endl << "There is no existing temp (objdump) file for the binary!" << std::endl;
+            return -1;
+        }
+    }
+    else
+    {
+        int ret_objdump = system(objdump_cmd.c_str());
+        if (ret_objdump)
+        {
+            std::cout << "objdump failed!" << std::endl;
+        }
     }
     std::ifstream objdump_file;
-    objdump_file.open("objdumptmp.txt");
+    objdump_file.open("./temp_files/objdumptmp.txt");
     std::string line;
     objdump_file >> std::ws;
     while(getline(objdump_file, line))
@@ -248,9 +280,128 @@ void Binary::populate_coexecution_vectors(UserOptions& uo)
             }
         }
     }
+    return 0;
 }
 
-void Binary::rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth)
+int Binary::find_problem_function_groups(UserOptions& uo)
+{
+    /*
+        find groups of functions that both
+        (a) coexecute with each other
+        (b) compete for cache sets
+        the group-size at which this becomes dangerous
+        depends on the associativity of the cache
+    */
+
+    for (auto& i : functions_list)
+    {
+        std::set_intersection(
+            i.second.competes_with.begin(), i.second.competes_with.end(),
+            i.second.coexecutes_with.begin(), i.second.coexecutes_with.end(),
+            std::inserter(i.second.competes_and_coexecutes_with, i.second.competes_and_coexecutes_with.begin())
+        );
+    }
+
+    std::multimap<size_t, std::set<size_t>> problem_groups_ranked;
+
+    int num_groups = 1;
+
+    for (int depth = uo.proc.l1i->get_assoc() / 2; num_groups != 0; ++depth)
+    {
+        std::cout << "." << std::flush;
+
+        problem_groups.clear();
+
+        std::set<size_t> current_group;
+
+        for (auto& i : functions_list)
+        {
+            current_group.insert(i.first);
+            rec_problem_find(i.first, current_group, depth);
+            current_group.erase(current_group.find(i.first));
+        }
+
+        num_groups = problem_groups.size();
+
+        /* rank problem groups */
+
+        for (auto& group : problem_groups)
+        {
+            int overlap[4096];
+            for (int o = 0; o < 4096; ++o)
+            {
+                overlap[o] = 1;
+            }
+            for (auto& j : group)
+            {
+                for (int o = functions_list[j].get_size(); o < 4096; ++o)
+                {
+                    overlap[(functions_list[j].get_address() + o) % 4096] = 0;
+                }
+            }
+            int overlap_extent = 0;
+            for (int i = 0; i < 4096; ++i)
+            {
+                if (overlap[i] == 1) { ++overlap_extent; }
+            }
+            size_t group_score = pow(10, group.size()) + overlap_extent; /* === incorporate number of co-calls in this too!! === */
+            if (overlap_extent > 0)
+            {
+                problem_groups_ranked.insert(std::pair<size_t, std::set<size_t>>(group_score, group));
+            }
+        }
+    }
+
+    if (problem_groups_ranked.size() == 0)
+    {
+        std::cout << "Based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << " and the chosen levels of coexecution indirecion and competition overlap, no cache-competition related sources of latency problems have been identified!" << std::endl << std::endl;
+        return 0;
+    }
+
+    std::cout << std::endl << std::endl << "The following groups of functions have been identified as a potential source of latency problems." << std::endl;
+    std::cout << "They have been ranked based on a combination of the number of functions in the group and the amount of cache space they compete for." << std::endl;
+    std::cout << "This has been calculated based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << ", as well as the chosen coexecution indirection level of " << uo.coex << " and competition overlap threshold of " << uo.comp << " bytes." << std::endl << std::endl;
+    
+    int ranking_num = 0;
+    std::map<size_t, std::set<size_t>>::iterator i = problem_groups_ranked.end();
+    for (--i ; i != problem_groups_ranked.begin() && ranking_num < uo.ranking_length; --i)
+    {
+        std::cout << "===Group===" << std::endl << std::endl;
+        size_t score = i->first;
+        std::set<size_t> group = i->second;
+        for (auto j : group)
+        {
+            std::cout << functions_list[j].get_name() << std::endl;
+        }
+
+        int overlap[4096];
+        for (int o = 0; o < 4096; ++o)
+        {
+            overlap[o] = 1;
+        }
+        for (auto& j : group)
+        {
+            for (int o = functions_list[j].get_size(); o < 4096; ++o)
+            {
+                overlap[(functions_list[j].get_address() + o) % 4096] = 0;
+            }
+        }
+        int overlap_extent = 0;
+        for (int i = 0; i < 4096; ++i)
+        {
+            if (overlap[i] == 1) { ++overlap_extent; }
+        }
+
+        std::cout << std::endl << "This group of " << group.size() << " coexecuting functions competes for the same " << overlap_extent << "-byte region of the cache" << std::endl << std::endl;
+
+        //std::cout << std::endl << "This group of functions competes for the same " << count << "-byte portion of the cache" << std::endl;
+        //std::cout << std::endl;
+        ++ranking_num;
+    }
+    return 0;
+}
+
+int Binary::rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth)
 {
     /*
         recursively find groups of functions which
@@ -287,77 +438,5 @@ void Binary::rec_problem_find(size_t current_addr, std::set<size_t>& current_gro
             current_group.erase(current_group.find(next_func));
         }
     }
-}
-
-void Binary::find_problem_function_groups(UserOptions& uo)
-{
-    /*
-        find groups of functions that both
-        (a) coexecute with each other
-        (b) compete for cache sets
-        the group-size at which this becomes dangerous
-        depends on the associativity of the cache
-    */
-
-    for (auto& i : functions_list)
-    {
-        std::set_intersection(
-            i.second.competes_with.begin(), i.second.competes_with.end(),
-            i.second.coexecutes_with.begin(), i.second.coexecutes_with.end(),
-            std::inserter(i.second.competes_and_coexecutes_with, i.second.competes_and_coexecutes_with.begin())
-        );
-    }
-
-    std::set<size_t> current_group;
-
-    for (auto& i : functions_list)
-    {
-        current_group.insert(i.first);
-        rec_problem_find(i.first, current_group, uo.proc.l1d->get_assoc());
-        current_group.erase(current_group.find(i.first));
-    }
-
-    if (problem_groups.size() == 0)
-    {
-        std::cout << "Based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << " and the chosen levels of coexecution indirecion and competition overlap, no cache-competition related sources of latency problems have been identified!" << std::endl << std::endl;
-        return;
-    }
-
-    std::cout << "The following groups of functions have been identified as a potential source of latency problems." << std::endl;
-    std::cout << "This has been calculated based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << ", as well as the chosen coexecution indirection level of " << uo.coex << " and competition overlap threshold of " << uo.comp << " bytes." << std::endl << std::endl;
-    
-    int num_groups = 0;
-    for (auto& i : problem_groups)
-    {
-        int overlap[4096];
-        for (int o = 0; o < 4096; ++o)
-        {
-            overlap[o] = 1;
-        }
-        for (auto& j : i)
-        {
-            for (int o = functions_list[j].get_size(); o < 4096; ++o)
-            {
-                overlap[(functions_list[j].get_address() + o) % 4096] = 0;
-            }
-        }
-        int count = 0;
-        for (int i = 0; i < 4096; ++i)
-        {
-            if (overlap[i] == 1) { ++count; }
-        }
-
-        if (count >= uo.comp)
-        {
-            ++num_groups;
-            std::cout << "===Group===" << std::endl << std::endl;
-            for (auto& j : i)
-            {
-                std::cout << functions_list[j].get_name() << std::endl;
-            }
-            std::cout << std::endl << "This group overlaps by " << count << " bytes" << std::endl;
-            std::cout << std::endl;
-        }
-    }
-    std::cout << "There are " << num_groups << " overlapping groups." << std::endl << std::endl;
+    return 0;
 }

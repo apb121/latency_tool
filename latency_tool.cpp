@@ -1,5 +1,7 @@
 #include <unistd.h>
 #include <iostream>
+#include <bit>
+#include <bitset>
 
 #define SOURCE_CODE_ONLY 7
 #define BINARY_ONLY 6
@@ -7,6 +9,7 @@
 #define MANUAL_CACHE 4
 #define NO_EMPIRICAL 3
 #define KEEP_TEMP 2
+#define EXISTING_TEMP_FILES 1
 
 #include "cache_info.hpp"
 #include "class_parser.hpp"
@@ -27,6 +30,8 @@
             -k, --keep-temporary-files (make sure to add checks for if files exist before deleting them) {2}
             -l= --coexecution-level= (default = ? maybe 1)
             -t= --competition-threshold= (default = ? maybe 64, or maybe 16)
+            -r= --ranking-length= (default = 10)
+            -e, --use-existing-temp-files (automatically switches on -k flag) {1}
 */
 
 int main(int argc, char** argv)
@@ -124,26 +129,60 @@ int main(int argc, char** argv)
         std::cout << "The associativity and critical stride of the L1 data cache are both unknown." << std::endl;
         std::cout << "They will now be tested empirically. This may take up to a minute." << std::endl;
 
-        suggested_values[0] = uo.proc.l1d->empirical_assoc_test();
+        suggested_values[0] = uo.proc.l1d->empirical_assoc_test(uo.flags);
+        if (suggested_values[0] <= 0)
+        {
+          std::cerr << "Error assessing L1 data-cache associativity." << std::endl;
+          std::cerr << "Exiting." << std::endl;
+          return 1;
+        }
         std::cout << "Suggested L1 data-cache associativity: " << suggested_values[0] << std::endl;
-        suggested_values[1] = uo.proc.l1d->empirical_stride_test();
+        suggested_values[1] = uo.proc.l1d->empirical_stride_test(uo.flags);
+        if (suggested_values[1] <= 0)
+        {
+          std::cerr << "Error assessing L1 data-cache critical stride." << std::endl;
+          std::cerr << "Exiting." << std::endl;
+          return 1;
+        }
         std::cout << "Suggested L1 data-cache critical stride: " << suggested_values[1] << std::endl;
 
-        std::cout << "Setting L1 data-cache associativity to " << suggested_values[0] << std::endl;
+        std::cout << std::endl << "Setting L1 data-cache associativity to " << suggested_values[0] << std::endl;
         uo.proc.l1d->set_assoc(suggested_values[0]);
         int pos_critical_stride = uo.proc.l1d->get_size() / uo.proc.l1d->get_assoc();
-        std::cout << "Setting L1 data-cache critical stride to " << min(pos_critical_stride, suggested_values[1]) << std::endl;
-        uo.proc.l1d->set_critical_stride(min(pos_critical_stride, suggested_values[1]));
+
+        // this next bit is an interesting point for discussion
+
+        if (  ((pos_critical_stride) & (pos_critical_stride - 1) == 0) && pos_critical_stride != 0 &&
+              ((suggested_values[1]) & (suggested_values[1] - 1) != 0))
+        {
+          std::cout << std::endl << "Setting L1 data-cache critical stride to " << pos_critical_stride << std::endl << std::endl;          
+        }
+        else if ( ((pos_critical_stride) & (pos_critical_stride - 1) != 0) &&
+                  ((suggested_values[1]) & (suggested_values[1] - 1) == 0) && suggested_values[1] != 0)
+        {
+          std::cout << std::endl << "Setting L1 data-cache critical stride to " << suggested_values[1] << std::endl << std::endl; 
+        }
+        else
+        {
+          std::cout << std::endl << "Setting L1 data-cache critical stride to " << min(pos_critical_stride, suggested_values[1]) << std::endl << std::endl;
+          uo.proc.l1d->set_critical_stride(min(pos_critical_stride, suggested_values[1]));
+        }
       }
       else if (uo.proc.l1d->get_assoc() <= 0)
       {
         std::cout << "The associativity of the L1 data cache is unknown." << std::endl;
         std::cout << "It will now be tested empirically. This may take up to a minute." << std::endl;
 
-        suggested_values[0] = uo.proc.l1d->empirical_assoc_test();
+        suggested_values[0] = uo.proc.l1d->empirical_assoc_test(uo.flags);
+        if (suggested_values[0] <= 0)
+        {
+          std::cerr << "Error assessing L1 data-cache associativity." << std::endl;
+          std::cerr << "Exiting." << std::endl;
+          return 1;
+        }
         std::cout << "Suggested L1 data-cache associativity: " << suggested_values[0] << std::endl;
 
-        std::cout << "Setting L1 data-cache associavtivity to " << suggested_values[0] << std::endl;
+        std::cout << std::endl << "Setting L1 data-cache associavtivity to " << suggested_values[0] << std::endl << std::endl;
         uo.proc.l1d->set_assoc(suggested_values[0]);
       }
       else if (uo.proc.l1d->get_critical_stride() <= 0)
@@ -151,10 +190,16 @@ int main(int argc, char** argv)
         std::cout << "The critical stride of the L1 data cache is unknown." << std::endl;
         std::cout << "It will now be tested empirically. This may take up to a minute." << std::endl;
 
-        suggested_values[1] = uo.proc.l1d->empirical_stride_test();
+        suggested_values[1] = uo.proc.l1d->empirical_stride_test(uo.flags);
+        if (suggested_values[1] <= 0)
+        {
+          std::cerr << "Error assessing L1 data-cache critical stride." << std::endl;
+          std::cerr << "Exiting." << std::endl;
+          return 1;
+        }
         std::cout << "Suggested L1 data-cache critical stride: " << suggested_values[1] << std::endl;
 
-        std::cout << "Setting L1 data-cache critical stride to " << suggested_values[1] << std::endl;
+        std::cout << std::endl << "Setting L1 data-cache critical stride to " << suggested_values[1] << std::endl << std::endl;
         uo.proc.l1d->set_critical_stride(suggested_values[1]);
       }
       if (uo.proc.l1i->get_assoc() <= 0 && uo.proc.l1i->get_critical_stride() <= 0)
@@ -162,32 +207,77 @@ int main(int argc, char** argv)
         std::cout << "The associativity and critical stride of the L1 instruction-cache are both unknown." << std::endl;
         std::cout << "They will now be tested empirically. This may take up to a minute." << std::endl;
 
-        suggested_values[2] = uo.proc.l1i->empirical_assoc_test();
+        suggested_values[2] = uo.proc.l1i->empirical_assoc_test(uo.flags);
+        if (suggested_values[2] <= 0)
+        {
+          std::cerr << "Error assessing L1 instruction-cache associativity." << std::endl;
+          std::cerr << "Exiting." << std::endl;
+          return 1;
+        }
         std::cout << "Suggested L1 instruction-cache associativity: " << suggested_values[2] << std::endl;
-        suggested_values[3] = uo.proc.l1i->empirical_stride_test();
+        suggested_values[3] = uo.proc.l1i->empirical_stride_test(uo.flags);
+        if (suggested_values[3] <= 0)
+        {
+          std::cerr << "Error assessing L1 instruction-cache critical stride." << std::endl;
+          std::cerr << "Exiting." << std::endl;
+          return 1;
+        }
         std::cout << "Suggested L1 instruction-cache critical stride: " << suggested_values[3] << std::endl;
 
-        std::cout << "Setting L1 instruction-cache associativity to " << suggested_values[2] << std::endl;
+        std::cout << std::endl << "Setting L1 instruction-cache associativity to " << suggested_values[2] << std::endl;
         uo.proc.l1i->set_assoc(suggested_values[2]);
         int pos_critical_stride = uo.proc.l1i->get_size() / uo.proc.l1i->get_assoc();
-        std::cout << "Setting L1 instruction-cache critical stride to " << min(pos_critical_stride, suggested_values[3]) << std::endl;
-        uo.proc.l1d->set_critical_stride(min(pos_critical_stride, suggested_values[3]));
+        // this next bit is an interesting point for discussion
+
+        if (  ((pos_critical_stride) & (pos_critical_stride - 1) == 0) && pos_critical_stride != 0 &&
+              ((suggested_values[3]) & (suggested_values[3] - 1) != 0))
+        {
+          std::cout << std::endl << "Setting L1 data-cache critical stride to " << pos_critical_stride << std::endl << std::endl;          
+        }
+        else if ( ((pos_critical_stride) & (pos_critical_stride - 1) != 0) &&
+                  ((suggested_values[3]) & (suggested_values[3] - 1) == 0) && suggested_values[3] != 0)
+        {
+          std::cout << std::endl << "Setting L1 data-cache critical stride to " << suggested_values[3] << std::endl << std::endl; 
+        }
+        else
+        {
+          std::cout << std::endl << "Setting L1 data-cache critical stride to " << min(pos_critical_stride, suggested_values[3]) << std::endl << std::endl;
+          uo.proc.l1i->set_critical_stride(min(pos_critical_stride, suggested_values[3]));
+        }
       }
       else if (uo.proc.l1i->get_assoc() <= 0)
       {
         std::cout << "The associativity of the L1 instruction-cache is unknown." << std::endl;
         std::cout << "It will now be tested empirically. This may take up to a minute." << std::endl;
 
-        suggested_values[2] = uo.proc.l1i->empirical_assoc_test();
+        suggested_values[2] = uo.proc.l1i->empirical_assoc_test(uo.flags);
+        if (suggested_values[2] <= 0)
+        {
+          std::cerr << "Error assessing L1 instruction-cache associativity." << std::endl;
+          std::cerr << "Exiting." << std::endl;
+          return 1;
+        }
         std::cout << "Suggested instruction-cache associativity: " << suggested_values[2] << std::endl;
+
+        std::cout << std::endl << "Setting L1 instruction-cache associavtivity to " << suggested_values[2] << std::endl << std::endl;
+        uo.proc.l1i->set_assoc(suggested_values[2]);
       }
       else if (uo.proc.l1i->get_critical_stride() <= 0)
       {
         std::cout << "The critical stride of the L1 instruction-cache is unknown." << std::endl;
         std::cout << "It will now be tested empirically. This may take up to a minute." << std::endl;
 
-        suggested_values[3] = uo.proc.l1i->empirical_stride_test();
+        suggested_values[3] = uo.proc.l1i->empirical_stride_test(uo.flags);
+        if (suggested_values[3] <= 0)
+        {
+          std::cerr << "Error assessing L1 instruction-cache critical stride." << std::endl;
+          std::cerr << "Exiting." << std::endl;
+          return 1;
+        }
         std::cout << "Suggested instruction-cache critical stride: " << suggested_values[3] << std::endl;
+
+        std::cout << std::endl << "Setting L1 instruction-cache critical stride to " << suggested_values[3] << std::endl << std::endl;
+        uo.proc.l1d->set_assoc(suggested_values[3]);
       }
     }
 
@@ -234,12 +324,40 @@ int main(int argc, char** argv)
         std::cout << std::endl;
       }
       std::cout << std::endl << "===========================================================" << std::endl << std::endl;
-      std::cout << "Analysing your binary..." << std::endl << std::endl;
+      std::cout << "Analysing your binary" << std::flush;
       bin = new Binary(uo.file_names[uo.file_names.size() - 1], all_types);
-      bin->get_functions(uo);
-      bin->populate_competition_vectors(uo);
-      bin->populate_coexecution_vectors(uo);
-      bin->find_problem_function_groups(uo);
+      int bin_ret = 0;
+      bin_ret = bin->get_functions(uo);
+      if (bin_ret != 0)
+      {
+        std::cout << std::endl << std::endl << "Error reading functions from " << uo.file_names[uo.file_names.size() - 1] << "." << std::endl;
+        std::cout << "Exiting." << std::endl;
+      }
+      bin_ret = bin->populate_competition_vectors(uo);
+      if (bin_ret != 0)
+      {
+        std::cout << std::endl << std::endl << "Error populating competition vectors from " << uo.file_names[uo.file_names.size() - 1] << "." << std::endl;
+        std::cout << "Exiting." << std::endl;
+      }
+      bin_ret = bin->populate_coexecution_vectors(uo);
+      if (bin_ret != 0)
+      {
+        std::cout << std::endl << std::endl << "Error populating coexecution vectors from " << uo.file_names[uo.file_names.size() - 1] << "." << std::endl;
+        std::cout << "Exiting." << std::endl;
+      }
+      bin_ret = bin->find_problem_function_groups(uo);
+      if (bin_ret != 0)
+      {
+        std::cout << std::endl << std::endl << "Error finding problem function groups." << std::endl;
+        std::cout << "Exiting." << std::endl;
+      }
+      std::cout << std::endl;
+    }
+
+    if (!uo.flags.test(2))
+    {
+      std::string cmd_rm_tmp = "rm ./temp_files/*";
+      system(cmd_rm_tmp.c_str());
     }
     
     return 0;

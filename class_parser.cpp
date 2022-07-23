@@ -10,6 +10,7 @@
 #include <forward_list>
 #include <deque>
 #include <vector>
+#include <cmath>
 
 #include "class_parser.hpp"
 
@@ -27,6 +28,15 @@ size_t get_type_size(std::string type, std::string array_match)
     else if (type.find("unordered") != std::string::npos)
     {
       size = sizeof(std::unordered_set<void*>);
+    }
+    else if (type.find("bitset") != std::string::npos)
+    {
+      std::regex bitset_len_regex("[0-9]+");
+      std::smatch bitset_len_match;
+      size_t bitset_len = 0;
+      regex_search(type, bitset_len_match, bitset_len_regex);
+      int bits = stoi(bitset_len_match.str());
+      return std::ceil(bits / 8.0);
     }
     else if (type.find("set") != std::string::npos)
     {
@@ -62,7 +72,7 @@ size_t get_type_size(std::string type, std::string array_match)
     }
     else if (type.find("std::vector") != std::string::npos)
     {
-      std::regex vector_bool_regex("std::vector *< *bool *>");
+      std::regex vector_bool_regex("vector *< *bool *>");
       std::smatch vector_bool_match;
       if (regex_search(type, vector_bool_match, vector_bool_regex))
       {
@@ -254,7 +264,7 @@ void UDType::detect_variables()
         than exclude in the regex
     */
 
-    std::regex variable_declaration("(?:(?:virtual *|auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *\\* *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=)])|(((\\[ *[0-9]* *\\])+)))");
+    std::regex variable_declaration("(?:(?:virtual *|auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *\\* *|bitset *<.*> *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=)])|(((\\[ *[0-9]* *\\])+)))");
     std::smatch variable_match;
     while (regex_search(class_info_copy, variable_match, variable_declaration))
     {
