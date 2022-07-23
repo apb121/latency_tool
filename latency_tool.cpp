@@ -84,17 +84,11 @@ int main(int argc, char** argv)
       );
     }
 
-    // also - give the option to combine the system variables and known, manually-input specific values ??
-
     if (uo.proc.l1d->get_size() <= 0 || uo.proc.l1i->get_size() <= 0)
     {
       std::cout << "It has not been possible to gauge the size of one of the L1 caches. At present this is a fatal error." << std::endl;
       return 1;
     }
-
-    // the above does not need to be fatal.
-    // if there is no l1d size l1i can still be tested
-    // if there is no l1i size l1d can still be tested
 
     if (  uo.flags.test(NO_EMPIRICAL) &&
           (
@@ -212,18 +206,6 @@ int main(int argc, char** argv)
         (*files)[i].suggest_optimised_orderings();
       }
     }
-    /*
-    else if (uo.flags.test(BINARY_ONLY))
-    {
-      // improve this next part...
-      vector<UDType> empty;
-      bin = new Binary(uo.file_names[0], empty);    // might need to check but it appears that this section isn't actually necessary
-      bin->get_functions(uo);
-      bin->populate_competition_vectors(uo);
-      bin->populate_coexecution_vectors(uo);
-      bin->find_problem_function_groups(uo);
-    }
-    */
     else
     {
       files = new vector<File>;
@@ -245,34 +227,6 @@ int main(int argc, char** argv)
       bin->populate_coexecution_vectors(uo);
       bin->find_problem_function_groups(uo);
     }
-
-  /*
-    class_test.detect_types();
-    // class_test.suggest_optimised_orderings();
     
-    class_parser.detect_types();
-    // class_parser.suggest_optimised_orderings();
-
-    cache_info.detect_types();
-    // cache_info.suggest_optimised_orderings();
-
-    binary_analyser.detect_types();
-    // binary_analyser.suggest_optimised_orderings();
-
-    vector<UDType> all_types;
-    vector<UDType> types = class_parser.get_types();
-    all_types.insert(all_types.end(), types.begin(), types.end());
-    types = cache_info.get_types();
-    all_types.insert(all_types.end(), types.begin(), types.end());
-    types = binary_analyser.get_types();
-    all_types.insert(all_types.end(), types.begin(), types.end());
-
-    //Binary b("critical_stride_test_i_1024", all_types);
-    Binary b("system_test", all_types);
-    b.get_functions();
-    b.populate_competition_vectors(4096);
-    b.populate_coexecution_vectors();
-    b.find_problem_function_groups();
-  */
     return 0;
 }

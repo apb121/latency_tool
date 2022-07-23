@@ -2,6 +2,15 @@ code stuff
 
 -- !! see what the compiler says about the size of structs that contain each other
 
+-- overall programme stuff 
+    -- give the user the option to combine the system variables and known, manually-input specific values ??
+    -- make it so that not having the size of one of the caches is not fatal (just do data/instructions if the other is missing)
+    -- factor out all the stuff in main if possible
+    -- support for size of bitset ??
+    -- slash-star comments... (see both/all places where characters (usu. brackets) in comments are ignored)
+    -- size of classes that contain UDTypes as members!
+    -- calculate number of coexecutions of a problem group... (to evaluate problematicness with overlap extent and overall size of group)
+    -- have a think about the binary only flag and doing all functions (i.e., including 'W' rather than just 'T') 
 -- suggestions
     -- inline some functions (then they will not conflict!)
     -- move functions around (put function that are called together together)
@@ -31,6 +40,7 @@ code stuff
     -- better to use objdump for many reasons
         -- a lot of function calls (e.g. to constructors, assignment operators, etc.) are not explicit in source code
             -- particularly useful because it can identify slow-downs that could never been seen just by looking at the source code. constructors might conflict!
+        -- avoids wasting time on functions written but never called (these are not compiled into the binary)
     -- need to incorporate:
         -- how many times functions call each other
         -- how much functions overlap

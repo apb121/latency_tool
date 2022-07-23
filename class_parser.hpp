@@ -54,8 +54,6 @@ struct UDType
 
         /* discard any code embedded in curly or round brackets. this cannot contain data members */
 
-        // (what about slash-star comments...)
-
         while (pos < class_info.length() && curly_bracket_depth > 0)
         {
           if (class_info[pos] == '"' && class_info[pos - 1] != '\'' && !in_single)
@@ -196,8 +194,6 @@ struct UDType
         {
           // important! use this when calculating the size of classes that contain UDTypes as members!
           // perhaps dynamically create the regex string on the basis of the detected structs... :)
-
-          //std::cout << "This class has no data members of its own!" << "(" << name << ")" << std::endl;
           return 0;
         }
         size_t curr_align = 0;
@@ -379,8 +375,6 @@ class File
         return user_defined_types;
     }
 
-    // definitely make the following more user friendly...
-
     void suggest_optimised_orderings()
     {
         int opt_count = 0;
@@ -425,10 +419,6 @@ class File
         }
     }
 };
-
-// add to the following as deemed necessary...
-
-// bitset fails with size_t ...
 
 size_t get_type_size(std::string type, std::string array_match)
 {
@@ -618,10 +608,3 @@ size_t get_type_size(std::string type, std::string array_match)
   }
   return size;
 }
-
-// just a test...
-
-class A : public UDType
-{
-  int i = 4;
-};

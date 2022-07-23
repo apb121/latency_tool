@@ -71,7 +71,7 @@ class Binary
             -- move constructors
             -- default/copy/move operator overloads (e.g., assignment)
             -- destructors
-            -- (templated functions)
+            -- (templated functions?)
             it will also avoid wasting time on functions that are written
             but are never called. these do not make their way into the binary
         */
@@ -363,12 +363,6 @@ class Binary
             }
         }
         std::cout << "There are " << num_groups << " overlapping groups." << std::endl << std::endl;
-
-        // after the function...
-        // hopefully find a way to evalute the problematic-ness of the group
-            // size of group
-            // number of coexecutions
-            // amount of overlap
     }
     void rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth)
     {

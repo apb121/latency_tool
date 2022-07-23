@@ -114,7 +114,7 @@ struct UserOptions
           std::string flag(argv[i]);
           regex_search(flag, level_match, coex_level_regex);
           int coex_level = stoi(level_match.str());
-          if (coex_level < 0 || coex_level > 100) // some large number, probably like 4 would do because high numbers here can be dangerous
+          if (coex_level < 0 || coex_level > 100) // some large number, probably like 4 would do because high numbers here can be dangerous; perhaps just add a warning if its over about 3
           {
             std::cerr << "Invalid coexecution level." << std::endl;
             return 1;
