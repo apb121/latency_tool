@@ -2,6 +2,7 @@
 #include <unordered_set>
 #include <queue>
 #include <deque>
+#include <bitset>
 
 using namespace std;
 
@@ -65,6 +66,11 @@ struct E
     double d2;
 };
 
+struct BS
+{
+    std::bitset<8> b;
+};
+
 int main()
 {
     int i = 3;
@@ -119,6 +125,9 @@ int main()
     cout << "D" << endl;
     cout << sizeof(D) << endl;
     cout << sizeof(long) << endl;
+    cout << "=============" << endl;
+    cout << "BS" << endl;
+    cout << sizeof(BS) << endl;
     cout << endl;
     return 0;
 }

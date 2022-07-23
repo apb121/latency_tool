@@ -48,7 +48,7 @@ class Binary
     {
 
     }
-    void get_functions()
+    void get_functions(UserOptions& uo)
     {
         std::string nm_cmd = "nm -v -C -l --radix=d --print-size " + file_name + " >> nmtmp.txt";
         std::string nm_rm = "rm nmtmp.txt";
@@ -141,7 +141,7 @@ class Binary
                     UDT_func = true;
                 }
             }
-            if (UDT_func == false && buf[2][0] != 'T')
+            if (UDT_func == false/* && !uo.flags.test(BINARY_ONLY) */ && buf[2][0] != 'T')
             {
                 while (nm_file.get() != '\n' && !nm_file.eof()) {};
                 continue;
@@ -164,12 +164,13 @@ class Binary
             nm_file >> std::ws;
         }
     }
-    void populate_competition_vectors(int critical_stride)
+    void populate_competition_vectors(UserOptions& uo)
     {
         /*
             identify functions that compete with each other for cache sets
         */
-        int span[critical_stride];
+        int critical_stride = uo.proc.l1i->get_critical_stride();
+        int* span = new int[critical_stride];
         for (auto& i : functions_list)
         {
             for (int j = 0; j < critical_stride; ++j)
@@ -184,18 +185,23 @@ class Binary
             for (auto j : functions_list)
             {
                 if (j.second.get_address() == i.second.get_address()) { continue; }
+                int comp_stride = 0;
                 for (int k = 0; k < j.second.get_size(); ++k)
                 {
                     if (span[(j.second.get_address() + k) % critical_stride] == 1)
                     {
-                        i.second.competes_with.insert(j.second.get_address());
-                        break;
+                        ++comp_stride;
                     }
+                }
+                if (comp_stride > 0)
+                {
+                    i.second.competes_with.insert(j.second.get_address());
                 }
             }
         }
+        delete [] span;
     }
-    void populate_coexecution_vectors()
+    void populate_coexecution_vectors(UserOptions& uo)
     {
         /*
             identify functions that call/are called by each other
@@ -268,7 +274,7 @@ class Binary
             E will be deemed to coexecute with F.
         */
 
-        int num_extra_levels = 1;
+        int num_extra_levels = uo.coex;
 
         for (int level = 0; level < num_extra_levels; ++level)
         {
@@ -284,7 +290,7 @@ class Binary
             }
         }
     }
-    void find_problem_function_groups()
+    void find_problem_function_groups(UserOptions& uo)
     {
         /*
             find groups of functions that both
@@ -307,24 +313,56 @@ class Binary
 
         for (auto& i : functions_list)
         {
-            std::cout << "Outer search: " << functions_list[i.first].get_name() << ": " << i.first << std::endl;
             current_group.insert(i.first);
-            rec_problem_find(i.first, current_group, 6);
+            rec_problem_find(i.first, current_group, uo.proc.l1d->get_assoc());
             current_group.erase(current_group.find(i.first));
         }
+
+        std::cout << std::endl << "======================================================================" << std::endl << std::endl;
+
+        if (problem_groups.size() == 0)
+        {
+            std::cout << "Based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << " and the chosen levels of coexecution indirecion and competition overlap, no cache-competition related sources of latency problems have been identified!" << std::endl << std::endl;
+            return;
+        }
+
+        std::cout << "The following groups of functions have been identified as a potential source of latency problems." << std::endl;
+        std::cout << "This has been calculated based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << ", as well as the chosen coexecution indirection level of " << uo.coex << " and competition overlap threshold of " << uo.comp << " bytes." << std::endl << std::endl;
         
-        std::cout << "Ok..." << std::endl;
-        std::cout << problem_groups.size() << std::endl;
-        
+        int num_groups = 0;
         for (auto& i : problem_groups)
         {
-            std::cout << "===Group===" << std::endl;
+            int overlap[4096];
+            for (int o = 0; o < 4096; ++o)
+            {
+                overlap[o] = 1;
+            }
             for (auto& j : i)
             {
-                std::cout << functions_list[j].get_name() << std::endl;
+                for (int o = functions_list[j].get_size(); o < 4096; ++o)
+                {
+                    overlap[(functions_list[j].get_address() + o) % 4096] = 0;
+                }
             }
-            std::cout << std::endl;
+            int count = 0;
+            for (int i = 0; i < 4096; ++i)
+            {
+                if (overlap[i] == 1) { ++count; }
+            }
+
+            if (count >= uo.comp)
+            {
+                ++num_groups;
+                std::cout << "===Group===" << std::endl << std::endl;
+                for (auto& j : i)
+                {
+                    std::cout << functions_list[j].get_name() << std::endl;
+                }
+                std::cout << std::endl << "This group overlaps by " << count << " bytes" << std::endl;
+                std::cout << std::endl;
+            }
         }
+        std::cout << "There are " << num_groups << " overlapping groups." << std::endl << std::endl;
 
         // after the function...
         // hopefully find a way to evalute the problematic-ness of the group

@@ -1,33 +1,33 @@
-# started on Wed Jul 20 17:58:07 2022
+# started on Sat Jul 23 00:18:20 2022
 
-55503,,L1-icache-load-misses,0.26%,1213267,100.00,,
-# started on Wed Jul 20 17:58:10 2022
+48342,,L1-icache-load-misses,0.15%,987640,100.00,,
+# started on Sat Jul 23 00:18:22 2022
 
-56507,,L1-icache-load-misses,0.30%,1293840,100.00,,
-# started on Wed Jul 20 17:58:12 2022
+49117,,L1-icache-load-misses,0.15%,1003173,100.00,,
+# started on Sat Jul 23 00:18:24 2022
 
-62372,,L1-icache-load-misses,0.23%,1380939,100.00,,
-# started on Wed Jul 20 17:58:14 2022
+53125,,L1-icache-load-misses,0.14%,1011598,100.00,,
+# started on Sat Jul 23 00:18:26 2022
 
-50516,,L1-icache-load-misses,0.30%,1181083,100.00,,
-# started on Wed Jul 20 17:58:17 2022
+49989,,L1-icache-load-misses,0.13%,1003985,100.00,,
+# started on Sat Jul 23 00:18:28 2022
 
-67192,,L1-icache-load-misses,0.22%,1264594,100.00,,
-# started on Wed Jul 20 17:58:19 2022
+56318,,L1-icache-load-misses,0.13%,1000805,100.00,,
+# started on Sat Jul 23 00:18:30 2022
 
-96937,,L1-icache-load-misses,0.16%,1254908,100.00,,
-# started on Wed Jul 20 17:58:22 2022
+86182,,L1-icache-load-misses,0.09%,1038234,100.00,,
+# started on Sat Jul 23 00:18:32 2022
 
-481872,,L1-icache-load-misses,0.15%,1406237,100.00,,
-# started on Wed Jul 20 17:58:24 2022
+504832,,L1-icache-load-misses,0.15%,1201238,100.00,,
+# started on Sat Jul 23 00:18:34 2022
 
-518603,,L1-icache-load-misses,0.13%,1555005,100.00,,
-# started on Wed Jul 20 17:58:27 2022
+507679,,L1-icache-load-misses,0.12%,1362864,100.00,,
+# started on Sat Jul 23 00:18:36 2022
 
-494621,,L1-icache-load-misses,0.10%,1603617,100.00,,
-# started on Wed Jul 20 17:58:29 2022
+447329,,L1-icache-load-misses,0.11%,1332564,100.00,,
+# started on Sat Jul 23 00:18:38 2022
 
-503716,,L1-icache-load-misses,0.09%,1744660,100.00,,
-# started on Wed Jul 20 17:58:32 2022
+510456,,L1-icache-load-misses,0.09%,1567786,100.00,,
+# started on Sat Jul 23 00:18:40 2022
 
-533112,,L1-icache-load-misses,0.09%,2049335,100.00,,
+510592,,L1-icache-load-misses,0.08%,1577348,100.00,,

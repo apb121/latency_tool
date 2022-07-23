@@ -3,6 +3,12 @@
 #include <algorithm>
 #include <cmath>
 
+class L1d_cache;
+class L1i_cache;
+class L2_cache;
+class L3_cache;
+class L4_cache;
+
 class Cache
 {
   std::string name = "generic_cache";
@@ -16,7 +22,7 @@ class Cache
   {
     if (size <= 0)
     {
-      std::cerr << "This processor does not have an " << name << " cache" << std::endl;
+      std::cerr << "This processor does not have an " << name << " cache" << std::endl << std::endl;
     }
     else if (assoc <= 0)
     {
@@ -25,6 +31,8 @@ class Cache
     else if (assoc <= 0)
     {
       std::cerr << "This processor does not specify linesize of its " << name << " cache." << std::endl;
+      critical_stride = size / assoc;
+      std::cout << "The critical stride of the " << name << " cache is " << critical_stride << " bytes." << std::endl;
     }
     else
     {
@@ -35,6 +43,10 @@ class Cache
   const int get_linesize() const { return linesize; }
   const int get_assoc() const { return assoc; }
   const int get_size() const { return size; }
+  const int get_critical_stride() const { return critical_stride; }
+  void set_linesize(int l) { linesize = l; }
+  void set_assoc(int a) { assoc = a; }
+  void set_critical_stride(int cs) { critical_stride = cs; }
 };
 
 class L1_cache : public Cache
@@ -451,4 +463,21 @@ class L4_cache : public Cache
     {
 
     }
+};
+
+struct Processor
+{
+    L1d_cache* l1d = nullptr;
+    L1i_cache* l1i = nullptr;
+    L2_cache* l2 = nullptr;
+    L3_cache* l3 = nullptr;
+    L4_cache* l4 = nullptr;
+    ~Processor()
+    {
+      if (l1d) { delete l1d; }
+      if (l1i) { delete l1i; }
+      if (l2) { delete l2; }
+      if (l3) { delete l3; }
+      if (l4) { delete l4; }
+    };
 };

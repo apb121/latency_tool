@@ -194,7 +194,10 @@ struct UDType
     {
         if (types_list.size() == 0)
         {
-          std::cout << "This class has no data members of its own!" << std::endl;
+          // important! use this when calculating the size of classes that contain UDTypes as members!
+          // perhaps dynamically create the regex string on the basis of the detected structs... :)
+
+          //std::cout << "This class has no data members of its own!" << "(" << name << ")" << std::endl;
           return 0;
         }
         size_t curr_align = 0;
@@ -274,11 +277,15 @@ class File
     {
 
     }
+    std::string get_file_name()
+    {
+      return file_name;
+    }
     std::vector<UDType> get_types()
     {
       return user_defined_types;
     }
-    void detect_types()
+    std::vector<UDType> detect_types()
     {
         std::ifstream class_file;
         class_file.open(file_name);
@@ -369,17 +376,28 @@ class File
             break;
           }
         }
+        return user_defined_types;
     }
 
     // definitely make the following more user friendly...
 
     void suggest_optimised_orderings()
     {
+        int opt_count = 0;
         for (int i = 0; i < user_defined_types.size(); ++i)
         {
-            std::cout << " ================== " << std::endl << std::endl;
-            std::cout << user_defined_types[i].name << ": " << std::endl;
-            std::cout << "Current ordering:" << std::endl;
+            int current_size = user_defined_types[i].calculate_size();
+            std::vector<variable_info> proposed_types_list = user_defined_types[i].suggest_optimised_ordering();
+            int optimised_size = user_defined_types[i].calculate_size(proposed_types_list);
+
+            if (optimised_size == current_size) { continue; }
+
+            ++opt_count;
+
+            std::cout << std::endl << "=== An inefficient data member ordering has been detected in file \"" << file_name << "\" ===" << std::endl << std::endl;
+
+            std::cout << "Typename: " << user_defined_types[i].name << std::endl << std::endl;
+            std::cout << "Current ordering:" << std::endl << std::endl;
             for (int j = 0; j < user_defined_types[i].types_list.size(); ++j)
             {
                 std::cout << "type: " << std::get<2>(user_defined_types[i].types_list[j]) << "; ";
@@ -388,22 +406,9 @@ class File
                 std::cout << std::endl;
             }
 
-            int current_size = user_defined_types[i].calculate_size();
-            std::cout << "Total size: " << current_size << std::endl;
-            std::cout << std::endl;
-            std::cout << "Calculating optimal ordering..." << std::endl;
-            std::cout << std::endl;
-            
-            std::vector<variable_info> proposed_types_list = user_defined_types[i].suggest_optimised_ordering();
-            int optimised_size = user_defined_types[i].calculate_size(proposed_types_list);
+            std::cout << std::endl << "Current size: " << current_size << std::endl << std::endl;
 
-            if (optimised_size == current_size)
-            {
-                std::cout << "This type is already optimally ordered for size!" << std::endl;
-                continue;
-            }
-
-            std::cout << "Proposed ordering:" << std::endl;
+            std::cout << "Proposed ordering:" << std::endl << std::endl;
             for (int j = 0; j < proposed_types_list.size(); ++j)
             {
                 std::cout << "type: " << std::get<2>(proposed_types_list[j]) << "; ";
@@ -411,14 +416,19 @@ class File
                 std::cout << "size: " << std::get<1>(proposed_types_list[j]) << "; ";
                 std::cout << std::endl;
             }
-            std::cout << "Total size: " << optimised_size << std::endl;
-            std::cout << "This ordering saves " << current_size - optimised_size << " bytes." << std::endl;
-            std::cout << std::endl;
+            std::cout << std::endl << "New size: " << optimised_size << std::endl << std::endl;
+            std::cout << "This ordering saves " << current_size - optimised_size << " bytes." << std::endl << std::endl;
+        }
+        if (opt_count == 0)
+        {
+          std::cout << "No inefficiently ordered data members have been detected in the file \"" << file_name << "\"" << std::endl;
         }
     }
 };
 
 // add to the following as deemed necessary...
+
+// bitset fails with size_t ...
 
 size_t get_type_size(std::string type, std::string array_match)
 {
