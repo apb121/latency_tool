@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <iostream>
 
 #define SOURCE_CODE_ONLY 7
@@ -11,8 +12,6 @@
 #include "class_parser.hpp"
 #include "user_options.hpp"
 #include "binary_analyser.hpp"
-
-using namespace std;
 
 /*
     normal usage:
@@ -43,7 +42,7 @@ int main(int argc, char** argv)
       return 1;
     }
 
-    for (int i = 0; i < uo.file_names.size(); ++i)
+    for (size_t i = 0; i < uo.file_names.size(); ++i)
     {
       std::ifstream f(uo.file_names[i]);
       if (!f.good())
@@ -57,6 +56,8 @@ int main(int argc, char** argv)
 
     if (!uo.flags.test(MANUAL_CACHE))
     {
+      std::cout << std::endl << "===========================================================" << std::endl << std::endl;
+      std::cout << "Reading cache data from your system..." << std::endl << std::endl;
       uo.proc.l1d = new L1d_cache(
         sysconf(_SC_LEVEL1_DCACHE_SIZE),
         sysconf(_SC_LEVEL1_DCACHE_LINESIZE),
@@ -195,12 +196,14 @@ int main(int argc, char** argv)
 
     if (uo.flags.test(SOURCE_CODE_ONLY))
     {
+      std::cout << std::endl << "===========================================================" << std::endl << std::endl;
+      std::cout << "Analysing your source code..." << std::endl << std::endl;
       files = new vector<File>;
-      for (int i = 0; i < uo.file_names.size(); ++i)
+      for (size_t i = 0; i < uo.file_names.size(); ++i)
       {
         files->push_back(uo.file_names[i]);
       }
-      for (int i = 0; i < files->size(); ++i)
+      for (size_t i = 0; i < files->size(); ++i)
       {
         (*files)[i].detect_types();
         (*files)[i].suggest_optimised_orderings();
@@ -209,18 +212,29 @@ int main(int argc, char** argv)
     else
     {
       files = new vector<File>;
-      for (int i = 0; i < uo.file_names.size() - 1; ++i)
+      if (uo.file_names.size() > 1)
+      {
+        std::cout << std::endl << "===========================================================" << std::endl << std::endl;
+        std::cout << "Analysing your source code..." << std::endl << std::endl;
+      }
+      for (size_t i = 0; i < uo.file_names.size() - 1; ++i)
       {
         files->push_back(uo.file_names[i]);
       }
       vector<UDType> all_types;
-      for (int i = 0; i < files->size(); ++i)
+      for (size_t i = 0; i < files->size(); ++i)
       {
         (*files)[i].detect_types();
         (*files)[i].suggest_optimised_orderings();
         vector<UDType> types = (*files)[i].get_types();
         all_types.insert(all_types.end(), types.begin(), types.end());
       }
+      if (uo.file_names.size() > 1)
+      {
+        std::cout << std::endl;
+      }
+      std::cout << std::endl << "===========================================================" << std::endl << std::endl;
+      std::cout << "Analysing your binary..." << std::endl << std::endl;
       bin = new Binary(uo.file_names[uo.file_names.size() - 1], all_types);
       bin->get_functions(uo);
       bin->populate_competition_vectors(uo);
