@@ -254,16 +254,18 @@ int main(int argc, char** argv)
         if (  ((pos_critical_stride) & (pos_critical_stride - 1) == 0) && pos_critical_stride != 0 &&
               ((suggested_values[3]) & (suggested_values[3] - 1) != 0))
         {
-          std::cout << std::endl << "Setting L1 data-cache critical stride to " << pos_critical_stride << std::endl << std::endl;          
+          std::cout << std::endl << "Setting L1 instruction-cache critical stride to " << pos_critical_stride << std::endl << std::endl;  
+          uo.proc.l1i->set_critical_stride(pos_critical_stride);
         }
         else if ( ((pos_critical_stride) & (pos_critical_stride - 1) != 0) &&
                   ((suggested_values[3]) & (suggested_values[3] - 1) == 0) && suggested_values[3] != 0)
         {
-          std::cout << std::endl << "Setting L1 data-cache critical stride to " << suggested_values[3] << std::endl << std::endl; 
+          std::cout << std::endl << "Setting L1 instruction-cache critical stride to " << suggested_values[3] << std::endl << std::endl;
+          uo.proc.l1i->set_critical_stride(suggested_values[3]);
         }
         else
         {
-          std::cout << std::endl << "Setting L1 data-cache critical stride to " << min(pos_critical_stride, suggested_values[3]) << std::endl << std::endl;
+          std::cout << std::endl << "Setting L1 instruction-cache critical stride to " << min(pos_critical_stride, suggested_values[3]) << std::endl << std::endl;
           uo.proc.l1i->set_critical_stride(min(pos_critical_stride, suggested_values[3]));
         }
       }
@@ -301,7 +303,7 @@ int main(int argc, char** argv)
         std::cout << "Suggested instruction-cache critical stride: " << suggested_values[3] << std::endl;
 
         std::cout << std::endl << "Setting L1 instruction-cache critical stride to " << suggested_values[3] << std::endl << std::endl;
-        uo.proc.l1d->set_assoc(suggested_values[3]);
+        uo.proc.l1i->set_assoc(suggested_values[3]);
       }
     }
 

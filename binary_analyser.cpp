@@ -345,7 +345,7 @@ int Binary::find_problem_function_groups(UserOptions& uo)
             {
                 if (overlap[i] == 1) { ++overlap_extent; }
             }
-            size_t group_score = pow(10, group.size()) + overlap_extent; /* === incorporate number of co-calls in this too!! === */
+            size_t group_score = pow(2, group.size()) * overlap_extent; /* === incorporate number of co-calls in this too!! === */
             if (overlap_extent > 0)
             {
                 problem_groups_ranked.insert(std::pair<size_t, std::set<size_t>>(group_score, group));

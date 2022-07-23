@@ -1,30 +1,20 @@
+apb121@vertex53:latency_tool$ ./latency_tool -t=200 -l=1 -r=5 class_parser.hpp cache_info.hpp binary_analyser.hpp user_options.hpp latency_tool
+
 ===========================================================
 
 Reading cache data from your system...
 
 The critical stride of the L1d cache is 4096 bytes.
-This processor does not specify the associativity of its L1i cache.
+The critical stride of the L1i cache is 4096 bytes.
 The critical stride of the L2 cache is 65536 bytes.
-The critical stride of the L3 cache is 1048576 bytes.
+The critical stride of the L3 cache is 786432 bytes.
 This processor does not have an L4 cache
-
-The associativity and critical stride of the L1 instruction-cache are both unknown.
-They will now be tested empirically. This may take up to a minute.
-Assessing instruction-cache associativity empirically........
-Suggested L1 instruction-cache associativity: 8
-Assessing instruction-cache critical stride empirically...........
-Suggested L1 instruction-cache critical stride: 4096
-
-Setting L1 instruction-cache associativity to 8
-
-Setting L1 data-cache critical stride to 4096
 
 
 ===========================================================
 
 Analysing your source code...
 
-No inefficiently ordered data members have been detected in the file "user_options.hpp"
 
 === An inefficient data member ordering has been detected in file "class_parser.hpp" ===
 
@@ -52,165 +42,80 @@ This ordering saves 8 bytes.
 
 No inefficiently ordered data members have been detected in the file "cache_info.hpp"
 No inefficiently ordered data members have been detected in the file "binary_analyser.hpp"
+No inefficiently ordered data members have been detected in the file "user_options.hpp"
 
 
 ===========================================================
 
-Analysing your binary.........
+Analysing your binary........
 
 The following groups of functions have been identified as a potential source of latency problems.
 They have been ranked based on a combination of the number of functions in the group and the amount of cache space they compete for.
-This has been calculated based on the instruction-cache's critical stride of 4096 bytes and associativity of 8, as well as the chosen coexecution indirection level of 1 and competition overlap threshold of 16 bytes.
+This has been calculated based on the instruction-cache's critical stride of 4096 bytes and associativity of 8, as well as the chosen coexecution indirection level of 1 and competition overlap threshold of 200 bytes.
 
 ===Group===
 
 main
-UserOptions::UserOptions()
-UDType::~UDType()
-UserOptions::parse_flags(int, char**)
-Cache::Cache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, int, int, int)
-get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
-UDType::detect_variables()
-File::detect_types()
-Binary::get_functions(UserOptions&)
-Binary::populate_coexecution_vectors(UserOptions&)
-Binary::find_problem_function_groups(UserOptions&)
-
-This group of 11 coexecuting functions competes for the same 43-byte region of the cache
-
-===Group===
-
-main
-L1d_cache::L1d_cache(int, int, int)
 UserOptions::parse_flags(int, char**)
 get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
 UDType::detect_variables()
 UDType::calculate_size(std::vector<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >)
 File::suggest_optimised_orderings()
-Binary::populate_competition_vectors(UserOptions&)
-Binary::populate_coexecution_vectors(UserOptions&)
-Binary::rec_problem_find(unsigned long, std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> >&, int)
-
-This group of 10 coexecuting functions competes for the same 212-byte region of the cache
-
-===Group===
-
-main
-UserOptions::UserOptions()
-UserOptions::parse_flags(int, char**)
-Cache::Cache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, int, int, int)
-get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
-UDType::detect_variables()
-File::detect_types()
 Binary::get_functions(UserOptions&)
 Binary::populate_coexecution_vectors(UserOptions&)
 Binary::find_problem_function_groups(UserOptions&)
 
-This group of 10 coexecuting functions competes for the same 96-byte region of the cache
+This group of 9 coexecuting functions competes for the same 983-byte region of the cache
 
 ===Group===
 
 main
-L4_cache::L4_cache(int, int, int)
 UserOptions::parse_flags(int, char**)
 get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
 UDType::detect_variables()
-UDType::suggest_optimised_ordering[abi:cxx11]()
 File::suggest_optimised_orderings()
-Binary::populate_competition_vectors(UserOptions&)
+Binary::get_functions(UserOptions&)
+Binary::populate_coexecution_vectors(UserOptions&)
 Binary::find_problem_function_groups(UserOptions&)
-Function::Function(unsigned long, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
 
-This group of 10 coexecuting functions competes for the same 88-byte region of the cache
+This group of 8 coexecuting functions competes for the same 1466-byte region of the cache
 
 ===Group===
 
 main
-UDType::~UDType()
 UserOptions::parse_flags(int, char**)
-Cache::Cache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, int, int, int)
 get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
 UDType::detect_variables()
+UDType::calculate_size()
 File::detect_types()
 Binary::get_functions(UserOptions&)
 Binary::populate_coexecution_vectors(UserOptions&)
 Binary::find_problem_function_groups(UserOptions&)
 
-This group of 10 coexecuting functions competes for the same 63-byte region of the cache
+This group of 9 coexecuting functions competes for the same 500-byte region of the cache
 
 ===Group===
 
-main
-L3_cache::L3_cache(int, int, int)
 UserOptions::parse_flags(int, char**)
 get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
 UDType::detect_variables()
 UDType::calculate_size(std::vector<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >)
 File::suggest_optimised_orderings()
-Binary::populate_competition_vectors(UserOptions&)
-Binary::find_problem_function_groups(UserOptions&)
-Function::Function(unsigned long, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
-
-This group of 10 coexecuting functions competes for the same 61-byte region of the cache
-
-===Group===
-
-main
-UserOptions::~UserOptions()
-UserOptions::parse_flags(int, char**)
-Cache::Cache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, int, int, int)
-get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
-UDType::detect_variables()
-File::detect_types()
 Binary::get_functions(UserOptions&)
 Binary::populate_coexecution_vectors(UserOptions&)
 Binary::find_problem_function_groups(UserOptions&)
 
-This group of 10 coexecuting functions competes for the same 51-byte region of the cache
+This group of 8 coexecuting functions competes for the same 983-byte region of the cache
 
 ===Group===
 
 main
-File::~File()
-UserOptions::parse_flags(int, char**)
-Cache::Cache(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, int, int, int)
-get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
-UDType::detect_variables()
-File::detect_types()
-Binary::get_functions(UserOptions&)
-Binary::populate_coexecution_vectors(UserOptions&)
-Binary::find_problem_function_groups(UserOptions&)
-
-This group of 10 coexecuting functions competes for the same 47-byte region of the cache
-
-===Group===
-
-main
-L3_cache::L3_cache(int, int, int)
-UserOptions::parse_flags(int, char**)
 get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
 UDType::detect_variables()
 UDType::calculate_size(std::vector<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >)
 File::suggest_optimised_orderings()
-Binary::populate_competition_vectors(UserOptions&)
+Binary::get_functions(UserOptions&)
+Binary::populate_coexecution_vectors(UserOptions&)
 Binary::find_problem_function_groups(UserOptions&)
-UDType::get_name[abi:cxx11]()
 
-This group of 10 coexecuting functions competes for the same 45-byte region of the cache
-
-===Group===
-
-main
-L3_cache::L3_cache(int, int, int)
-UserOptions::parse_flags(int, char**)
-get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
-UDType::detect_variables()
-UDType::suggest_optimised_ordering[abi:cxx11]()
-File::suggest_optimised_orderings()
-Binary::populate_competition_vectors(UserOptions&)
-Binary::find_problem_function_groups(UserOptions&)
-Function::Function(unsigned long, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
-
-This group of 10 coexecuting functions competes for the same 44-byte region of the cache
-
-
+This group of 8 coexecuting functions competes for the same 983-byte region of the cache
