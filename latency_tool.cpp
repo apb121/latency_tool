@@ -34,12 +34,28 @@
             -e, --use-existing-temp-files (automatically switches on -k flag) {1}
 */
 
+void cleanup_temp_files(UserOptions& uo)
+{
+  if (!uo.flags.test(2))
+  {
+    std::string cmd_rm_tmp = "rm ./temp_files/*";
+    system(cmd_rm_tmp.c_str());
+  }
+}
+
 int main(int argc, char** argv)
 {
     using namespace std;
     UserOptions uo;
     int parse_ret = uo.parse_flags(argc, argv);
     if (parse_ret) { return 1; }
+
+    std::ifstream f("./temp_files");
+    if (!f.good())
+    {
+      system("mkdir temp_files");
+    }
+    f.close();
 
     if (uo.file_names.size() == 0)
     {
@@ -134,6 +150,7 @@ int main(int argc, char** argv)
         {
           std::cerr << "Error assessing L1 data-cache associativity." << std::endl;
           std::cerr << "Exiting." << std::endl;
+          cleanup_temp_files(uo);
           return 1;
         }
         std::cout << "Suggested L1 data-cache associativity: " << suggested_values[0] << std::endl;
@@ -142,6 +159,7 @@ int main(int argc, char** argv)
         {
           std::cerr << "Error assessing L1 data-cache critical stride." << std::endl;
           std::cerr << "Exiting." << std::endl;
+          cleanup_temp_files(uo);
           return 1;
         }
         std::cout << "Suggested L1 data-cache critical stride: " << suggested_values[1] << std::endl;
@@ -178,6 +196,7 @@ int main(int argc, char** argv)
         {
           std::cerr << "Error assessing L1 data-cache associativity." << std::endl;
           std::cerr << "Exiting." << std::endl;
+          cleanup_temp_files(uo);
           return 1;
         }
         std::cout << "Suggested L1 data-cache associativity: " << suggested_values[0] << std::endl;
@@ -195,6 +214,7 @@ int main(int argc, char** argv)
         {
           std::cerr << "Error assessing L1 data-cache critical stride." << std::endl;
           std::cerr << "Exiting." << std::endl;
+          cleanup_temp_files(uo);
           return 1;
         }
         std::cout << "Suggested L1 data-cache critical stride: " << suggested_values[1] << std::endl;
@@ -212,6 +232,7 @@ int main(int argc, char** argv)
         {
           std::cerr << "Error assessing L1 instruction-cache associativity." << std::endl;
           std::cerr << "Exiting." << std::endl;
+          cleanup_temp_files(uo);
           return 1;
         }
         std::cout << "Suggested L1 instruction-cache associativity: " << suggested_values[2] << std::endl;
@@ -220,6 +241,7 @@ int main(int argc, char** argv)
         {
           std::cerr << "Error assessing L1 instruction-cache critical stride." << std::endl;
           std::cerr << "Exiting." << std::endl;
+          cleanup_temp_files(uo);
           return 1;
         }
         std::cout << "Suggested L1 instruction-cache critical stride: " << suggested_values[3] << std::endl;
@@ -255,6 +277,7 @@ int main(int argc, char** argv)
         {
           std::cerr << "Error assessing L1 instruction-cache associativity." << std::endl;
           std::cerr << "Exiting." << std::endl;
+          cleanup_temp_files(uo);
           return 1;
         }
         std::cout << "Suggested instruction-cache associativity: " << suggested_values[2] << std::endl;
@@ -272,6 +295,7 @@ int main(int argc, char** argv)
         {
           std::cerr << "Error assessing L1 instruction-cache critical stride." << std::endl;
           std::cerr << "Exiting." << std::endl;
+          cleanup_temp_files(uo);
           return 1;
         }
         std::cout << "Suggested instruction-cache critical stride: " << suggested_values[3] << std::endl;
@@ -330,35 +354,37 @@ int main(int argc, char** argv)
       bin_ret = bin->get_functions(uo);
       if (bin_ret != 0)
       {
-        std::cout << std::endl << std::endl << "Error reading functions from " << uo.file_names[uo.file_names.size() - 1] << "." << std::endl;
+        std::cout << std::endl << "Error reading functions from " << uo.file_names[uo.file_names.size() - 1] << "." << std::endl;
         std::cout << "Exiting." << std::endl;
+        cleanup_temp_files(uo);
+        return 1;
       }
       bin_ret = bin->populate_competition_vectors(uo);
       if (bin_ret != 0)
       {
-        std::cout << std::endl << std::endl << "Error populating competition vectors from " << uo.file_names[uo.file_names.size() - 1] << "." << std::endl;
+        std::cout << std::endl << "Error populating competition vectors from " << uo.file_names[uo.file_names.size() - 1] << "." << std::endl;
         std::cout << "Exiting." << std::endl;
+        cleanup_temp_files(uo);
+        return 1;
       }
       bin_ret = bin->populate_coexecution_vectors(uo);
       if (bin_ret != 0)
       {
-        std::cout << std::endl << std::endl << "Error populating coexecution vectors from " << uo.file_names[uo.file_names.size() - 1] << "." << std::endl;
+        std::cout << std::endl << "Error populating coexecution vectors from " << uo.file_names[uo.file_names.size() - 1] << "." << std::endl;
         std::cout << "Exiting." << std::endl;
+        cleanup_temp_files(uo);
+        return 1;
       }
       bin_ret = bin->find_problem_function_groups(uo);
       if (bin_ret != 0)
       {
-        std::cout << std::endl << std::endl << "Error finding problem function groups." << std::endl;
+        std::cout << std::endl << "Error finding problem function groups." << std::endl;
         std::cout << "Exiting." << std::endl;
+        cleanup_temp_files(uo);
+        return 1;
       }
       std::cout << std::endl;
     }
-
-    if (!uo.flags.test(2))
-    {
-      std::string cmd_rm_tmp = "rm ./temp_files/*";
-      system(cmd_rm_tmp.c_str());
-    }
-    
+    cleanup_temp_files(uo);
     return 0;
 }

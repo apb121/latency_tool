@@ -25,7 +25,7 @@ int Binary::get_functions(UserOptions& uo)
         if (ret_nm)
         {
             std::cout << "nm failed!" << std::endl;
-            return 0-1;
+            return -1;
         }
     }
     char buf[5][512];
@@ -205,6 +205,7 @@ int Binary::populate_coexecution_vectors(UserOptions& uo)
         if (ret_objdump)
         {
             std::cout << "objdump failed!" << std::endl;
+            return -1;
         }
     }
     std::ifstream objdump_file;
