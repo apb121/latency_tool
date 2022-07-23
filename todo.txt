@@ -3,29 +3,32 @@ code stuff
 -- make a readme!
 
 -- overall programme stuff
+    -- do the check for problematically sized functions (near to 1024)
+    -- put the suggestions in the standard output
+        -- after the binary analysis put:
+            -- explanation
+                -- groups of coexecuting and competing functions near the associativity cause jitter
+                -- groups of coexecuting and competing functions above the associativity are guaranteed to evict each other from the cache and therefore cause latency issues
+            -- suggestions
+                -- inline some functions (then they will not conflict! may also have other advantages...)
+                -- move functions around (put function that are called together together)
+                -- combine functions
+                -- try -falign-functions=...
+                -- forcibly stop some functions coming into the cache with non temporal code accesses??
     -- make the temp files only overwrite the old temp file at the end (with cp)
         -- so that if the programme is aborted halfway it isn't a problem...
     -- add checks for if data/instruction cache info is present in the analysis functions
-    -- implement the -k flag
     -- might be better if the binary is the first file?
-    -- factor stuff in all the hpps into hpps and cpps
-        -- make a makefile!
-            -- perhaps think about this in the context of adding makefile functionality to the programme...
+    -- add makefile functionality (programme executes make?)
     -- give the user the option to combine the system variables and known, manually-input specific values ??
     -- make it so that not having the size of one of the caches is not fatal (just do data/instructions if the other is missing)
     -- factor out all the stuff in main if possible
-    -- support for size of bitset ??
     -- slash-star comments... (see both/all places where characters (usu. brackets) in comments are ignored)
     -- slash-slash comments
     -- size of classes that contain UDTypes as members!
     -- calculate number of coexecutions of a problem group... (to evaluate problematicness with overlap extent and overall size of group)
     -- have a think about the binary only flag and doing all functions (i.e., including 'W' rather than just 'T') 
 -- suggestions
-    -- inline some functions (then they will not conflict! may also have other advantages...)
-    -- move functions around (put function that are called together together)
-    -- combine functions
-    -- try -falign-functions=...
-    -- forcibly stop some functions coming into the cache with non temporal code accesses??
 -- source code (class) parser
     -- inherit size from parent classes, increase size by any size of new data members...
     -- (NB regex is equivalent to FSM and therefore can't handle arbitrarily recursive structures that require counting)
@@ -33,26 +36,22 @@ code stuff
     -- add template functionality to class/variable search
         -- suggest specialisations?
     -- classes as members of other classes
-    -- avoid virtual declarations
     -- many-level recursive array<>s
     -- comma separated lists of variables
 -- empirical cache tests
     -- more sophisticated stddev checking for spikes?
 -- binary analyser
-    -- next do: coexecutes with and competes with
-    -- also: more levels of coexecutes with
     -- makefile functionality?
     -- nm function functionality
         -- which functions are called near to each other
         -- consider: overloading
         -- consider: templates!
     -- better to use objdump for many reasons
-        -- a lot of function calls (e.g. to constructors, assignment operators, etc.) are not explicit in source code
+        -- a lot of function calls (e.g. to constructors, assignment operators, multiple functions from templates, etc.) are not explicit in source code
             -- particularly useful because it can identify slow-downs that could never been seen just by looking at the source code. constructors might conflict!
         -- avoids wasting time on functions written but never called (these are not compiled into the binary)
     -- need to incorporate:
         -- how many times functions call each other
-        -- how much functions overlap
     -- interesting demonstrations of function group identifier
         -- compare aligned functions perfomance with nCr (e.g., groups of size 3 from 17 competing and coexecuting functions (1 extra level of indirection) leads to 680 groups found!)
         -- compare critical stride tests 1024, 2048, and 4096!
