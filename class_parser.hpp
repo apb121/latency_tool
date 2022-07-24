@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstring>
 #include <string>
+#include <map>
 
 using variable_info = std::tuple<std::string, size_t, std::string, std::string>;
 
@@ -21,10 +22,11 @@ struct UDType
     UDType(std::string name, std::string class_info)
         : name(name), class_info(class_info) {}
     std::string get_name() { return name; }
-    void detect_variables();
-    size_t calculate_size();
-    size_t calculate_size(std::vector<variable_info> proposed_types_list);
-    std::vector<variable_info> suggest_optimised_ordering();
+    size_t get_size() { return total_size; }
+    void detect_variables(std::map<std::string, size_t> udtype_sizes);
+    size_t calculate_size(std::map<std::string, size_t> udtype_sizes);
+    size_t calculate_size(std::vector<variable_info> proposed_types_list, std::map<std::string, size_t> udtype_sizes);
+    std::vector<variable_info> suggest_optimised_ordering(std::map<std::string, size_t> udtype_sizes);
 };
 
 class File
@@ -37,7 +39,7 @@ class File
     std::string get_file_name() { return file_name; }
     std::vector<UDType> get_types() { return user_defined_types; }
     std::vector<UDType> detect_types();
-    void suggest_optimised_orderings();
+    void suggest_optimised_orderings(std::map<std::string, size_t> udtype_sizes);
 };
 
 //test

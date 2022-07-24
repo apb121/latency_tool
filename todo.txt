@@ -1,6 +1,21 @@
 code stuff
 
+-- source code analyser
+    -- loop through each type
+        -- attempt to calculate size
+            -- calculate size calls detect_variables in the service of getting their sizes
+                -- importantly: with the UDType size map
+                    -- which is put into the regex
+                        -- this will get the types as variables even if their sizes are not known yet
+            -- then calculate size also calls the get_type_size function, also with the UDType size map
+                -- this is where, if the map has -1, the size will return -1
+                    -- at this point calculate size returns -1 to main, which increments its relevant variable
+            -- if main receives info that the size can be calculated, update the UDType map
+        -- if size can
+
 -- make a readme!
+
+-- main needs serious structural cleanup
 
 -- overall programme stuff
     -- do the check for problematically sized functions (near to 1024)

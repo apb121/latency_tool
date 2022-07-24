@@ -14,7 +14,7 @@
 
 #include "class_parser.hpp"
 
-size_t get_type_size(std::string type, std::string array_match)
+size_t get_type_size(std::string type, std::string array_match, std::map<std::string, size_t> udtype_sizes)
 {
   size_t size = 0;
   if (type.find("<") != std::string::npos)
@@ -31,12 +31,7 @@ size_t get_type_size(std::string type, std::string array_match)
     }
     else if (type.find("bitset") != std::string::npos)
     {
-      std::regex bitset_len_regex("[0-9]+");
-      std::smatch bitset_len_match;
-      size_t bitset_len = 0;
-      regex_search(type, bitset_len_match, bitset_len_regex);
-      int bits = stoi(bitset_len_match.str());
-      return std::ceil(bits / 8.0);
+      return sizeof(std::bitset<8>);
     }
     else if (type.find("set") != std::string::npos)
     {
@@ -160,6 +155,16 @@ size_t get_type_size(std::string type, std::string array_match)
   {
     size = sizeof(char);
   }
+  else
+  {
+    for (auto& i : udtype_sizes)
+    {
+      if (type.find(i.first) != std::string::npos)
+      {
+        size = i.second;
+      }
+    }
+  }
   if (type.find("array") != std::string::npos)
   {
     std::regex array_regex("array *< *.* *, *[0-9]+ *>");
@@ -190,7 +195,7 @@ size_t get_type_size(std::string type, std::string array_match)
         int type_end = array_regex_recurse_match_str.length() - (array_match_str.length() + 1);
         while (isspace(array_regex_recurse_match_str[type_begin])) { type_begin++; }
         std::string type_match_str = array_regex_recurse_match_str.substr(type_begin, (type_end - type_begin));
-        size = get_type_size(type_match_str, array_match_str);
+        size = get_type_size(type_match_str, array_match_str, udtype_sizes);
       }
       size *= stoi(array_len_str.substr(begin, end - begin + 1));
     }
@@ -209,10 +214,11 @@ size_t get_type_size(std::string type, std::string array_match)
       array_match = sub_array_match.suffix();
     }
   }
+  // std::cout << "size finder is returning: " << size << " for " << type << std::endl;
   return size;
 }
 
-void UDType::detect_variables()
+void UDType::detect_variables(std::map<std::string, size_t> udtype_sizes)
 {
     std::string class_info_copy;
     size_t pos = 0;
@@ -238,9 +244,9 @@ void UDType::detect_variables()
       {
         curly_bracket_depth++;
       }
-      if (class_info[pos] == '(' && !in_double && !in_single)
+      if (class_info[pos] == ')' && !in_double && !in_single)
       {
-        round_bracket_depth++;
+        round_bracket_depth--;
       }
       if (curly_bracket_depth == 1 && round_bracket_depth == 0)
       {
@@ -250,9 +256,9 @@ void UDType::detect_variables()
       {
         curly_bracket_depth--;
       }
-      if (class_info[pos] == ')' && !in_double && !in_single)
+      if (class_info[pos] == '(' && !in_double && !in_single) // important that the order of incrementing and decrementing the counters for brackets is exactly like this so that round brackets are kept in
       {
-        round_bracket_depth--;
+        round_bracket_depth++;
       }
       pos++;
     }
@@ -260,15 +266,29 @@ void UDType::detect_variables()
     /*  
         find variable declarations.
         note: the virtual keyword is present
-        because it is easier to discard later
-        than exclude in the regex
+        because it is easier to catch here and discard later
+        than to exclude in the regex
     */
 
-    std::regex variable_declaration("(?:(?:virtual *|auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *\\* *|bitset *<.*> *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=)])|(((\\[ *[0-9]* *\\])+)))");
+    /* new types should go in the middle */
+
+    std::string variable_regex_start = "(?:(?:virtual *|";
+    std::string variable_regex_end = "auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *\\* *|bitset *<.*> *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=])|(((\\[ *[0-9]* *\\])+)))";
+
+    for (auto& i : udtype_sizes)
+    {
+      variable_regex_start += (i.first + " *|");
+    }
+
+    // std::cout << variable_regex_start + variable_regex_end << std::endl;
+
+    // remove this
+    std::regex variable_declaration(variable_regex_start + variable_regex_end);
     std::smatch variable_match;
     while (regex_search(class_info_copy, variable_match, variable_declaration))
     {
         std::string declaration = variable_match.str();
+        // std::cout << "Declaration: " << declaration << std::endl;
         int end = declaration.length() - 1;
 
         /*  
@@ -346,7 +366,10 @@ void UDType::detect_variables()
         {
             if (variable_type.find("auto") == std::string::npos)
             {
-                size_t variable_size = get_type_size(variable_type, array_match_str);
+                size_t variable_size = get_type_size(variable_type, array_match_str, udtype_sizes);
+                // std::cout << "variable found: " << variable_name << std::endl;
+                // std::cout << "type: " << variable_type << std::endl;
+                // std::cout << "size: " << variable_size << std::endl;
                 types_list.push_back({variable_name, variable_size, variable_type, variable_type_alignment});
             }
             else
@@ -359,12 +382,17 @@ void UDType::detect_variables()
     }
 }
 
-size_t UDType::calculate_size()
+size_t UDType::calculate_size(std::map<std::string, size_t> udtype_sizes)
 {
+
+    // std::cout << "Calculating size of: " << name << std::endl;
+
+    types_list.clear();
+
+    detect_variables(udtype_sizes);
+
     if (types_list.size() == 0)
     {
-      // important! use this when calculating the size of classes that contain UDTypes as members!
-      // perhaps dynamically create the regex string on the basis of the detected structs... :)
       return 0;
     }
     size_t curr_align = 0;
@@ -372,7 +400,7 @@ size_t UDType::calculate_size()
     {
         curr_align += std::get<1>(types_list[i]);
         std::string align_by = std::get<3>(types_list[i + 1]);
-        int align_target = ((get_type_size(align_by, "") <= 8) ? get_type_size(align_by, "") : 8);
+        int align_target = ((get_type_size(align_by, "", udtype_sizes) <= 8) ? get_type_size(align_by, "", udtype_sizes) : 8);
         if (align_target == 0)
         {
             std::cout << "UDType contains unknown type: " << align_by << std::endl; // remove
@@ -388,8 +416,10 @@ size_t UDType::calculate_size()
 
 // probably try to make this hacky overloading better...
 
-size_t UDType::calculate_size(std::vector<variable_info> proposed_types_list)
+size_t UDType::calculate_size(std::vector<variable_info> proposed_types_list, std::map<std::string, size_t> udtype_sizes)
 {
+    std::cout << "Calculating size of: " << name << std::endl;
+
     if (proposed_types_list.size() == 0)
     {
       return 0;
@@ -399,7 +429,7 @@ size_t UDType::calculate_size(std::vector<variable_info> proposed_types_list)
     {
         curr_align += std::get<1>(proposed_types_list[i]);
         std::string align_by = std::get<3>(proposed_types_list[i + 1]);
-        int align_target = ((get_type_size(align_by, "") <= 8) ? get_type_size(align_by, "") : 8);
+        int align_target = ((get_type_size(align_by, "", udtype_sizes) <= 8) ? get_type_size(align_by, "", udtype_sizes) : 8);
         if (align_target == 0)
         {
             exit(1);
@@ -413,7 +443,7 @@ size_t UDType::calculate_size(std::vector<variable_info> proposed_types_list)
 
 // somewhat brute force...
 
-std::vector<variable_info> UDType::suggest_optimised_ordering()
+std::vector<variable_info> UDType::suggest_optimised_ordering(std::map<std::string, size_t> udtype_sizes)
 {
     if (types_list.size() == 0)
     {
@@ -421,10 +451,10 @@ std::vector<variable_info> UDType::suggest_optimised_ordering()
       return v;
     }
     std::vector<variable_info> new_ordering = types_list;
-    int min_size = calculate_size();
+    int min_size = calculate_size(udtype_sizes);
     do
     {
-        int size = calculate_size();
+        int size = calculate_size(udtype_sizes);
         if (size < min_size)
         {
             min_size = size;
@@ -437,7 +467,7 @@ std::vector<variable_info> UDType::suggest_optimised_ordering()
 
 /* ============================= FILE ============================= */
 
-std::vector<UDType> File::detect_types()
+std::vector<UDType> File::detect_types(/*std::map<std::string, size_t> udtype_sizes*/)
 {
     std::ifstream class_file;
     class_file.open(file_name);
@@ -517,26 +547,25 @@ std::vector<UDType> File::detect_types()
         while (!isspace(class_info[name_end]) && class_info[name_end] != '{' && class_info[name_end] != ':') { name_end++; }
         UDType new_ud_type(class_info.substr(name_start, name_end - name_start), class_info);
         file_remaining = file_remaining.substr(pos);
-        new_ud_type.detect_variables();
+        /*
+        new_ud_type.detect_variables(udtype_sizes);
+        */
         user_defined_types.push_back(new_ud_type);
       }
       else
       {
-        /*  
-            this is not a class
-        */
         break;
       }
     }
     return user_defined_types;
 }
 
-void File::suggest_optimised_orderings()
+void File::suggest_optimised_orderings(std::map<std::string, size_t> udtype_sizes)
 {
     int opt_count = 0;
     for (size_t i = 0; i < user_defined_types.size(); ++i)
     {
-        int current_size = user_defined_types[i].calculate_size();
+        int current_size = user_defined_types[i].calculate_size(udtype_sizes);
         if (current_size == -1)
         {
           std::cerr << "UDType contains unknown type, cannot suggest optimised orderings" << std::endl;
@@ -546,8 +575,8 @@ void File::suggest_optimised_orderings()
         {
           continue; // empty class
         }
-        std::vector<variable_info> proposed_types_list = user_defined_types[i].suggest_optimised_ordering();
-        int optimised_size = user_defined_types[i].calculate_size(proposed_types_list);
+        std::vector<variable_info> proposed_types_list = user_defined_types[i].suggest_optimised_ordering(udtype_sizes);
+        int optimised_size = user_defined_types[i].calculate_size(proposed_types_list, udtype_sizes);
 
         if (optimised_size == current_size) { continue; }
 

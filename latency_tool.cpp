@@ -307,27 +307,71 @@ int main(int argc, char** argv)
       }
     }
 
-    vector<File>* files = nullptr;
-    Binary* bin = nullptr;
+    // vector<File>* files = nullptr;
+    // Binary* bin = nullptr;
 
     if (uo.flags.test(SOURCE_CODE_ONLY))
     {
       std::cout << std::endl << "===========================================================" << std::endl << std::endl;
       std::cout << "Analysing your source code..." << std::endl << std::endl;
-      files = new vector<File>;
       for (size_t i = 0; i < uo.file_names.size(); ++i)
       {
-        files->push_back(uo.file_names[i]);
+        uo.files.push_back(uo.file_names[i]);
       }
-      for (size_t i = 0; i < files->size(); ++i)
+      for (size_t i = 0; i < uo.files.size(); ++i)
       {
-        (*files)[i].detect_types();
-        (*files)[i].suggest_optimised_orderings();
+        vector<UDType> types = uo.files[i].detect_types();
+        for (size_t j = 0; j < types.size(); ++j)
+        {
+          uo.udtype_sizes[types[j].get_name()] = 0;
+        }
+        uo.all_user_types.insert(uo.all_user_types.end(), types.begin(), types.end());
+        // uo.files[i].suggest_optimised_orderings();
       }
+      // call calculate size on each until there is no change in the number of -1s that get returned
+      int num_unknown = 0, prev_unknown = 1;
+      while (num_unknown != prev_unknown)
+      {
+        prev_unknown = num_unknown;
+        num_unknown = 0;
+        for (size_t i = 0; i < uo.all_user_types.size(); ++i)
+        {
+          int size = uo.all_user_types[i].calculate_size(uo.udtype_sizes);
+          if (size <= 0)
+          {
+            ++num_unknown;
+          }
+          else
+          {
+            // std::cout << "Size of user defined type has been learned!" << std::endl;
+            std::cout << uo.all_user_types[i].get_name() << ": " << size << std::endl;
+            uo.udtype_sizes[uo.all_user_types[i].get_name()] = size;
+          }
+        }
+      }
+      std::cout << "Real sizes: " << std::endl;
+      std::cout << "UDType: " << sizeof(UDType) << std::endl;
+      std::cout << "File: " << sizeof(File) << std::endl;
+      std::cout << "G: " << sizeof(G) << std::endl;
+      std::cout << "UserOptions: " << sizeof(UserOptions) << std::endl;
+      std::cout << "Function: " << sizeof(Function) << std::endl;
+      std::cout << "Binary: " << sizeof(Binary) << std::endl;
+      std::cout << "Cache: " << sizeof(Cache) << std::endl;
+      std::cout << "Processor: " << sizeof(Processor) << std::endl;
+      std::cout << "Map: " << sizeof(std::map<std::string, size_t>) << std::endl;
+      std::cout << "Vector string: " << sizeof(std::vector<std::string>) << std::endl;
+      std::cout << "Vector file: " << sizeof(std::vector<File>) << std::endl;
+      std::cout << "Vector udt: " << sizeof(std::vector<UDType>) << std::endl;
+      std::cout << (int) ((long) (void*)&(uo.coex) - (long) (void*)&(uo.flags)) << std::endl;
+      return 0; // remove
+      for (size_t i = 0; i < uo.all_user_types.size(); ++i)
+      {
+        std::cout << uo.all_user_types[i].get_name() << ": " << uo.all_user_types[i].get_name() << std::endl;
+      }
+      return 1; // remove
     }
     else
     {
-      files = new vector<File>;
       if (uo.file_names.size() > 1)
       {
         std::cout << std::endl << "===========================================================" << std::endl << std::endl;
@@ -335,15 +379,19 @@ int main(int argc, char** argv)
       }
       for (size_t i = 0; i < uo.file_names.size() - 1; ++i)
       {
-        files->push_back(uo.file_names[i]);
+        uo.files.push_back(uo.file_names[i]);
       }
-      vector<UDType> all_types;
-      for (size_t i = 0; i < files->size(); ++i)
+      for (size_t i = 0; i < uo.files.size(); ++i)
       {
-        (*files)[i].detect_types();
-        (*files)[i].suggest_optimised_orderings();
-        vector<UDType> types = (*files)[i].get_types();
-        all_types.insert(all_types.end(), types.begin(), types.end());
+        vector<UDType> types = uo.files[i].detect_types();
+        uo.all_user_types.insert(uo.all_user_types.end(), types.begin(), types.end());
+      }
+      for (size_t i = 0; i < uo.files.size(); ++i)
+      {
+        uo.files[i].detect_types();
+        uo.files[i].suggest_optimised_orderings(uo.udtype_sizes);
+        vector<UDType> types = uo.files[i].get_types();
+        uo.all_user_types.insert(uo.all_user_types.end(), types.begin(), types.end());
       }
       if (uo.file_names.size() > 1)
       {
@@ -351,7 +399,7 @@ int main(int argc, char** argv)
       }
       std::cout << std::endl << "===========================================================" << std::endl << std::endl;
       std::cout << "Analysing your binary" << std::flush;
-      bin = new Binary(uo.file_names[uo.file_names.size() - 1], all_types);
+      Binary* bin = new Binary(uo.file_names[uo.file_names.size() - 1], uo.all_user_types);
       int bin_ret = 0;
       bin_ret = bin->get_functions(uo);
       if (bin_ret != 0)
@@ -385,6 +433,7 @@ int main(int argc, char** argv)
         cleanup_temp_files(uo);
         return 1;
       }
+      delete bin;
       std::cout << std::endl;
     }
     cleanup_temp_files(uo);
