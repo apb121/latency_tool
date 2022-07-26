@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "cache_info.hpp"
 
 Cache::Cache(std::string name, int size, int linesize, int assoc)

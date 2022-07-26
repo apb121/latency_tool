@@ -1,10 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <cmath>
-
 #include "binary_analyser.hpp"
-#include "user_options.hpp"
-#include "class_parser.hpp"
 
 int Binary::get_functions(UserOptions& uo)
 {

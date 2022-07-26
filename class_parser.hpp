@@ -2,14 +2,27 @@
 #define CLASS_PARSER_HPP
 
 #include <vector>
+#include <unordered_set>
+#include <set>
+#include <map>
+#include <queue>
+#include <stack>
+#include <list>
+#include <forward_list>
+#include <deque>
 #include <cstring>
 #include <string>
 #include <map>
 #include <numeric>
-
-using variable_info = std::tuple<std::string, size_t, std::string, std::string>;
+#include <iostream>
+#include <fstream>
+#include <regex>
+#include <cmath>
+#include <algorithm>
 
 /* variable_name, variable_size, variable_type, alignment_type */
+using variable_info = std::tuple<std::string, size_t, std::string, std::string>;
+
 size_t get_type_size(std::string type, std::string array_match);
 
 struct UDType

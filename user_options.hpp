@@ -1,12 +1,17 @@
 #ifndef USER_OPTIONS_HPP
 #define USER_OPTIONS_HPP
 
+#include <unistd.h>
 #include <bitset>
 #include <vector>
 #include <string>
 #include <map>
+#include <iostream>
+#include <regex>
 
 #include "cache_info.hpp"
+#include "class_parser.hpp"
+#include "binary_analyser.hpp"
 
 #define SOURCE_CODE_ONLY 7
 #define BINARY_ONLY 6
@@ -15,9 +20,6 @@
 #define NO_EMPIRICAL 3
 #define KEEP_TEMP 2
 #define EXISTING_TEMP_FILES 1
-
-#include "class_parser.hpp"
-#include "binary_analyser.hpp"
 
 struct UserOptions
 {

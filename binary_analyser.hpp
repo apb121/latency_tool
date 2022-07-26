@@ -5,6 +5,8 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <fstream>
+#include <cmath>
 
 #include "user_options.hpp"
 #include "class_parser.hpp"

@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <bitset>
+#include <iostream>
 
 class L1d_cache;
 class L1i_cache;

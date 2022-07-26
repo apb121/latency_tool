@@ -1,18 +1,3 @@
-#include <iostream>
-#include <fstream>
-#include <regex>
-#include <unordered_set>
-#include <set>
-#include <map>
-#include <queue>
-#include <stack>
-#include <list>
-#include <forward_list>
-#include <deque>
-#include <vector>
-#include <cmath>
-#include <algorithm>
-
 #include "class_parser.hpp"
 
 size_t get_type_size(std::string type, std::string array_match, std::map<std::string, size_t> udtype_sizes)
