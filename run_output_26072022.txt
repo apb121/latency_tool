@@ -1,0 +1,258 @@
+apb121@vertex53:latency_tool$ ./latency_tool -e class_parser.hpp user_options.hpp binary_analyser.hpp cache_info.hpp latency_tool
+
+===========================================================
+
+CACHE ANALYSIS
+
+===========================================================
+
+
+=== L1 data cache ===
+
+Size: 32768 bytes
+Associativity: 8
+Linesize: 64 bytes
+Critical stride: 4096 bytes
+
+=== L1 instruction cache ===
+
+Size: 32768 bytes
+Associativity: 8
+Linesize: 64 bytes
+Critical stride: 4096 bytes
+
+=== L2 cache ===
+
+Size: 262144 bytes
+Associativity: 4
+Linesize: 64 bytes
+Critical stride: 65536 bytes
+
+=== L3 cache ===
+
+Size: 12582912 bytes
+Associativity: 16
+Linesize: 64 bytes
+Critical stride: 786432 bytes
+
+=== L4 cache ===
+
+This processor does not have an L4 cache
+
+
+===========================================================
+
+SOURCE CODE ANALYSIS
+
+===========================================================
+
+This tool analyses your source code files to discover cache-inefficient data layouts in user-defined types.
+Any user-defined types which can be optimised by reordering their data members will be reported, along with suggestions for new layouts.
+
+Additionally, this tool will identify any user-defined types where the Least Common Multiple of the size of the type and the critical stride of your processor is small.
+If objects of these types are stored in contiguous memory (such as an array or vector), the same data members in different objects may compete for space in the cache.
+If access patterns involve accessing the same data members across multiple contiguous objects, this may create latency problems.
+
+Analysing your source code...
+
+
+=== An inefficient data member ordering has been detected ===
+
+Typename: UDType
+
+Current ordering:
+
+type: std::string ; name: name; size: 32; 
+type: std::string ; name: class_info; size: 32; 
+type: std::vector<variable_info> ; name: types_list; size: 24; 
+type: bool ; name: has_auto; size: 1; 
+type: bool ; name: has_virtual; size: 1; 
+type: size_t ; name: total_size; size: 8; 
+type: bool ; name: is_child; size: 1; 
+type: std::string ; name: parent_name; size: 32; 
+type: UDType* ; name: parent_class; size: 8; 
+
+Current size: 152
+
+Proposed ordering:
+
+type: std::string ; name: name; size: 32; 
+type: std::string ; name: class_info; size: 32; 
+type: std::string ; name: parent_name; size: 32; 
+type: std::vector<variable_info> ; name: types_list; size: 24; 
+type: size_t ; name: total_size; size: 8; 
+type: UDType* ; name: parent_class; size: 8; 
+type: bool ; name: has_auto; size: 1; 
+type: bool ; name: has_virtual; size: 1; 
+type: bool ; name: is_child; size: 1; 
+
+New size: 144
+
+This ordering saves 8 bytes.
+
+
+=== An inefficient data member ordering has been detected ===
+
+Typename: G
+
+Current ordering:
+
+type: char ; name: c; size: 1; 
+type: double ; name: d; size: 8; 
+type: short ; name: s; size: 2; 
+type: int ; name: i; size: 4; 
+
+Current size: 24
+
+Proposed ordering:
+
+type: double ; name: d; size: 8; 
+type: int ; name: i; size: 4; 
+type: short ; name: s; size: 2; 
+type: char ; name: c; size: 1; 
+
+New size: 16
+
+This ordering saves 8 bytes.
+
+
+=== An inefficient class size has been detected ===
+
+Typename: Large
+
+This type has a total size of 1024 bytes, whose Least Common Multiple with your processor's L1 data-cache critical stride of 4096 bytes is 4096.
+This means that data members 4 objects apart in contiguous memory will compete with each other for cache space.
+
+
+===== Suggestions =====
+
+It is recommended, unless there is a specific reason to retain an inefficient ordering, that any reorderings identified above are implemented.
+If the overall size of a type may cause problems in the context of access patterns and the critical stride of the data cache, attempting to make the data structure smaller (perhaps by using different data types as sub-members or by using highly compact types like bitfields) is the ideal solution.
+Failing that, it may (counterintuitively) be worth trying to make the object slightly larger to reduce the chance of desired accesses evicting useful data from the cache by increasing the Least Common Multiple of the object size and the critical stride.
+
+
+===========================================================
+
+BINARY ANALYSIS
+
+===========================================================
+
+Groups of functions that call each other and compete for the same portion of the cache may cause latency problems.
+If the number of functions in the group is above the associativity of the instruction cache (8 on this processor), these functions will definitely evict each other from the cache.
+If the number of functions in the group is equal to or slighly below the associativity of the instruction cache, there is a significant probability that the functions will evict each other from the cache. The uncertainty (standard deviation) of this probability can also be a source of jitter at runtime.
+The larger the region of cache memory that the functions compete for, the more code needs to be fetched from lower level caches the next time the evicted function needs to be executed, and the more significant the latency penalties are.
+
+Analysing your binary...
+
+
+The following groups of functions have been identified as potential sources of latency problems.
+They have been ranked based on a combination of the number of functions in the group and the amount of cache space they compete for.
+This has been calculated based on the instruction-cache's critical stride of 4096 bytes and associativity of 8, as well as a coexecution indirection level of 1 and competition overlap threshold of 256 bytes.
+
+=== Group ===
+
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+UserOptions::run_analysis()
+Binary::populate_coexecution_vectors(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+These 5 coexecuting functions call each other directly 35 times and compete for the same 2872-byte region of the cache
+
+=== Group ===
+
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+UserOptions::run_analysis()
+Binary::find_problem_function_groups(UserOptions&)
+
+These 4 coexecuting functions call each other directly 30 times and compete for the same 3738-byte region of the cache
+
+=== Group ===
+
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+Binary::populate_coexecution_vectors(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+These 4 coexecuting functions call each other directly 35 times and compete for the same 2872-byte region of the cache
+
+=== Group ===
+
+UserOptions::run_cache_setup()
+UserOptions::run_analysis()
+Binary::populate_coexecution_vectors(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+These 4 coexecuting functions call each other directly 30 times and compete for the same 2872-byte region of the cache
+
+=== Group ===
+
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+UserOptions::run_analysis()
+Binary::populate_coexecution_vectors(UserOptions&)
+
+These 4 coexecuting functions call each other directly 24 times and compete for the same 3230-byte region of the cache
+
+=== Group ===
+
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+UserOptions::run_analysis()
+Binary::populate_competition_vectors(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+These 5 coexecuting functions call each other directly 38 times and compete for the same 866-byte region of the cache
+
+=== Group ===
+
+UserOptions::parse_flags(int, char**)
+UserOptions::run_analysis()
+Binary::populate_coexecution_vectors(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+These 4 coexecuting functions call each other directly 21 times and compete for the same 2872-byte region of the cache
+
+=== Group ===
+
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+UserOptions::run_analysis()
+Binary::populate_competition_vectors(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+Binary::rec_problem_find(unsigned long, std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> >&, int)
+
+These 6 coexecuting functions call each other directly 39 times and compete for the same 291-byte region of the cache
+
+=== Group ===
+
+main
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+UserOptions::run_analysis()
+Binary::populate_coexecution_vectors(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+These 6 coexecuting functions call each other directly 41 times and compete for the same 275-byte region of the cache
+
+=== Group ===
+
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+Binary::populate_competition_vectors(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+These 4 coexecuting functions call each other directly 38 times and compete for the same 866-byte region of the cache
+
+
+
+===== Suggestions =====
+
+There are a number of things that programmers can do to mitigate these problems.
+
+(1) rewrite the functions to involve less code!
+(2) inline small functions that may evict parts of larger functions from the cache so that they do not conflict for cache space
+(3) combine smaller functions that compete for cache space into fewer, longer functions
+(4) move functions around in the code so that functions that are called together are placed together in memory and will therefore occupy non-overlapping regions of the cache
+(5) try the gcc flag --falign-functions=<alignment>, which will force functions onto the specified alignment and which may improve the situation - but may also make it worse!

@@ -235,22 +235,21 @@ int UserOptions::run_cache_setup()
     );
   }
 
+  // doesn't need to be fatal
+  // use each of these checks separately below
+
   if (proc.l1d->get_size() <= 0 || proc.l1i->get_size() <= 0)
   {
     std::cout << "It has not been possible to gauge the size of one of the L1 caches. At present, this is a fatal error." << std::endl;
     return 1;
   }
 
-  if (  flags.test(NO_EMPIRICAL) &&
-        (
-          proc.l1d->get_assoc() <= 0 ||
-          proc.l1d->get_critical_stride() <= 0 ||
-          proc.l1d->get_linesize() <= 0 ||
-          proc.l1i->get_assoc() <= 0 ||
-          proc.l1i->get_critical_stride() <= 0 ||
-          proc.l1i->get_linesize() <= 0
-        )
-    )
+  if (flags.test(NO_EMPIRICAL) && ( proc.l1d->get_assoc() <= 0 ||
+                                    proc.l1d->get_critical_stride() <= 0 ||
+                                    proc.l1d->get_linesize() <= 0 ||
+                                    proc.l1i->get_assoc() <= 0 ||
+                                    proc.l1i->get_critical_stride() <= 0 ||
+                                    proc.l1i->get_linesize() <= 0 ))
   {
     std::cout << "The following cache dimensions are unknown, but you have chosen not to execute empirical tests:" << std::endl;
     if (proc.l1d->get_assoc() <= 0) { std::cout << "-- L1 data cache associativity" << std::endl; }

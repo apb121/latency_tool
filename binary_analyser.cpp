@@ -297,7 +297,7 @@ int Binary::find_problem_function_groups(UserOptions& uo)
         );
     }
 
-    std::multimap<size_t, std::set<size_t>> problem_groups_ranked;
+    std::multimap<size_t, ProblemGroup> problem_groups_ranked;
 
     int num_groups = 1;
 
@@ -306,6 +306,8 @@ int Binary::find_problem_function_groups(UserOptions& uo)
         problem_groups.clear();
 
         std::set<size_t> current_group;
+
+        /* perform recursive search for problem groups of functions */
 
         for (auto& i : functions_list)
         {
@@ -332,15 +334,70 @@ int Binary::find_problem_function_groups(UserOptions& uo)
                     overlap[(functions_list[j].get_address() + o) % 4096] = 0;
                 }
             }
-            int overlap_extent = 0;
+            size_t overlap_extent = 0;
             for (int i = 0; i < 4096; ++i)
             {
                 if (overlap[i] == 1) { ++overlap_extent; }
             }
-            size_t group_score = pow(2, group.size()) * overlap_extent; /* === incorporate number of co-calls in this too!! === */
+            /* calculate how many times these functions call each other */
+
+            size_t coexecution_count = 0;
+            std::ifstream objdump_file("./temp_files/objdumptmp.txt");
+            
+            std::string line;
+            objdump_file >> std::ws;
+            while(getline(objdump_file, line))
+            {
+                size_t pos = 0;
+                while (pos < line.length() && isspace(line[pos])) { pos++; }
+                if (!isdigit(line[pos])) { continue; }
+                line = line.substr(pos);
+                int end = line.find_first_not_of("0123456789abcdef");
+                std::string address = line.substr(0, end);
+                bool is_relevant = false;
+                long dec_addr_src = strtol(address.c_str(), nullptr, 16);
+                for (auto& i : group)
+                {
+                    if ((dec_addr_src > functions_list[i].get_address()) && (dec_addr_src < functions_list[i].get_address() + functions_list[i].get_size()))
+                    {
+                        is_relevant = true;
+                        break;
+                    }
+                }
+                if (!is_relevant) { continue; }
+                pos = end;
+                while (pos < line.length() && isspace(line[pos]) || line[pos] == ':') { pos++; }
+                int ins_start = pos;
+                while (pos < line.length() && !isspace(line[pos])) { pos++; }
+                int ins_end = pos;
+                std::string instruction = line.substr(ins_start, ins_end - ins_start);
+                std::string call_dest;
+                if (instruction == "call")
+                {
+                    pos = line.find("call") + 4;
+                    while (pos < line.length() && isspace(line[pos])) { pos++; }
+                    int dest_start = pos;
+                    while (pos < line.length() && !isspace(line[pos])) { pos++; }
+                    int dest_end = pos;
+                    call_dest = line.substr(dest_start, dest_end - dest_start);
+                    if (call_dest.find_first_not_of("0123456789abcdef") == std::string::npos)
+                    {
+                        long dec_addr_dest = strtol(call_dest.c_str(), nullptr, 16);
+                        for (auto& i : functions_list)
+                        {
+                            if (i.first == dec_addr_dest)
+                            {
+                                coexecution_count++;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            size_t group_score = (pow(2, group.size()) * overlap_extent) * coexecution_count;
             if (overlap_extent > 0)
             {
-                problem_groups_ranked.insert(std::pair<size_t, std::set<size_t>>(group_score, group));
+                problem_groups_ranked.insert(std::pair<size_t, ProblemGroup>(group_score, {group, coexecution_count, overlap_extent}));
             }
         }
     }
@@ -356,36 +413,18 @@ int Binary::find_problem_function_groups(UserOptions& uo)
     std::cout << "This has been calculated based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << ", as well as a coexecution indirection level of " << uo.coex << " and competition overlap threshold of " << uo.comp << " bytes." << std::endl << std::endl;
     
     int ranking_num = 0;
-    std::map<size_t, std::set<size_t>>::iterator i = problem_groups_ranked.end();
+    std::map<size_t, ProblemGroup>::iterator i = problem_groups_ranked.end();
     for (--i ; i != problem_groups_ranked.begin() && ranking_num < uo.ranking_length; --i)
     {
         std::cout << "=== Group ===" << std::endl << std::endl;
         size_t score = i->first;
-        std::set<size_t> group = i->second;
+        std::set<size_t> group = i->second.functions;
         for (auto j : group)
         {
             std::cout << functions_list[j].get_name() << std::endl;
         }
 
-        int overlap[4096];
-        for (int o = 0; o < 4096; ++o)
-        {
-            overlap[o] = 1;
-        }
-        for (auto& j : group)
-        {
-            for (int o = functions_list[j].get_size(); o < 4096; ++o)
-            {
-                overlap[(functions_list[j].get_address() + o) % 4096] = 0;
-            }
-        }
-        int overlap_extent = 0;
-        for (int i = 0; i < 4096; ++i)
-        {
-            if (overlap[i] == 1) { ++overlap_extent; }
-        }
-
-        std::cout << std::endl << "These " << group.size() << " coexecuting functions compete for the same " << overlap_extent << "-byte region of the cache" << std::endl << std::endl;
+        std::cout << std::endl << "These " << group.size() << " coexecuting functions call each other directly " << i->second.coexecutions << " times and compete for the same " << i->second.overlap << "-byte region of the cache" << std::endl << std::endl;
 
         ++ranking_num;
     }

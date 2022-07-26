@@ -13,6 +13,13 @@
 
 struct UserOptions;
 
+struct ProblemGroup
+{
+    std::set<size_t> functions;
+    size_t coexecutions = 0;
+    size_t overlap = 0;
+};
+
 class Function
 {
     size_t address;

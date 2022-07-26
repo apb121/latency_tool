@@ -476,6 +476,7 @@ bool UDType::suggest_optimisations(std::map<std::string, size_t> udtype_sizes, i
     std::vector<variable_info> proposed_types_list = types_list;
     int curr_size = calculate_size(udtype_sizes);
     int min_size = curr_size;
+    /*
     do
     {
         int size = calculate_size(proposed_types_list, udtype_sizes);
@@ -485,6 +486,16 @@ bool UDType::suggest_optimisations(std::map<std::string, size_t> udtype_sizes, i
             new_ordering = proposed_types_list;
         }
     } while(std::next_permutation(proposed_types_list.begin(), proposed_types_list.end()));
+    */
+    std::sort ( begin(proposed_types_list),
+                end(proposed_types_list), 
+                [](variable_info const& first, variable_info const& second)
+                {
+                  return get<1>(first) > get<1>(second);
+                }
+              );
+    min_size = calculate_size(proposed_types_list, udtype_sizes);
+    new_ordering = proposed_types_list;
     if (min_size < curr_size)
     {
         optimised = true;
