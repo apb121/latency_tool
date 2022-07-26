@@ -1,0 +1,231 @@
+apb121@vertex53:latency_tool$ ./latency_tool class_parser.hpp user_options.hpp binary_analyser.hpp cache_info.hpp latency_tool
+
+===========================================================
+
+Reading cache data from your system...
+
+The critical stride of the L1d cache is 4096 bytes.
+The critical stride of the L1i cache is 4096 bytes.
+The critical stride of the L2 cache is 65536 bytes.
+The critical stride of the L3 cache is 786432 bytes.
+This processor does not have an L4 cache
+
+
+===========================================================
+
+Analysing your source code...
+
+Analysing class: UDType
+
+=== An inefficient data member ordering has been detected ===
+
+Typename: UDType
+
+Current ordering:
+
+type: std::string ; name: name; size: 32; 
+type: std::string ; name: class_info; size: 32; 
+type: std::vector<variable_info> ; name: types_list; size: 24; 
+type: bool ; name: has_auto; size: 1; 
+type: bool ; name: has_virtual; size: 1; 
+type: size_t ; name: total_size; size: 8; 
+type: bool ; name: is_child; size: 1; 
+type: std::string ; name: parent_name; size: 32; 
+type: UDType* ; name: parent_class; size: 8; 
+
+Current size: 152
+
+Proposed ordering:
+
+type: std::string ; name: name; size: 32; 
+type: std::string ; name: class_info; size: 32; 
+type: std::vector<variable_info> ; name: types_list; size: 24; 
+type: bool ; name: has_auto; size: 1; 
+type: bool ; name: is_child; size: 1; 
+type: bool ; name: has_virtual; size: 1; 
+type: UDType* ; name: parent_class; size: 8; 
+type: std::string ; name: parent_name; size: 32; 
+type: size_t ; name: total_size; size: 8; 
+
+New size: 144
+
+This ordering saves 8 bytes.
+
+Analysing class: File
+Analysing class: G
+
+=== An inefficient data member ordering has been detected ===
+
+Typename: G
+
+Current ordering:
+
+type: char ; name: c; size: 1; 
+type: double ; name: d; size: 8; 
+type: short ; name: s; size: 2; 
+type: int ; name: i; size: 4; 
+
+Current size: 24
+
+Proposed ordering:
+
+type: char ; name: c; size: 1; 
+type: short ; name: s; size: 2; 
+type: int ; name: i; size: 4; 
+type: double ; name: d; size: 8; 
+
+New size: 16
+
+This ordering saves 8 bytes.
+
+Analysing class: UserOptions
+Analysing class: Function
+Analysing class: Binary
+Analysing class: Cache
+Analysing class: L1_cache
+Analysing class: L1d_cache
+Analysing class: L1i_cache
+Analysing class: L2_cache
+Analysing class: L3_cache
+Analysing class: L4_cache
+Analysing class: Processor
+
+
+===========================================================
+
+Analysing your binary........      
+
+The following groups of functions have been identified as a potential source of latency problems.
+They have been ranked based on a combination of the number of functions in the group and the amount of cache space they compete for.
+This has been calculated based on the instruction-cache's critical stride of 4096 bytes and associativity of 8, as well as the chosen coexecution indirection level of 1 and competition overlap threshold of 16 bytes.
+
+===Group===
+
+main
+UserOptions::parse_flags(int, char**)
+get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::detect_variables(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::suggest_optimisations(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >, int)
+File::detect_types()
+Binary::get_functions(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+This group of 8 coexecuting functions competes for the same 1379-byte region of the cache
+
+===Group===
+
+main
+UserOptions::parse_flags(int, char**)
+get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::detect_variables(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::calculate_size(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::suggest_optimisations(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >, int)
+Binary::get_functions(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+This group of 8 coexecuting functions competes for the same 1333-byte region of the cache
+
+===Group===
+
+main
+UserOptions::parse_flags(int, char**)
+get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::detect_variables(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::calculate_size(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::suggest_optimisations(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >, int)
+File::detect_types()
+Binary::get_functions(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+This group of 9 coexecuting functions competes for the same 641-byte region of the cache
+
+===Group===
+
+main
+UserOptions::parse_flags(int, char**)
+get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::detect_variables(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::suggest_optimisations(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >, int)
+Binary::get_functions(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+This group of 7 coexecuting functions competes for the same 2071-byte region of the cache
+
+===Group===
+
+main
+L3_cache::L3_cache(int, int, int)
+UserOptions::parse_flags(int, char**)
+get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::detect_variables(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::calculate_size(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::suggest_optimisations(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >, int)
+File::detect_types()
+Binary::get_functions(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+This group of 10 coexecuting functions competes for the same 226-byte region of the cache
+
+===Group===
+
+main
+L2_cache::L2_cache(int, int, int)
+UserOptions::parse_flags(int, char**)
+get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::detect_variables(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::calculate_size(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::suggest_optimisations(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >, int)
+File::detect_types()
+Binary::get_functions(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+This group of 10 coexecuting functions competes for the same 226-byte region of the cache
+
+===Group===
+
+main
+UserOptions::parse_flags(int, char**)
+get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::detect_variables(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::suggest_optimisations(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >, int)
+File::detect_types()
+Binary::find_problem_function_groups(UserOptions&)
+
+This group of 7 coexecuting functions competes for the same 1791-byte region of the cache
+
+===Group===
+
+main
+UserOptions::parse_flags(int, char**)
+get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::detect_variables(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::calculate_size(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+File::detect_types()
+Binary::get_functions(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+This group of 8 coexecuting functions competes for the same 857-byte region of the cache
+
+===Group===
+
+main
+UserOptions::parse_flags(int, char**)
+get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::detect_variables(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+File::detect_types()
+Binary::get_functions(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+This group of 7 coexecuting functions competes for the same 1602-byte region of the cache
+
+===Group===
+
+main
+UserOptions::parse_flags(int, char**)
+get_type_size(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::detect_variables(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+UDType::calculate_size(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > >)
+Binary::get_functions(UserOptions&)
+Binary::find_problem_function_groups(UserOptions&)
+
+This group of 7 coexecuting functions competes for the same 1550-byte region of the cache

@@ -11,6 +11,7 @@
 #include <deque>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 
 #include "class_parser.hpp"
 
@@ -65,7 +66,7 @@ size_t get_type_size(std::string type, std::string array_match, std::map<std::st
     {
       size = sizeof(std::deque<void*>);
     }
-    else if (type.find("std::vector") != std::string::npos)
+    else if (type.find("vector") != std::string::npos)
     {
       std::regex vector_bool_regex("vector *< *bool *>");
       std::smatch vector_bool_match;
@@ -79,7 +80,7 @@ size_t get_type_size(std::string type, std::string array_match, std::map<std::st
       }
     }
   }
-  else if (type.find("std::string") != std::string::npos)
+  else if (type.find("string") != std::string::npos)
   {
     size = sizeof(std::string);
   }
@@ -214,7 +215,6 @@ size_t get_type_size(std::string type, std::string array_match, std::map<std::st
       array_match = sub_array_match.suffix();
     }
   }
-  // std::cout << "size finder is returning: " << size << " for " << type << std::endl;
   return size;
 }
 
@@ -222,7 +222,7 @@ void UDType::detect_variables(std::map<std::string, size_t> udtype_sizes)
 {
     std::string class_info_copy;
     size_t pos = 0;
-    while (class_info[pos] != '{') { pos++; } // get to the start of the class
+    while (class_info[pos] != '{') { pos++; }
     pos++;
     int curly_bracket_depth = 1;
     int round_bracket_depth = 0;
@@ -250,13 +250,13 @@ void UDType::detect_variables(std::map<std::string, size_t> udtype_sizes)
       }
       if (curly_bracket_depth == 1 && round_bracket_depth == 0)
       {
-        class_info_copy += class_info[pos]; // build copy
+        class_info_copy += class_info[pos];
       }
       if (class_info[pos] == '}' && !in_double && !in_single)
       {
         curly_bracket_depth--;
       }
-      if (class_info[pos] == '(' && !in_double && !in_single) // important that the order of incrementing and decrementing the counters for brackets is exactly like this so that round brackets are kept in
+      if (class_info[pos] == '(' && !in_double && !in_single)
       {
         round_bracket_depth++;
       }
@@ -280,15 +280,11 @@ void UDType::detect_variables(std::map<std::string, size_t> udtype_sizes)
       variable_regex_start += (i.first + " *|");
     }
 
-    // std::cout << variable_regex_start + variable_regex_end << std::endl;
-
-    // remove this
     std::regex variable_declaration(variable_regex_start + variable_regex_end);
     std::smatch variable_match;
     while (regex_search(class_info_copy, variable_match, variable_declaration))
     {
         std::string declaration = variable_match.str();
-        // std::cout << "Declaration: " << declaration << std::endl;
         int end = declaration.length() - 1;
 
         /*  
@@ -300,11 +296,6 @@ void UDType::detect_variables(std::map<std::string, size_t> udtype_sizes)
         std::smatch array_match;
         std::string array_match_str = "";
         std::string declaration_remaining = declaration;
-        if (declaration_remaining.substr(0, 7) == "virtual")
-        {
-          class_info_copy = variable_match.suffix();
-          continue;
-        }
         while (regex_search(declaration_remaining, array_match, array_length))
         {
             /*
@@ -367,9 +358,6 @@ void UDType::detect_variables(std::map<std::string, size_t> udtype_sizes)
             if (variable_type.find("auto") == std::string::npos)
             {
                 size_t variable_size = get_type_size(variable_type, array_match_str, udtype_sizes);
-                // std::cout << "variable found: " << variable_name << std::endl;
-                // std::cout << "type: " << variable_type << std::endl;
-                // std::cout << "size: " << variable_size << std::endl;
                 types_list.push_back({variable_name, variable_size, variable_type, variable_type_alignment});
             }
             else
@@ -384,98 +372,179 @@ void UDType::detect_variables(std::map<std::string, size_t> udtype_sizes)
 
 size_t UDType::calculate_size(std::map<std::string, size_t> udtype_sizes)
 {
-
-    // std::cout << "Calculating size of: " << name << std::endl;
-
     types_list.clear();
 
     detect_variables(udtype_sizes);
 
-    if (types_list.size() == 0)
-    {
-      return 0;
-    }
     size_t curr_align = 0;
-    for (size_t i = 0; i < types_list.size() - 1; ++i)
+
+    for (int i = 0; i < (int) types_list.size() - 1; ++i)
     {
         curr_align += std::get<1>(types_list[i]);
         std::string align_by = std::get<3>(types_list[i + 1]);
         int align_target = ((get_type_size(align_by, "", udtype_sizes) <= 8) ? get_type_size(align_by, "", udtype_sizes) : 8);
         if (align_target == 0)
         {
-            std::cout << "UDType contains unknown type: " << align_by << std::endl; // remove
-            std::cout << "Unable to calculate size." << std::endl;
-            return -1;
+            return 0;
         }
         while (curr_align % align_target != 0) { curr_align++; }
     }
-    curr_align += std::get<1>(types_list[types_list.size() - 1]);
+    if (types_list.size() > 0)
+    {
+      curr_align += std::get<1>(types_list[types_list.size() - 1]);
+    }
     while (curr_align % 8 != 0) { curr_align++; }
-    return (total_size = curr_align);
+    int size = curr_align;
+    if (has_virtual)
+    {
+      if (parent_class)
+      {
+        if (!parent_class->has_virtual)
+        {
+          size += 8;
+        }
+      }
+      else
+      {
+        size += 8;
+      }
+    }
+    if (is_child)
+    {
+      int parent_size = this->get_parent()->calculate_size(udtype_sizes);
+      if (parent_size == 0)
+      {
+        size = 0;
+      }
+      else
+      {
+        size += parent_size;
+      }
+    }
+    return (total_size = size);
 }
-
-// probably try to make this hacky overloading better...
 
 size_t UDType::calculate_size(std::vector<variable_info> proposed_types_list, std::map<std::string, size_t> udtype_sizes)
 {
-    std::cout << "Calculating size of: " << name << std::endl;
-
-    if (proposed_types_list.size() == 0)
-    {
-      return 0;
-    }
     size_t curr_align = 0;
-    for (size_t i = 0; i < proposed_types_list.size() - 1; ++i)
+
+    for (int i = 0; i < (int) proposed_types_list.size() - 1; ++i)
     {
         curr_align += std::get<1>(proposed_types_list[i]);
         std::string align_by = std::get<3>(proposed_types_list[i + 1]);
         int align_target = ((get_type_size(align_by, "", udtype_sizes) <= 8) ? get_type_size(align_by, "", udtype_sizes) : 8);
         if (align_target == 0)
         {
-            exit(1);
+            return 0;
         }
         while (curr_align % align_target != 0) { curr_align++; }
     }
-    curr_align += std::get<1>(proposed_types_list[proposed_types_list.size() - 1]);
+    if (proposed_types_list.size() > 0)
+    {
+      curr_align += std::get<1>(proposed_types_list[proposed_types_list.size() - 1]);
+    }
     while (curr_align % 8 != 0) { curr_align++; }
-    return (total_size = curr_align);
+    int size = curr_align;
+    if (has_virtual)
+    {
+      if (parent_class)
+      {
+        if (!parent_class->has_virtual)
+        {
+          size += 8;
+        }
+      }
+      else
+      {
+        size += 8;
+      }
+    }
+    if (is_child)
+    {
+      int parent_size = this->get_parent()->calculate_size(udtype_sizes);
+      if (parent_size == 0)
+      {
+        size = 0;
+      }
+      else
+      {
+        size += parent_size;
+      }
+    }
+    return size;
 }
 
-// somewhat brute force...
-
-std::vector<variable_info> UDType::suggest_optimised_ordering(std::map<std::string, size_t> udtype_sizes)
+bool UDType::suggest_optimisations(std::map<std::string, size_t> udtype_sizes, int critical_stride)
 {
-    if (types_list.size() == 0)
+    bool optimised = false;
+    int current_size = calculate_size(udtype_sizes);
+    if (current_size == 0)
     {
-      std::vector<variable_info> v;
-      return v;
+      std::cerr << name << " contains unknown an type, cannot suggest optimised orderings" << std::endl;
+      return false;
+    }
+    else if (types_list.size() == 0)
+    {
+      return false;
     }
     std::vector<variable_info> new_ordering = types_list;
-    int min_size = calculate_size(udtype_sizes);
+    std::vector<variable_info> proposed_types_list = types_list;
+    int curr_size = calculate_size(udtype_sizes);
+    int min_size = curr_size;
     do
     {
-        int size = calculate_size(udtype_sizes);
+        int size = calculate_size(proposed_types_list, udtype_sizes);
         if (size < min_size)
         {
             min_size = size;
-            new_ordering = types_list;
+            new_ordering = proposed_types_list;
         }
-        min_size = (size < min_size ? size : min_size);
-    } while(std::next_permutation(types_list.begin(), types_list.end()));
-    return new_ordering;
+    } while(std::next_permutation(proposed_types_list.begin(), proposed_types_list.end()));
+    if (min_size < curr_size)
+    {
+        optimised = true;
+        std::cout << std::endl << "=== An inefficient data member ordering has been detected ===" << std::endl << std::endl;
+        std::cout << "Typename: " << name << std::endl << std::endl;
+        std::cout << "Current ordering:" << std::endl << std::endl;
+        for (size_t j = 0; j < types_list.size(); ++j)
+        {
+            std::cout << "type: " << std::get<2>(types_list[j]) << "; ";
+            std::cout << "name: " << std::get<0>(types_list[j]) << "; ";
+            std::cout << "size: " << std::get<1>(types_list[j]) << "; ";
+            std::cout << std::endl;
+        }
+
+        std::cout << std::endl << "Current size: " << current_size << std::endl << std::endl;
+
+        std::cout << "Proposed ordering:" << std::endl << std::endl;
+        for (size_t j = 0; j < new_ordering.size(); ++j)
+        {
+            std::cout << "type: " << std::get<2>(new_ordering[j]) << "; ";
+            std::cout << "name: " << std::get<0>(new_ordering[j]) << "; ";
+            std::cout << "size: " << std::get<1>(new_ordering[j]) << "; ";
+            std::cout << std::endl;
+        }
+        std::cout << std::endl << "New size: " << min_size << std::endl << std::endl;
+        std::cout << "This ordering saves " << current_size - min_size << " bytes." << std::endl << std::endl;
+    }
+    int lcm = std::lcm(curr_size, critical_stride);
+    if ((lcm / curr_size) <= 16)
+    {
+      optimised = true;
+      std::cout << std::endl << "=== An inefficient class size has been detected ===" << std::endl << std::endl;
+      std::cout << "Typename: " << name << std::endl << std::endl;
+      std::cout << "This type has a total size of " << curr_size << " bytes, whose Least Common Multiple with your processor's L1 data-cache critical stride of " << critical_stride << " bytes is " << lcm << "." << std::endl;
+      std::cout << "This means that data members " << lcm / curr_size << " objects apart in contiguous memory will compete with each other for cache space." << std::endl << std::endl;
+    }
+    return optimised;
 }
 
 /* ============================= FILE ============================= */
 
-std::vector<UDType> File::detect_types(/*std::map<std::string, size_t> udtype_sizes*/)
+std::vector<UDType> File::detect_types()
 {
     std::ifstream class_file;
     class_file.open(file_name);
-    if(!class_file.is_open())
-    {
-      std::cout << "File could not be opened!" << std::endl;
-      exit(1);
-    }
     char c;
     std::string full_file;
     c = class_file.get();
@@ -498,7 +567,25 @@ std::vector<UDType> File::detect_types(/*std::map<std::string, size_t> udtype_si
     std::string class_info;
     while (regex_search(file_remaining, class_match, class_regex))
     {
+      bool is_child = false;
+      std::string parent_name = "";
       class_info = class_match.str();
+      std::regex parent_regex("(\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)");
+      std::smatch parent_match;
+      std::string parent_str;
+      regex_search(class_info, parent_match, parent_regex);
+      parent_str = parent_match.str();
+      if (parent_str.length() > 0)
+      { 
+        is_child = true;
+        int ppp_start = 0;
+        while (isspace(parent_str[ppp_start])) { ++ppp_start; }
+        while (!isspace(parent_str[ppp_start])) { ++ppp_start; }
+        while (isspace(parent_str[ppp_start])) { ++ppp_start; }
+        size_t ppp_end = ppp_start;
+        while (!isspace(parent_str[ppp_end])) { ++ppp_end; }
+        parent_name = parent_str.substr(ppp_start, ppp_end - ppp_start);
+      }
       file_remaining = class_match.suffix();
       size_t pos = 0;
       int curly_bracket_depth = 1;
@@ -546,10 +633,20 @@ std::vector<UDType> File::detect_types(/*std::map<std::string, size_t> udtype_si
         name_end = name_start;
         while (!isspace(class_info[name_end]) && class_info[name_end] != '{' && class_info[name_end] != ':') { name_end++; }
         UDType new_ud_type(class_info.substr(name_start, name_end - name_start), class_info);
+        size_t virtual_loc = class_info.find("virtual");
+
+        /* virtual functions require a field of size 8 bytes to point to the class's vtable */
+        
+        if (virtual_loc != std::string::npos && isspace(class_info[virtual_loc - 1]) && isspace(class_info[virtual_loc + 7]))
+        {
+          new_ud_type.has_virtual = true;
+        }
+        if (is_child)
+        {
+          new_ud_type.is_child = true;
+          new_ud_type.parent_name = parent_name;
+        }
         file_remaining = file_remaining.substr(pos);
-        /*
-        new_ud_type.detect_variables(udtype_sizes);
-        */
         user_defined_types.push_back(new_ud_type);
       }
       else
@@ -558,57 +655,4 @@ std::vector<UDType> File::detect_types(/*std::map<std::string, size_t> udtype_si
       }
     }
     return user_defined_types;
-}
-
-void File::suggest_optimised_orderings(std::map<std::string, size_t> udtype_sizes)
-{
-    int opt_count = 0;
-    for (size_t i = 0; i < user_defined_types.size(); ++i)
-    {
-        int current_size = user_defined_types[i].calculate_size(udtype_sizes);
-        if (current_size == -1)
-        {
-          std::cerr << "UDType contains unknown type, cannot suggest optimised orderings" << std::endl;
-          continue; // unknown type
-        }
-        else if (current_size == 0)
-        {
-          continue; // empty class
-        }
-        std::vector<variable_info> proposed_types_list = user_defined_types[i].suggest_optimised_ordering(udtype_sizes);
-        int optimised_size = user_defined_types[i].calculate_size(proposed_types_list, udtype_sizes);
-
-        if (optimised_size == current_size) { continue; }
-
-        ++opt_count;
-
-        std::cout << std::endl << "=== An inefficient data member ordering has been detected in file \"" << file_name << "\" ===" << std::endl << std::endl;
-
-        std::cout << "Typename: " << user_defined_types[i].name << std::endl << std::endl;
-        std::cout << "Current ordering:" << std::endl << std::endl;
-        for (size_t j = 0; j < user_defined_types[i].types_list.size(); ++j)
-        {
-            std::cout << "type: " << std::get<2>(user_defined_types[i].types_list[j]) << "; ";
-            std::cout << "name: " << std::get<0>(user_defined_types[i].types_list[j]) << "; ";
-            std::cout << "size: " << std::get<1>(user_defined_types[i].types_list[j]) << "; ";
-            std::cout << std::endl;
-        }
-
-        std::cout << std::endl << "Current size: " << current_size << std::endl << std::endl;
-
-        std::cout << "Proposed ordering:" << std::endl << std::endl;
-        for (size_t j = 0; j < proposed_types_list.size(); ++j)
-        {
-            std::cout << "type: " << std::get<2>(proposed_types_list[j]) << "; ";
-            std::cout << "name: " << std::get<0>(proposed_types_list[j]) << "; ";
-            std::cout << "size: " << std::get<1>(proposed_types_list[j]) << "; ";
-            std::cout << std::endl;
-        }
-        std::cout << std::endl << "New size: " << optimised_size << std::endl << std::endl;
-        std::cout << "This ordering saves " << current_size - optimised_size << " bytes." << std::endl << std::endl;
-    }
-    if (opt_count == 0)
-    {
-      std::cout << "No inefficiently ordered data members have been detected in the file \"" << file_name << "\"" << std::endl;
-    }
 }

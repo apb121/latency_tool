@@ -83,9 +83,43 @@ struct Outer
     int g;
 };
 
+class A_sub_0
+{
+    private:
+    int i;
+    char c;
+    int get_i() { return i; }
+};
+class A_sub_1 : public A_sub_0
+{
+};
+
+class A_sub_2 : public A_sub_0
+{
+};
+
+class B_sub_0
+{
+    protected:
+    int i;
+    char c;
+    virtual int get_i() { return i; }
+};
+class B_sub_1 : public B_sub_0
+{
+    int get_i() override { return i; }
+};
+
+class B_sub_2 : public B_sub_0
+{
+    int get_i() override { return i; }
+};
+
 int main()
 {
-    std::cout << sizeof(Inner) << std::endl;
-    std::cout << sizeof(Outer) << std::endl;
+    std::cout << sizeof(A_sub_0) << std::endl;
+    std::cout << sizeof(A_sub_1) << std::endl;
+    std::cout << sizeof(B_sub_0) << std::endl;
+    std::cout << sizeof(B_sub_1) << std::endl;
     return 0;
 }

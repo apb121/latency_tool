@@ -37,7 +37,7 @@ class L1_cache : public Cache
     public:
     L1_cache(std::string name, int size, int linesize, int assoc)
         : Cache(name, size, linesize, assoc) {}
-    virtual int empirical_assoc_test(std::bitset<8>& uo_flags) = 0; // these are interesting from the perspective of the class parser!
+    virtual int empirical_assoc_test(std::bitset<8>& uo_flags) = 0;
     virtual int empirical_stride_test(std::bitset<8>& uo_flags) = 0;
 };
 
@@ -45,7 +45,7 @@ class L1d_cache : public L1_cache
 {
     public:
     L1d_cache(int size, int linesize, int assoc)
-        : L1_cache("L1d", size, linesize, assoc) {}
+        : L1_cache("L1 data", size, linesize, assoc) {}
     int empirical_assoc_test(std::bitset<8>& uo_flags) override;
     int empirical_stride_test(std::bitset<8>& uo_flags) override;
 };
@@ -54,7 +54,7 @@ class L1i_cache : public L1_cache
 {
     public:
     L1i_cache(int size, int linesize, int assoc)
-        : L1_cache("L1i", size, linesize, assoc)
+        : L1_cache("L1 instruction", size, linesize, assoc)
     {
 
     }

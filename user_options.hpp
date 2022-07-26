@@ -15,7 +15,7 @@ struct UserOptions
 {
     std::bitset<8> flags;
     int coex = 1;
-    int comp = 16;
+    int comp = 256;
     int ranking_length = 10;
     std::vector<std::string> file_names;
     std::vector<File> files;

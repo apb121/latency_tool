@@ -1,0 +1,33 @@
+=== An inefficient data member ordering has been detected ===
+
+Typename: UDType
+
+Current ordering:
+
+type: std::string ; name: name; size: 32; 
+type: std::string ; name: class_info; size: 32; 
+type: std::vector<variable_info> ; name: types_list; size: 24; 
+type: bool ; name: has_auto; size: 1; 
+type: bool ; name: has_virtual; size: 1; 
+type: size_t ; name: total_size; size: 8; 
+type: bool ; name: is_child; size: 1; 
+type: std::string ; name: parent_name; size: 32; 
+type: UDType* ; name: parent_class; size: 8; 
+
+Current size: 152
+
+Proposed ordering:
+
+type: std::string ; name: name; size: 32; 
+type: std::string ; name: class_info; size: 32; 
+type: std::vector<variable_info> ; name: types_list; size: 24; 
+type: bool ; name: has_auto; size: 1; 
+type: bool ; name: is_child; size: 1; 
+type: bool ; name: has_virtual; size: 1; 
+type: UDType* ; name: parent_class; size: 8; 
+type: std::string ; name: parent_name; size: 32; 
+type: size_t ; name: total_size; size: 8; 
+
+New size: 144
+
+This ordering saves 8 bytes.

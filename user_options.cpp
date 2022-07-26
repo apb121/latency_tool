@@ -108,7 +108,7 @@ int UserOptions::parse_flags(int argc, char** argv)
       std::string flag(argv[i]);
       regex_search(flag, level_match, coex_level_regex);
       int coex_level = stoi(level_match.str());
-      if (coex_level < 0 || coex_level > 100) // some large number, probably like 4 would do because high numbers here can be dangerous; perhaps just add a warning if its over about 3
+      if (coex_level < 0 || coex_level > 100)
       {
         std::cerr << "Invalid coexecution level." << std::endl;
         return 1;
@@ -128,7 +128,7 @@ int UserOptions::parse_flags(int argc, char** argv)
       std::string flag(argv[i]);
       regex_search(flag, threshold_match, comp_level_regex);
       int comp_level = stoi(threshold_match.str());
-      if (comp_level < 1 || comp_level > 100000) // some large number
+      if (comp_level < 1 || comp_level > 100000)
       {
         std::cerr << "Invalid competition thredhold." << std::endl;
         return 1;
@@ -154,7 +154,7 @@ int UserOptions::parse_flags(int argc, char** argv)
       std::string flag(argv[i]);
       regex_search(flag, rank_match, rank_length_regex);
       int rank_len = stoi(rank_match.str());
-      if (rank_len < 1) // some large number
+      if (rank_len < 1)
       {
         std::cerr << "Invalid ranking length." << std::endl;
         return 1;

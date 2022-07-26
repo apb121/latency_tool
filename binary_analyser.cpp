@@ -111,7 +111,7 @@ int Binary::get_functions(UserOptions& uo)
                 UDT_func = true;
             }
         }
-        if (UDT_func == false/* && !uo.flags.test(BINARY_ONLY) */ && buf[2][0] != 'T')
+        if (UDT_func == false/* && !uo.flags.test(BINARY_ONLY)*/ && buf[2][0] != 'T')
         {
             while (nm_file.get() != '\n' && !nm_file.eof()) {};
             continue;
@@ -170,7 +170,7 @@ int Binary::populate_competition_vectors(UserOptions& uo)
                     ++comp_stride;
                 }
             }
-            if (comp_stride > uo.comp) // if the whole group must overlap by this much, so must each member
+            if (comp_stride > uo.comp) /* if the whole group must overlap by this much, so must each member */
             {
                 i.second.competes_with.insert(j.second.get_address());
             }
@@ -309,8 +309,6 @@ int Binary::find_problem_function_groups(UserOptions& uo)
 
     for (int depth = uo.proc.l1i->get_assoc() / 2; num_groups != 0; ++depth)
     {
-        std::cout << "." << std::flush;
-
         problem_groups.clear();
 
         std::set<size_t> current_group;
@@ -359,15 +357,15 @@ int Binary::find_problem_function_groups(UserOptions& uo)
         return 0;
     }
 
-    std::cout << std::endl << std::endl << "The following groups of functions have been identified as a potential source of latency problems." << std::endl;
+    std::cout << std::endl << "The following groups of functions have been identified as potential sources of latency problems." << std::endl;
     std::cout << "They have been ranked based on a combination of the number of functions in the group and the amount of cache space they compete for." << std::endl;
-    std::cout << "This has been calculated based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << ", as well as the chosen coexecution indirection level of " << uo.coex << " and competition overlap threshold of " << uo.comp << " bytes." << std::endl << std::endl;
+    std::cout << "This has been calculated based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << ", as well as a coexecution indirection level of " << uo.coex << " and competition overlap threshold of " << uo.comp << " bytes." << std::endl << std::endl;
     
     int ranking_num = 0;
     std::map<size_t, std::set<size_t>>::iterator i = problem_groups_ranked.end();
     for (--i ; i != problem_groups_ranked.begin() && ranking_num < uo.ranking_length; --i)
     {
-        std::cout << "===Group===" << std::endl << std::endl;
+        std::cout << "=== Group ===" << std::endl << std::endl;
         size_t score = i->first;
         std::set<size_t> group = i->second;
         for (auto j : group)
@@ -393,12 +391,21 @@ int Binary::find_problem_function_groups(UserOptions& uo)
             if (overlap[i] == 1) { ++overlap_extent; }
         }
 
-        std::cout << std::endl << "This group of " << group.size() << " coexecuting functions competes for the same " << overlap_extent << "-byte region of the cache" << std::endl << std::endl;
+        std::cout << std::endl << "These " << group.size() << " coexecuting functions compete for the same " << overlap_extent << "-byte region of the cache" << std::endl << std::endl;
 
-        //std::cout << std::endl << "This group of functions competes for the same " << count << "-byte portion of the cache" << std::endl;
-        //std::cout << std::endl;
         ++ranking_num;
     }
+    if (problem_groups_ranked.size() > 0)
+    {
+        std::cout << std::endl << std::endl << "===== Suggestions =====" << std::endl << std::endl;
+        std::cout << "There are a number of things that programmers can do to mitigate these problems." << std::endl << std::endl;
+        std::cout << "(1) rewrite the functions to involve less code!" << std::endl;
+        std::cout << "(2) inline small functions that may evict parts of larger functions from the cache so that they do not conflict for cache space" << std::endl;
+        std::cout << "(3) combine smaller functions that compete for cache space into fewer, longer functions" << std::endl;
+        std::cout << "(4) move functions around in the code so that functions that are called together are placed together in memory and will therefore occupy non-overlapping regions of the cache" << std::endl;
+        std::cout << "(5) try the gcc flag --falign-functions=<alignment>, which will force functions onto the specified alignment and which may improve the situation - but may also make it worse!" << std::endl;
+    }
+
     return 0;
 }
 

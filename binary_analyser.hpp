@@ -16,8 +16,8 @@ class Function
     std::string name;
     std::string file_location;
     public:
-    std::set<size_t> competes_with; //competes for cache sets with
-    std::set<size_t> coexecutes_with; //often executed in conjunction with (according to the objdump)
+    std::set<size_t> competes_with; /* competes for cache sets with */
+    std::set<size_t> coexecutes_with; /* often executed in conjunction with (according to the objdump) */
     std::set<size_t> competes_and_coexecutes_with;
     Function(size_t address, size_t size, std::string name, std::string file_location)
         : address(address), size(size), name(name), file_location(file_location) {}

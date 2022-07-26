@@ -7,6 +7,7 @@ Cache::Cache(std::string name, int size, int linesize, int assoc)
 {
     if (size <= 0)
     {
+        std::cout << std::endl << "=== " << name << " cache ===" << std::endl << std::endl;
         std::cerr << "This processor does not have an " << name << " cache" << std::endl << std::endl;
     }
     else if (assoc <= 0)
@@ -15,14 +16,21 @@ Cache::Cache(std::string name, int size, int linesize, int assoc)
     }
     else if (assoc <= 0)
     {
+        std::cout << std::endl << "=== " << name << " cache ===" << std::endl << std::endl;
+        std::cout << "Size: " << size << " bytes" << std::endl;
+        std::cout << "Associativity: " << assoc << std::endl;
         std::cerr << "This processor does not specify linesize of its " << name << " cache." << std::endl;
         critical_stride = size / assoc;
-        std::cout << "The critical stride of the " << name << " cache is " << critical_stride << " bytes." << std::endl;
+        std::cout << "Critical stride: " << critical_stride << " bytes" << std::endl;
     }
     else
     {
+        std::cout << std::endl << "=== " << name << " cache ===" << std::endl << std::endl;
+        std::cout << "Size: " << size << " bytes" << std::endl;
+        std::cout << "Associativity: " << assoc << std::endl;
+        std::cout << "Linesize: " << linesize << " bytes" << std::endl;
         critical_stride = size / assoc;
-        std::cout << "The critical stride of the " << name << " cache is " << critical_stride << " bytes." << std::endl;
+        std::cout << "Critical stride: " << critical_stride << " bytes" << std::endl;
     }
 }
 
@@ -68,7 +76,7 @@ int L1d_cache::empirical_assoc_test(std::bitset<8>& uo_flags)
             FILE* cmd_stream;
             std::string echo = "echo \"#" + std::to_string(i) + "\\n\" >> ./temp_files/assoctmpd.txt";
             system(echo.c_str());
-            cmd_stream = popen(cmd_full_65536.c_str(), "r"); // these POSIX functions will only work on Linux systems
+            cmd_stream = popen(cmd_full_65536.c_str(), "r"); /* these POSIX functions will only work on Linux systems */
             pclose(cmd_stream);
             cmd_stream = popen(cmd_full_16.c_str(), "r");
             pclose(cmd_stream);

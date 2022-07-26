@@ -1,24 +1,159 @@
+report stuff (talking points)
+
+-- challenges
+    -- cache info
+        -- class structure in my code
+            -- class hierarchy
+        -- different cache structures
+        -- missing system variables!
+            -- show sysconf code
+            -- sometimes associativity is just... missing from the system variables
+        --testing values empirically
+            -- data cache associativity
+                -- show code
+                -- setup
+                    -- g++ -g ./test_files/associativity_test_d.cpp -o ./temp_files/associativity_test_d
+                    -- perf stat -x , --append -o ./temp_files/assoctmpd.txt -e L1-dcache-load-misses -r 1000 ./temp_files/associativity_test_d <16 or 65536 alignment>
+                -- best measure: cache miss percentage
+                    -- minimum of
+                        -- first jump in 65536 (raw cache miss percentage)
+                        -- highest standard deviation in cache miss percentage
+                            -- show graphs from first part
+            -- data cache critical stride (even though you can work out from associativity)
+                -- show code
+                -- setup
+                    -- g++ -g ./test_files/critical_stride_test_d.cpp -o ./temp_files/critical_stride_test_d
+                    -- perf stat -x , --append -o ./temp_files/cstmpd.txt -e L1-dcache-loads,L1-dcache-load-misses,duration_time -r 1000 ./temp_files/critical_stride_test_d <64, 128, 256, ... 65536>
+                --best measure:
+                    -- highest standard deviation of cache miss percentage is a quarter of the critical stride
+            -- instruction cache associativity
+                -- show code
+                    -- g++ -g -falign-functions=65536 ./test_files/associativity_test_i.cpp -o ./temp_files/associativity_test_i_65536 
+                    -- g++ -g ./test_files/associativity_test_i.cpp -o ./temp_files/associativity_test_i_noalign 
+                    -- perf stat -x , --append -o ./temp_files/assoctmpi.txt -e L1-icache-load-misses -r 1000 ./temp_files/associativity_test_i_65536 
+                    -- perf stat -x , --append -o ./temp_files/assoctmpi.txt -e L1-icache-load-misses -r 1000 ./temp_files/associativity_test_i_noalign 
+                -- best measure:
+                    -- same as data cache associativity
+            -- instruction cache critical stride
+                -- show code
+                -- setup
+                    -- g++ -g -falign-functions= <64, 128, 256, ... 65536> ./test_files/critical_stride_test_i.cpp -o ./temp_files/critical_stride_test_i_
+                    -- perf stat -x , --append -o ./temp_files/cstmpi.txt -e L1-icache-load-misses -r 1000 ./temp_files/critical_stride_test_i_
+                -- best measure:
+                    -- last large jump in absolute number of instruction cache misses (can't view standard deviation...)
+            -- empirical tests general
+                -- how to choose critical stride direct or size / assoc
+                    -- powers of two? (see code)
+    -- class parser
+        -- detecting classes
+            -- regex: "(class|struct)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{"
+                -- recursion to find balanced brackets
+                    -- regular expressions, like FSMs cannot do counting
+                        -- so it's only really possible to detect the start of a class with regex
+                            -- end of a class: } <variable name> ;
+            -- inbuilt types
+                
+            -- class hierarchies
+            -- user defined types containing other types
+            -- other code parsing issues
+                -- ignoring things in speech marks... but not based on speech marks that are themselves in speech marks!
+        -- detecting types and calculating their sizes
+            -- regex "(?:(?:virtual *|auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *\\* *|bitset *<.*> *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=])|(((\\[ *[0-9]* *\\])+)))"
+                -- putting user defined types in the middle!
+            -- some tricks
+                -- ignore anything in curly brackets
+            
+            -- function parameters
+                -- func(int a = 5, char g = 'f')
+            -- variable declarations inside functions (especially inline)
+            -- pointers
+                -- vector<normal> vs vector<bool>
+                -- asterisks inside template parameters vs outside them
+                    -- vector<string*> vs vector<string>*
+                -- char const * const * c;
+            -- pure virtual functions
+                -- virtual int function = 0;
+            -- array lengths
+                -- char a[5]
+                -- vector<char[5]> vs vector<char>[5]
+            -- static variables
+            -- parent/child class hierarchies
+            -- array<array<char[5], 6>, 7>[3]
+                -- aligns by char!
+            -- user defined types??
+                -- iterative building these into the checkers
+            -- remaining issues
+                -- recursive array<>
+                -- comma separated declarations
+        -- alignments
+            -- vector<char[5]>, e.g., aligns by char
+        -- reordering
+    -- binary analyser
+        -- identify functions
+            -- nm -v -C -l --radix=d --print-size <filename> > ./temp_files/nmtmp.txt
+                -v ordering by address
+                -C name demangler
+                -- (note duplicates... and use of map/set)
+            -- show output
+            -- question: library functions?
+            -- using class names identified from source code analysis
+        -- identifying relations between functions
+            -- objdump -d -C -Mintel --no-show-raw-insn <filename> > ./temp_files/objdumptmp.txt
+                -d disassemble
+                -C demangle
+            -- very basic assembly parsing to find function calls
+            -- populating "coexecution vectors"
+        -- identifying functions that compete for memory (minimum competition thresholds...)
+            -- using the coexecution vectors and filtering to find which functions span which portions of the cache (coexecution indirection levels...)
+                -- combining the two to find groups of functions that call each other and evict each other from the cache
+                    -- weighting (and ranking) number of coexecuting functions and amount of competition in bytes
+    -- user flags!
+    -- defaults
+    -- flow of information
+        -- esp: how different parts use each others' information
+            -- cache analysis
+                -- source code analysis uses cache analysis
+                -- binary analysis uses cache analysis and the output of the source code analysis (class names)
+    -- all feeds back to suggestions that are tailored to
+        -- specific source code
+        -- specific compiled binary
+        -- specific processor
+            -- but all these options are customisable and toggleable
+    -- lots of robustness checks
+
+--emphasise the difficulty of catching appropriate cases of variable declarations and rejecting inappropriate cases
+    -- inline functions
+    -- function parameters
+    -- complex cases (see notebook)
+    -- using nm and objdump
+--try to optimise OOP coursework!
+
 code stuff
 
+-- make hacky overloading of calculate_size() better
+
+-- make the optimise data ordering function more efficient
+
+-- add warnings for potentially problematic flag choices
+    -- e.g.,
+        -- high indirection numbers
+        -- low competition thresholds
+        -- large ranking lengths
+
+-- print explanations out to read while processing is taking place
+
 -- source code analyser
-    -- loop through each type
-        -- attempt to calculate size
-            -- calculate size calls detect_variables in the service of getting their sizes
-                -- importantly: with the UDType size map
-                    -- which is put into the regex
-                        -- this will get the types as variables even if their sizes are not known yet
-            -- then calculate size also calls the get_type_size function, also with the UDType size map
-                -- this is where, if the map has -1, the size will return -1
-                    -- at this point calculate size returns -1 to main, which increments its relevant variable
-            -- if main receives info that the size can be calculated, update the UDType map
-        -- if size can
+    -- optimisation: get things that are at the moment being calculated every time to sometimes return just a value
+        -- e.g. calculate_size and parent_size, etc.
+            -- in fact within the calculate size function it could check if the stored size is 0
+                -- at the end of the function if all checks have passed, only then is the value of size in the class is changed from 0
 
 -- make a readme!
 
 -- main needs serious structural cleanup
+    -- maybe put the stuff in the UDType class
 
 -- overall programme stuff
-    -- do the check for problematically sized functions (near to 1024)
     -- put the suggestions in the standard output
         -- after the binary analysis put:
             -- explanation
@@ -75,11 +210,3 @@ code stuff
         -- when commenting out the function "for (auto& i : problem_groups)", the number of 6-large groups of competing functions goes down from 14 to 6
 -- identify discontiguous data structures
 
-report stuff
-
---emphasise the difficulty of catching appropriate cases of variable declarations and rejecting inappropriate cases
-    -- inline functions
-    -- function parameters
-    -- complex cases (see notebook)
-    -- using nm and objdump
---try to optimise OOP coursework!

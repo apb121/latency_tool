@@ -78,7 +78,8 @@ int main(int argc, char** argv)
     if (!uo.flags.test(MANUAL_CACHE))
     {
       std::cout << std::endl << "===========================================================" << std::endl << std::endl;
-      std::cout << "Reading cache data from your system..." << std::endl << std::endl;
+      std::cout << "CACHE ANALYSIS" << std::endl;
+      std::cout << std::endl << "===========================================================" << std::endl << std::endl;
       uo.proc.l1d = new L1d_cache(
         sysconf(_SC_LEVEL1_DCACHE_SIZE),
         sysconf(_SC_LEVEL1_DCACHE_LINESIZE),
@@ -108,7 +109,7 @@ int main(int argc, char** argv)
 
     if (uo.proc.l1d->get_size() <= 0 || uo.proc.l1i->get_size() <= 0)
     {
-      std::cout << "It has not been possible to gauge the size of one of the L1 caches. At present this is a fatal error." << std::endl;
+      std::cout << "It has not been possible to gauge the size of one of the L1 caches. At present, this is a fatal error." << std::endl;
       return 1;
     }
 
@@ -167,8 +168,6 @@ int main(int argc, char** argv)
         std::cout << std::endl << "Setting L1 data-cache associativity to " << suggested_values[0] << std::endl;
         uo.proc.l1d->set_assoc(suggested_values[0]);
         int pos_critical_stride = uo.proc.l1d->get_size() / uo.proc.l1d->get_assoc();
-
-        // this next bit is an interesting point for discussion
 
         if (  ((pos_critical_stride) & (pos_critical_stride - 1) == 0) && pos_critical_stride != 0 &&
               ((suggested_values[1]) & (suggested_values[1] - 1) != 0))
@@ -249,7 +248,6 @@ int main(int argc, char** argv)
         std::cout << std::endl << "Setting L1 instruction-cache associativity to " << suggested_values[2] << std::endl;
         uo.proc.l1i->set_assoc(suggested_values[2]);
         int pos_critical_stride = uo.proc.l1i->get_size() / uo.proc.l1i->get_assoc();
-        // this next bit is an interesting point for discussion
 
         if (  ((pos_critical_stride) & (pos_critical_stride - 1) == 0) && pos_critical_stride != 0 &&
               ((suggested_values[3]) & (suggested_values[3] - 1) != 0))
@@ -307,13 +305,18 @@ int main(int argc, char** argv)
       }
     }
 
-    // vector<File>* files = nullptr;
-    // Binary* bin = nullptr;
-
     if (uo.flags.test(SOURCE_CODE_ONLY))
     {
       std::cout << std::endl << "===========================================================" << std::endl << std::endl;
-      std::cout << "Analysing your source code..." << std::endl << std::endl;
+      std::cout << "SOURCE CODE ANALYSIS" << std::endl;
+      std::cout << std::endl << "===========================================================" << std::endl << std::endl;
+      std::cout << "This tool analyses your source code files to discover cache-inefficient data layouts in user-defined types." << std::endl;
+      std::cout << "Any user-defined types which can be optimised by reordering its data members will be reported, along with a suggestion for a new layout." << std::endl << std::endl;
+      std::cout << "Additionally, this tool will identify any user-defined types where the Least Common Multiple of the size of the type and the critical stride of your processor is small." << std::endl;
+      std::cout << "If objects of these types are stored in contiguous memory (such as an array or a vector), the same members of the class in different objects may compete for space in the cache." << std::endl;
+      std::cout << "If access patterns involve accessing the same data members across multiple contiguous objects, this may create latency problems." << std::endl << std::endl;
+      std::cout << "Analysing your source code..." << std::endl << std::flush;
+
       for (size_t i = 0; i < uo.file_names.size(); ++i)
       {
         uo.files.push_back(uo.file_names[i]);
@@ -326,9 +329,23 @@ int main(int argc, char** argv)
           uo.udtype_sizes[types[j].get_name()] = 0;
         }
         uo.all_user_types.insert(uo.all_user_types.end(), types.begin(), types.end());
-        // uo.files[i].suggest_optimised_orderings();
       }
-      // call calculate size on each until there is no change in the number of -1s that get returned
+      
+      for (size_t i = 0; i < uo.all_user_types.size(); ++i)
+      {
+        if (uo.all_user_types[i].is_child == true)
+        {
+          for (size_t j = 0; j < uo.all_user_types.size(); ++j)
+          {
+            if (j == i) { continue; }
+            if (uo.all_user_types[i].get_parent_name() == uo.all_user_types[j].get_name())
+            {
+              uo.all_user_types[i].parent_class = &(uo.all_user_types[j]);
+            }
+          }
+        }
+      }
+
       int num_unknown = 0, prev_unknown = 1;
       while (num_unknown != prev_unknown)
       {
@@ -343,62 +360,104 @@ int main(int argc, char** argv)
           }
           else
           {
-            // std::cout << "Size of user defined type has been learned!" << std::endl;
-            std::cout << uo.all_user_types[i].get_name() << ": " << size << std::endl;
             uo.udtype_sizes[uo.all_user_types[i].get_name()] = size;
           }
         }
       }
-      std::cout << "Real sizes: " << std::endl;
-      std::cout << "UDType: " << sizeof(UDType) << std::endl;
-      std::cout << "File: " << sizeof(File) << std::endl;
-      std::cout << "G: " << sizeof(G) << std::endl;
-      std::cout << "UserOptions: " << sizeof(UserOptions) << std::endl;
-      std::cout << "Function: " << sizeof(Function) << std::endl;
-      std::cout << "Binary: " << sizeof(Binary) << std::endl;
-      std::cout << "Cache: " << sizeof(Cache) << std::endl;
-      std::cout << "Processor: " << sizeof(Processor) << std::endl;
-      std::cout << "Map: " << sizeof(std::map<std::string, size_t>) << std::endl;
-      std::cout << "Vector string: " << sizeof(std::vector<std::string>) << std::endl;
-      std::cout << "Vector file: " << sizeof(std::vector<File>) << std::endl;
-      std::cout << "Vector udt: " << sizeof(std::vector<UDType>) << std::endl;
-      std::cout << (int) ((long) (void*)&(uo.coex) - (long) (void*)&(uo.flags)) << std::endl;
-      return 0; // remove
       for (size_t i = 0; i < uo.all_user_types.size(); ++i)
       {
-        std::cout << uo.all_user_types[i].get_name() << ": " << uo.all_user_types[i].get_name() << std::endl;
+        std::cout << "Analysing class: " << uo.all_user_types[i].get_name() << std::endl;
+        uo.all_user_types[i].suggest_optimisations(uo.udtype_sizes, uo.proc.l1d->get_critical_stride());
       }
-      return 1; // remove
     }
     else
     {
       if (uo.file_names.size() > 1)
       {
         std::cout << std::endl << "===========================================================" << std::endl << std::endl;
-        std::cout << "Analysing your source code..." << std::endl << std::endl;
+        std::cout << "SOURCE CODE ANALYSIS" << std::endl;
+        std::cout << std::endl << "===========================================================" << std::endl << std::endl;
+        std::cout << "This tool analyses your source code files to discover cache-inefficient data layouts in user-defined types." << std::endl;
+        std::cout << "Any user-defined types which can be optimised by reordering their data members will be reported, along with suggestions for new layouts." << std::endl << std::endl;
+        std::cout << "Additionally, this tool will identify any user-defined types where the Least Common Multiple of the size of the type and the critical stride of your processor is small." << std::endl;
+        std::cout << "If objects of these types are stored in contiguous memory (such as an array or vector), the same data members in different objects may compete for space in the cache." << std::endl;
+        std::cout << "If access patterns involve accessing the same data members across multiple contiguous objects, this may create latency problems." << std::endl << std::endl;
+        std::cout << "Analysing your source code..." << std::endl << std::endl << std::flush;
       }
-      for (size_t i = 0; i < uo.file_names.size() - 1; ++i)
+      for (size_t i = 0; i < uo.file_names.size(); ++i)
       {
         uo.files.push_back(uo.file_names[i]);
       }
       for (size_t i = 0; i < uo.files.size(); ++i)
       {
         vector<UDType> types = uo.files[i].detect_types();
+        for (size_t j = 0; j < types.size(); ++j)
+        {
+          uo.udtype_sizes[types[j].get_name()] = 0;
+        }
         uo.all_user_types.insert(uo.all_user_types.end(), types.begin(), types.end());
       }
-      for (size_t i = 0; i < uo.files.size(); ++i)
+      
+      for (size_t i = 0; i < uo.all_user_types.size(); ++i)
       {
-        uo.files[i].detect_types();
-        uo.files[i].suggest_optimised_orderings(uo.udtype_sizes);
-        vector<UDType> types = uo.files[i].get_types();
-        uo.all_user_types.insert(uo.all_user_types.end(), types.begin(), types.end());
+        if (uo.all_user_types[i].is_child == true)
+        {
+          for (size_t j = 0; j < uo.all_user_types.size(); ++j)
+          {
+            if (j == i) { continue; }
+            if (uo.all_user_types[i].get_parent_name() == uo.all_user_types[j].get_name())
+            {
+              uo.all_user_types[i].parent_class = &(uo.all_user_types[j]);
+            }
+          }
+        }
       }
-      if (uo.file_names.size() > 1)
+
+      int num_unknown = 0, prev_unknown = 1;
+      while (num_unknown != prev_unknown)
       {
-        std::cout << std::endl;
+        prev_unknown = num_unknown;
+        num_unknown = 0;
+        for (size_t i = 0; i < uo.all_user_types.size(); ++i)
+        {
+          int size = uo.all_user_types[i].calculate_size(uo.udtype_sizes);
+          if (size <= 0)
+          {
+            ++num_unknown;
+          }
+          else
+          {
+            uo.udtype_sizes[uo.all_user_types[i].get_name()] = size;
+          }
+        }
       }
+
+      bool optimised = false;
+      for (size_t i = 0; i < uo.all_user_types.size(); ++i)
+      {
+        if (uo.all_user_types[i].suggest_optimisations(uo.udtype_sizes, uo.proc.l1d->get_critical_stride()))
+        {
+          optimised = true;
+        }
+      }
+
+      if (optimised)
+      {
+        std::cout << std::endl << "===== Suggestions =====" << std::endl << std::endl;
+        std::cout << "It is recommended, unless there is a specific reason to retain an inefficient ordering, that any reorderings identified above are implemented." << std::endl;
+        std::cout << "If the overall size of a type may cause problems in the context of access patterns and the critical stride of the data cache, attempting to make the data structure smaller (perhaps by using different data types as sub-members or by using highly compact types like bitfields) is the ideal solution." << std::endl;
+        std::cout << "Failing that, it may (counterintuitively) be worth trying to make the object slightly larger to reduce the chance of desired accesses evicting useful data from the cache by increasing the Least Common Multiple of the object size and the critical stride." << std::endl << std::endl;
+      }
+      
       std::cout << std::endl << "===========================================================" << std::endl << std::endl;
-      std::cout << "Analysing your binary" << std::flush;
+      std::cout << "BINARY ANALYSIS" << std::endl;
+      std::cout << std::endl << "===========================================================" << std::endl << std::endl;
+      std::cout << "Groups of functions that call each other and compete for the same portion of the cache (such as those identified above) may cause latency problems." << std::endl;
+      std::cout << "If the number of functions in the group is above the associativity of the instruction cache ("<< uo.proc.l1d->get_assoc() << " on this processor), these functions will definitely evict each other from the cache." << std::endl;
+      std::cout << "If the number of functions in the group is equal to or slighly below the associativity of the instruction cache, there is a significant probability that the functions will evict each other from the cache. The uncertainty (standard deviation) of this probability can also be a source of jitter at runtime." << std::endl;
+      std::cout << "The larger the region of cache memory that the functions compete for, the more code needs to be fetched from lower level caches the next time the evicted function needs to be executed, and the more significant the latency penalties are." << std::endl << std::endl;
+      std::cout << "Analysing your binary..." << std::endl << std::endl;
+
       Binary* bin = new Binary(uo.file_names[uo.file_names.size() - 1], uo.all_user_types);
       int bin_ret = 0;
       bin_ret = bin->get_functions(uo);
