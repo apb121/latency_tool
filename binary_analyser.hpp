@@ -9,6 +9,8 @@
 #include "user_options.hpp"
 #include "class_parser.hpp"
 
+struct UserOptions;
+
 class Function
 {
     size_t address;

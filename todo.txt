@@ -1,5 +1,7 @@
 report stuff (talking points)
 
+-- change bitflag ints to #define s
+
 -- challenges
     -- cache info
         -- class structure in my code

@@ -8,8 +8,16 @@
 
 #include "cache_info.hpp"
 
-struct File;
-struct UDType;
+#define SOURCE_CODE_ONLY 7
+#define BINARY_ONLY 6
+#define CACHE_INFO_ONLY 5
+#define MANUAL_CACHE 4
+#define NO_EMPIRICAL 3
+#define KEEP_TEMP 2
+#define EXISTING_TEMP_FILES 1
+
+#include "class_parser.hpp"
+#include "binary_analyser.hpp"
 
 struct UserOptions
 {
@@ -23,6 +31,10 @@ struct UserOptions
     std::map<std::string, size_t> udtype_sizes;
     Processor proc;
     int parse_flags(int argc, char** argv);
+    int run_file_setup();
+    int run_cache_setup();
+    int run_analysis();
+    ~UserOptions();
 };
 
 #endif
