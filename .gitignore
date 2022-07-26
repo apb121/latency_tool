@@ -1,5 +1,4 @@
 cachegrind.out.*
 *.o#ifndef CLASS_PARSER_HPP
-class_parser2.hpp
 class_test
 class_test.cpp

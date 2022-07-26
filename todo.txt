@@ -75,14 +75,16 @@ report stuff (talking points)
                 -- char const * const * c;
             -- pure virtual functions
                 -- virtual int function = 0;
+                -- keep virtual in the regex and discard later
             -- array lengths
                 -- char a[5]
                 -- vector<char[5]> vs vector<char>[5]
             -- static variables
             -- parent/child class hierarchies
+                -- use parents to calculate size of children
             -- array<array<char[5], 6>, 7>[3]
                 -- aligns by char!
-            -- user defined types??
+            -- user defined types inside user-defined types
                 -- iterative building these into the checkers
             -- remaining issues
                 -- recursive array<>
@@ -182,12 +184,8 @@ code stuff
     -- have a think about the binary only flag and doing all functions (i.e., including 'W' rather than just 'T') 
 -- suggestions
 -- source code (class) parser
-    -- inherit size from parent classes, increase size by any size of new data members...
-    -- (NB regex is equivalent to FSM and therefore can't handle arbitrarily recursive structures that require counting)
-    -- (keep virtual in there and discard it)
     -- add template functionality to class/variable search
         -- suggest specialisations?
-    -- classes as members of other classes
     -- many-level recursive array<>s
     -- comma separated lists of variables
 -- empirical cache tests
@@ -202,8 +200,6 @@ code stuff
         -- a lot of function calls (e.g. to constructors, assignment operators, multiple functions from templates, etc.) are not explicit in source code
             -- particularly useful because it can identify slow-downs that could never been seen just by looking at the source code. constructors might conflict!
         -- avoids wasting time on functions written but never called (these are not compiled into the binary)
-    -- need to incorporate:
-        -- how many times functions call each other
     -- interesting demonstrations of function group identifier
         -- compare aligned functions perfomance with nCr (e.g., groups of size 3 from 17 competing and coexecuting functions (1 extra level of indirection) leads to 680 groups found!)
         -- compare critical stride tests 1024, 2048, and 4096!
