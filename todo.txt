@@ -1,3 +1,19 @@
+--gdb plan
+    -- find types in files in the normal way
+    -- put the names of user classes into a vector
+    -- make a file called gdbinfocmdtmp.txt with the following commands on consecutive lines:
+        -- info types "user_type(<.*>)?"
+    -- run the following command (sending the output to a file called gdbinfoouttmp.txt)
+        -- gdb -x gdbinfocmdtmp.txt -batch <binary_file> > gdbinfoouttmp.txt
+    -- read the class names from gdbinfoouttmp.txt into a vector of all class names (including templated)
+    -- make a file called gdbptypecmdtmp.txt with the following commands on consecutive lines:
+        -- ptype /o <user_type>
+    -- run the following command (sending the output to a file called gdbptypeouttmp.txt)
+        -- gdb -x gdbptypecmdtmp.txt -batch <binary_file> > gdbptypeouttmp.txt
+    -- read the file gdbtypeouttmp.txt and get types/sizes/alignments
+    -- suggest better orderings!
+    -- (NOTE: still need to check for virtual manually)
+
 report stuff (talking points)
 
 -- change bitflag ints to #define s
