@@ -1,0 +1,84 @@
+All types matching regular expression "^UDType_new$":
+
+File class_parser.hpp:
+26:	UDType_new;
+All types matching regular expression "^UDType_new<.*>$":
+All types matching regular expression "^FileCollection$":
+
+File class_parser.hpp:
+32:	FileCollection;
+All types matching regular expression "^FileCollection<.*>$":
+All types matching regular expression "^UDType$":
+
+File class_parser.hpp:
+52:	UDType;
+All types matching regular expression "^UDType<.*>$":
+All types matching regular expression "^File$":
+
+File class_parser.hpp:
+80:	File;
+All types matching regular expression "^File<.*>$":
+All types matching regular expression "^G$":
+All types matching regular expression "^G<.*>$":
+All types matching regular expression "^Large$":
+All types matching regular expression "^Large<.*>$":
+All types matching regular expression "^UserOptions$":
+
+File user_options.hpp:
+24:	UserOptions;
+All types matching regular expression "^UserOptions<.*>$":
+All types matching regular expression "^ProblemGroup$":
+
+File binary_analyser.hpp:
+16:	ProblemGroup;
+All types matching regular expression "^ProblemGroup<.*>$":
+All types matching regular expression "^Function$":
+
+File binary_analyser.hpp:
+23:	Function;
+All types matching regular expression "^Function<.*>$":
+All types matching regular expression "^Binary$":
+
+File binary_analyser.hpp:
+53:	Binary;
+All types matching regular expression "^Binary<.*>$":
+All types matching regular expression "^Cache$":
+
+File cache_info.hpp:
+17:	Cache;
+All types matching regular expression "^Cache<.*>$":
+All types matching regular expression "^L1_cache$":
+
+File cache_info.hpp:
+36:	L1_cache;
+All types matching regular expression "^L1_cache<.*>$":
+All types matching regular expression "^L1d_cache$":
+
+File cache_info.hpp:
+45:	L1d_cache;
+All types matching regular expression "^L1d_cache<.*>$":
+All types matching regular expression "^L1i_cache$":
+
+File cache_info.hpp:
+54:	L1i_cache;
+All types matching regular expression "^L1i_cache<.*>$":
+All types matching regular expression "^L2_cache$":
+
+File cache_info.hpp:
+67:	L2_cache;
+All types matching regular expression "^L2_cache<.*>$":
+All types matching regular expression "^L3_cache$":
+
+File cache_info.hpp:
+74:	L3_cache;
+All types matching regular expression "^L3_cache<.*>$":
+All types matching regular expression "^L4_cache$":
+
+File cache_info.hpp:
+81:	L4_cache;
+All types matching regular expression "^L4_cache<.*>$":
+All types matching regular expression "^Processor$":
+
+File cache_info.hpp:
+88:	Processor;
+All types matching regular expression "^Processor<.*>$":

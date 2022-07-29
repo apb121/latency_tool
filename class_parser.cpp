@@ -1,5 +1,204 @@
 #include "class_parser.hpp"
 
+//getalign
+  // if it contains a <
+    // if the first isntance of 'array' is before the first instance of <
+      // move past the first instance of <
+        // and then call the function on the structure again
+    // otherwise do the normal thing just on the stuff up to the first <
+      // will be something like vector or map or whatever
+  // if no <
+    // do the normal thing of finding char or int or whatever
+
+int FileCollection::detect_types()
+{
+  std::vector<std::string> type_names;
+  for (int i = 0; i < file_names.size(); ++i)
+  {
+    std::ifstream file_stream(file_names[i]);
+    if (!file_stream.is_open())
+    {
+      std::cout << "Failed to open " << file_names[i] << "!" << std::endl;
+      return 1;
+    }
+    char c;
+    std::string full_file;
+    c = file_stream.get();
+    while (!file_stream.eof())
+    {
+      full_file += c;
+      c = file_stream.get();
+    }
+    std::vector<UDType> type_info;
+    /*  
+        detect classes and structs.
+        this regex detects the *start* of a class/struct
+        because regexes (as finite-state-machine equivalent formal languages)
+        are not able to count bracket recursions,
+        the end of the class is found separately below
+    */
+    std::regex class_regex("(class|struct)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{");
+    std::smatch class_match;
+    std::string file_remaining = full_file;
+    std::string class_info;
+    while (regex_search(file_remaining, class_match, class_regex))
+    {
+      class_info = class_match.str();
+      int name_start = 0;
+      while (isspace(class_info[name_start])) { name_start++; } // get to 'struct'/'class'
+      while (!isspace(class_info[name_start])) { name_start++; } // get to end of 'struct'/'class'
+      while (isspace(class_info[name_start])) { name_start++; } // get to start of class name
+      int name_end = name_start;
+      while (!isspace(class_info[name_end]) && class_info[name_end] != '{' && class_info[name_end] != ':') { name_end++; }
+      std::string type_name = class_info.substr(name_start, name_end - name_start);
+      type_names.push_back(type_name);
+      file_remaining = class_match.suffix();
+    }
+    file_stream.close();
+  }
+  system("rm ./temp_files/gdbinfocmdtmp.txt");
+  system("touch ./temp_files/gdbinfocmdtmp.txt");
+  std::ofstream gdb_info_cmd_stream("./temp_files/gdbinfocmdtmp.txt");
+  std::string gdb_info_cmd;
+  for (int i = 0; i < type_names.size(); ++i)
+  {
+    gdb_info_cmd += "info types ^" + type_names[i] + "$\n";
+    gdb_info_cmd += "info types ^" + type_names[i] + "<.*>$\n";
+  }
+  for (int i = 0; i < gdb_info_cmd.length(); ++i)
+  {
+    gdb_info_cmd_stream.put(gdb_info_cmd[i]);
+  }
+  gdb_info_cmd_stream.close();
+  std::string gdbinfocmd = "gdb -x ./temp_files/gdbinfocmdtmp.txt -batch " + file_names[file_names.size() - 1] + " > ./temp_files/gdbinfoouttmp.txt";
+  system(gdbinfocmd.c_str());
+  std::vector<std::string> types_full;
+  std::ifstream full_types_file("./temp_files/gdbinfoouttmp.txt");
+  if (!full_types_file.is_open())
+  {
+    std::cout << "Failed to open ./temp_files/gdbinfoouttmp.txt" << std::endl;
+    return 1;
+  }
+  std::string line;
+  getline(full_types_file, line);
+  while (!full_types_file.eof())
+  {
+    std::regex file_line_regex("[0-9]+:\\s*([a-zA-Z_][a-zA-Z0-9_]*);");
+    std::smatch file_line_match;
+    std::string file_line_str;
+    if (regex_match(line, file_line_match, file_line_regex))
+    {
+      int name_start = 0;
+      while (isdigit(line[name_start])) { ++name_start; }
+      ++name_start;
+      while (isspace(line[name_start])) { ++name_start; }
+      int name_end = name_start;
+      while (line[name_end] != ';') { ++name_end; }
+      std::string type_name_full = line.substr(name_start, name_end - name_start);
+      // std::cout << type_name_full << std::endl;
+      types_full.push_back(type_name_full);
+    }
+    getline(full_types_file, line);
+  }
+  full_types_file.close();
+  system("rm ./temp_files/gdbtypecmdtmp.txt");
+  system("touch ./temp_files/gdbtypecmdtmp.txt");
+  std::ofstream gdb_type_cmd_stream("./temp_files/gdbtypecmdtmp.txt");
+  std::string gdb_type_cmd;
+  // std::cout << "typesfullsize: " << types_full.size() << std::endl;
+  for (int i = 0; i < types_full.size(); ++i)
+  {
+    gdb_type_cmd += "ptype /o " + types_full[i] + "\n";
+  }
+  for (int i = 0; i < gdb_type_cmd.length(); ++i)
+  {
+    gdb_type_cmd_stream.put(gdb_type_cmd[i]);
+  }
+  gdb_type_cmd_stream.close();
+  std::string gdbtypecmd = "gdb -x ./temp_files/gdbtypecmdtmp.txt -batch " + file_names[file_names.size() - 1] + " > ./temp_files/gdbtypeouttmp.txt";
+  system(gdbtypecmd.c_str());
+  std::ifstream type_out_stream("./temp_files/gdbtypeouttmp.txt");
+  if (!type_out_stream.is_open())
+  {
+    std::cout << "Failed to open ./temp_files/gdbtypeouttmp.txt" << std::endl;
+    return 1;
+  }
+  std::string classes_file;
+  while (!type_out_stream.eof())
+  {
+    classes_file += type_out_stream.get();
+  }
+  std::regex type_out_class_regex("/\\*\\s*offset\\s*\\|\\s*size\\s*\\*/\\s*type\\s*=\\s*(class |struct )?([a-zA-Z_][a-zA-Z0-9_]*)\\s*(\\s*:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{");
+  std::smatch type_out_class_match;
+
+  while (std::regex_search(classes_file, type_out_class_match, type_out_class_regex))
+  {
+    std::string class_string = type_out_class_match.str();
+    int pos = 0;
+    int bracket_depth = 1;
+    classes_file = type_out_class_match.suffix();
+    while (bracket_depth > 0)
+    {
+      class_string += classes_file[pos];
+      if (classes_file[pos] == '{') { ++bracket_depth; }
+      if (classes_file[pos] == '}') { --bracket_depth; }
+      ++pos;
+    }
+    std::cout << "====== CLASS ======" << std::endl;
+    // std::cout << class_string << std::endl;
+
+    // find the name
+    int class_find = class_string.find("class");
+    int struct_find = class_string.find("struct");
+    int cs_min;
+    if (class_find == std::string::npos && struct_find != std::string::npos)
+    {
+      cs_min = struct_find;
+    }
+    else if (class_find != std::string::npos && struct_find == std::string::npos)
+    {
+      cs_min = class_find;
+    }
+    else
+    {
+      cs_min = std::min(class_find, struct_find);
+    }
+    // cs_min is now at the start of 'class'/'struct'
+    int name_start = cs_min;
+    while (!isspace(class_string[name_start])) { ++name_start; }
+    ++name_start;
+    int name_end = name_start;
+    while (!isspace(class_string[name_end])) { ++name_end; }
+    std::string udt_name = class_string.substr(name_start, name_end - name_start);
+    std::cout << udt_name << std::endl;
+
+    // note that for the name, if the position of [ is not npos, the name ends at the [
+
+    // find members and their sizes
+
+    // (while) regex search within class_string for members (they start with /* and end with a semicolon)
+      // the size is the first number after the |
+      // the name of the variable is the very last word before the semicolon
+      // the name of the type is everything between the first /* and the beginning of the name
+        // leave it up to the get_alignment function to deal with other stuff
+          // in the alignment function:
+            // if the 
+              // if there is no std::array or the first std::array is after the first <
+                // the type is just whatever is before the <
+                  // then do ordinary vector/set/etc.
+            //else (if there is no <)
+              // the type is 
+
+
+    classes_file = classes_file.substr(pos);
+  }
+
+  // make a string of the whole class using bracket depth
+    // regex search for each member
+      // get the info from each
+  return 0;
+}
+
 size_t get_type_size(std::string type, std::string array_match, std::map<std::string, size_t> udtype_sizes)
 {
   size_t size = 0;
@@ -557,98 +756,6 @@ std::vector<UDType> File::detect_types()
         are not able to count bracket recursions,
         the end of the class is found separately below
     */
-    std::regex class_regex("(class|struct)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{");
-    std::smatch class_match;
-    std::string file_remaining = full_file;
-    std::string class_info;
-    while (regex_search(file_remaining, class_match, class_regex))
-    {
-      bool is_child = false;
-      std::string parent_name = "";
-      class_info = class_match.str();
-      std::regex parent_regex("(\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)");
-      std::smatch parent_match;
-      std::string parent_str;
-      regex_search(class_info, parent_match, parent_regex);
-      parent_str = parent_match.str();
-      if (parent_str.length() > 0)
-      { 
-        is_child = true;
-        int ppp_start = 0;
-        while (isspace(parent_str[ppp_start])) { ++ppp_start; }
-        while (!isspace(parent_str[ppp_start])) { ++ppp_start; }
-        while (isspace(parent_str[ppp_start])) { ++ppp_start; }
-        size_t ppp_end = ppp_start;
-        while (!isspace(parent_str[ppp_end])) { ++ppp_end; }
-        parent_name = parent_str.substr(ppp_start, ppp_end - ppp_start);
-      }
-      file_remaining = class_match.suffix();
-      size_t pos = 0;
-      int curly_bracket_depth = 1;
-      bool in_double = false;
-      bool in_single = false;
-      while (pos < file_remaining.length() && curly_bracket_depth > 0)
-      {
-        if (file_remaining[pos] == '"' && file_remaining[pos - 1] != '\'' && !in_single)
-        {
-          in_double = !in_double;
-        }
-        if (file_remaining[pos] == '\'' && file_remaining[pos - 1] != '\'' && !in_double)
-        {
-          in_single = !in_single;
-        }
-        if (file_remaining[pos] == '{' && !in_double && !in_single)
-        {
-          curly_bracket_depth++;
-        }
-        if (file_remaining[pos] == '}' && !in_double && !in_single)
-        {
-          curly_bracket_depth--;
-        }
-        class_info += file_remaining[pos];
-        pos++;
-      }
-      while (pos < file_remaining.length() && file_remaining[pos] != ';')
-      {
-        class_info += file_remaining[pos];
-        pos++;
-      }
-      if (file_remaining[pos] == ';')
-      {
-        /*  
-            here a class/struct has been properly detected
-        */
-        class_info += file_remaining[pos];
-        pos++;
-        int name_start = 0, name_end = 0;
-        while (isspace(class_info[name_start])) { name_start++; }
-        name_end = name_start;
-        while (!isspace(class_info[name_end])) { name_end++; }
-        name_start = name_end;
-        while (isspace(class_info[name_start])) { name_start++; }
-        name_end = name_start;
-        while (!isspace(class_info[name_end]) && class_info[name_end] != '{' && class_info[name_end] != ':') { name_end++; }
-        UDType new_ud_type(class_info.substr(name_start, name_end - name_start), class_info);
-        size_t virtual_loc = class_info.find("virtual");
-
-        /* virtual functions require a field of size 8 bytes to point to the class's vtable */
-        
-        if (virtual_loc != std::string::npos && isspace(class_info[virtual_loc - 1]) && isspace(class_info[virtual_loc + 7]))
-        {
-          new_ud_type.has_virtual = true;
-        }
-        if (is_child)
-        {
-          new_ud_type.is_child = true;
-          new_ud_type.parent_name = parent_name;
-        }
-        file_remaining = file_remaining.substr(pos);
-        user_defined_types.push_back(new_ud_type);
-      }
-      else
-      {
-        break;
-      }
-    }
+    
     return user_defined_types;
 }

@@ -1,0 +1,213 @@
+/* offset    |  size */  type = class UDType_new {
+                         private:
+/*    0      |    24 */    class std::vector<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long>, std::allocator<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long> > > [with _Tp = std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long>, _Alloc = std::allocator<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long> >] : protected std::_Vector_base<_Tp, _Alloc> {
+
+                               /* total size (bytes):   24 */
+                           } member_variables;
+/*   24      |     8 */    size_t total_size;
+
+                           /* total size (bytes):   32 */
+                         }
+/* offset    |  size */  type = class FileCollection {
+                         private:
+/*    0      |    24 */    class std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > [with _Tp = std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, _Alloc = std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >] : protected std::_Vector_base<_Tp, _Alloc> {
+
+                               /* total size (bytes):   24 */
+                           } file_names;
+/*   24      |    24 */    class std::vector<UDType_new, std::allocator<UDType_new> > [with _Tp = UDType_new, _Alloc = std::allocator<UDType_new>] : protected std::_Vector_base<_Tp, _Alloc> {
+
+                               /* total size (bytes):   24 */
+                           } udtypes;
+
+                           /* total size (bytes):   48 */
+                         }
+/* offset    |  size */  type = struct UDType {
+/*    0      |     5 */    char a[5];
+/*    5      |     4 */    struct std::array<char, 4> [with _Tp = char] {
+/*    5      |     4 */        std::__array_traits<_Tp, 4>::_Type _M_elems;
+
+                               /* total size (bytes):    4 */
+                           } aa;
+/*    9      |     4 */    struct std::array<char, 4> [with _Tp = char] {
+/*    9      |     4 */        std::__array_traits<_Tp, 4>::_Type _M_elems;
+
+                               /* total size (bytes):    4 */
+                           } aaa;
+/*   13      |  1000 */    struct std::array<std::array<char, 2>, 500> [with _Tp = std::array<char, 2>] {
+/*   13      |  1000 */        std::__array_traits<_Tp, 500>::_Type _M_elems;
+
+                               /* total size (bytes): 1000 */
+                           } aaaa;
+/* XXX  3-byte hole  */
+/* 1016      |    32 */    std::string name;
+/* 1048      |    32 */    std::string class_info;
+/* 1080      |    24 */    class std::vector<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > [with _Tp = std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, _Alloc = std::allocator<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >] : protected std::_Vector_base<_Tp, _Alloc> {
+
+                               /* total size (bytes):   24 */
+                           } types_list;
+/* 1104      |     1 */    bool has_virtual;
+/* XXX  7-byte hole  */
+/* 1112      |     8 */    size_t total_size;
+/* 1120      |     1 */    bool is_child;
+/* XXX  7-byte hole  */
+/* 1128      |    32 */    std::string parent_name;
+/* 1160      |     8 */    UDType *parent_class;
+/* 1168      |     1 */    bool has_auto;
+/* XXX  7-byte padding  */
+
+                           /* total size (bytes): 1176 */
+                         }
+/* offset    |  size */  type = class File {
+                         private:
+/*    0      |    32 */    std::string file_name;
+/*   32      |    24 */    class std::vector<UDType, std::allocator<UDType> > [with _Tp = UDType, _Alloc = std::allocator<UDType>] : protected std::_Vector_base<_Tp, _Alloc> {
+
+                               /* total size (bytes):   24 */
+                           } user_defined_types;
+
+                           /* total size (bytes):   56 */
+                         }
+/* offset    |  size */  type = struct UserOptions {
+/*    0      |     8 */    class std::bitset<8> : private std::_Base_bitset<1> {
+
+                               /* total size (bytes):    8 */
+                           } flags;
+/*    8      |     4 */    int coex;
+/*   12      |     4 */    int comp;
+/*   16      |     4 */    int ranking_length;
+/* XXX  4-byte hole  */
+/*   24      |    24 */    class std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > [with _Tp = std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, _Alloc = std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >] : protected std::_Vector_base<_Tp, _Alloc> {
+
+                               /* total size (bytes):   24 */
+                           } file_names;
+/*   48      |    24 */    class std::vector<File, std::allocator<File> > [with _Tp = File, _Alloc = std::allocator<File>] : protected std::_Vector_base<_Tp, _Alloc> {
+
+                               /* total size (bytes):   24 */
+                           } files;
+/*   72      |    24 */    class std::vector<UDType, std::allocator<UDType> > [with _Tp = UDType, _Alloc = std::allocator<UDType>] : protected std::_Vector_base<_Tp, _Alloc> {
+
+                               /* total size (bytes):   24 */
+                           } all_user_types;
+/*   96      |    48 */    class std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> > > [with _Key = std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, _Tp = unsigned long, _Compare = std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, _Alloc = std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, unsigned long> >] {
+                             private:
+/*   96      |    48 */        _Rep_type _M_t;
+
+                               /* total size (bytes):   48 */
+                           } udtype_sizes;
+/*  144      |    40 */    struct Processor {
+/*  144      |     8 */        L1d_cache *l1d;
+/*  152      |     8 */        L1i_cache *l1i;
+/*  160      |     8 */        L2_cache *l2;
+/*  168      |     8 */        L3_cache *l3;
+/*  176      |     8 */        L4_cache *l4;
+
+                               /* total size (bytes):   40 */
+                           } proc;
+
+                           /* total size (bytes):  184 */
+                         }
+/* offset    |  size */  type = struct ProblemGroup {
+/*    0      |    48 */    class std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> > [with _Key = unsigned long, _Compare = std::less<unsigned long>, _Alloc = std::allocator<unsigned long>] {
+                             private:
+/*    0      |    48 */        _Rep_type _M_t;
+
+                               /* total size (bytes):   48 */
+                           } functions;
+/*   48      |     8 */    size_t coexecutions;
+/*   56      |     8 */    size_t overlap;
+
+                           /* total size (bytes):   64 */
+                         }
+/* offset    |  size */  type = class Function {
+                         private:
+/*    0      |     8 */    size_t address;
+/*    8      |     8 */    size_t size;
+/*   16      |    32 */    std::string name;
+/*   48      |    32 */    std::string file_location;
+                         public:
+/*   80      |    48 */    class std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> > [with _Key = unsigned long, _Compare = std::less<unsigned long>, _Alloc = std::allocator<unsigned long>] {
+                             private:
+/*   80      |    48 */        _Rep_type _M_t;
+
+                               /* total size (bytes):   48 */
+                           } competes_with;
+/*  128      |    48 */    class std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> > [with _Key = unsigned long, _Compare = std::less<unsigned long>, _Alloc = std::allocator<unsigned long>] {
+                             private:
+/*  128      |    48 */        _Rep_type _M_t;
+
+                               /* total size (bytes):   48 */
+                           } coexecutes_with;
+/*  176      |    48 */    class std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> > [with _Key = unsigned long, _Compare = std::less<unsigned long>, _Alloc = std::allocator<unsigned long>] {
+                             private:
+/*  176      |    48 */        _Rep_type _M_t;
+
+                               /* total size (bytes):   48 */
+                           } competes_and_coexecutes_with;
+
+                           /* total size (bytes):  224 */
+                         }
+/* offset    |  size */  type = class Binary {
+                         private:
+/*    0      |    32 */    std::string file_name;
+/*   32      |    48 */    class std::map<unsigned long, Function, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, Function> > > [with _Key = unsigned long, _Tp = Function, _Compare = std::less<unsigned long>, _Alloc = std::allocator<std::pair<unsigned long const, Function> >] {
+                             private:
+/*   32      |    48 */        _Rep_type _M_t;
+
+                               /* total size (bytes):   48 */
+                           } functions_list;
+/*   80      |    48 */    class std::set<std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> >, std::less<std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> > >, std::allocator<std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> > > > [with _Key = std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> >, _Compare = std::less<std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> > >, _Alloc = std::allocator<std::set<unsigned long, std::less<unsigned long>, std::allocator<unsigned long> > >] {
+                             private:
+/*   80      |    48 */        _Rep_type _M_t;
+
+                               /* total size (bytes):   48 */
+                           } problem_groups;
+/*  128      |    24 */    class std::vector<UDType, std::allocator<UDType> > [with _Tp = UDType, _Alloc = std::allocator<UDType>] : protected std::_Vector_base<_Tp, _Alloc> {
+
+                               /* total size (bytes):   24 */
+                           } user_types;
+
+                           /* total size (bytes):  152 */
+                         }
+/* offset    |  size */  type = class Cache {
+                         private:
+/*    8      |    32 */    std::string name;
+/*   40      |     4 */    int size;
+/*   44      |     4 */    int linesize;
+/*   48      |     4 */    int assoc;
+/*   52      |     4 */    int critical_stride;
+
+                           /* total size (bytes):   56 */
+                         }
+/* offset    |  size */  type = class L1_cache : public Cache {
+
+                           /* total size (bytes):   56 */
+                         }
+/* offset    |  size */  type = class L1d_cache : public L1_cache {
+
+                           /* total size (bytes):   56 */
+                         }
+/* offset    |  size */  type = class L1i_cache : public L1_cache {
+
+                           /* total size (bytes):   56 */
+                         }
+/* offset    |  size */  type = class L2_cache : public Cache {
+
+                           /* total size (bytes):   56 */
+                         }
+/* offset    |  size */  type = class L3_cache : public Cache {
+
+                           /* total size (bytes):   56 */
+                         }
+/* offset    |  size */  type = class L4_cache : public Cache {
+
+                           /* total size (bytes):   56 */
+                         }
+/* offset    |  size */  type = struct Processor {
+/*    0      |     8 */    L1d_cache *l1d;
+/*    8      |     8 */    L1i_cache *l1i;
+/*   16      |     8 */    L2_cache *l2;
+/*   24      |     8 */    L3_cache *l3;
+/*   32      |     8 */    L4_cache *l4;
+
+                           /* total size (bytes):   40 */
+                         }

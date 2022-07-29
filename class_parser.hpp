@@ -20,6 +20,30 @@
 #include <cmath>
 #include <algorithm>
 
+/* variable_name, variable_size, variable_type, alignment */
+using variable_info_new = std::tuple<std::string, size_t, std::string, size_t>;
+
+class UDType_new
+{
+    std::vector<variable_info_new> member_variables;
+    size_t total_size = 0;
+};
+
+class FileCollection
+{
+    std::vector<std::string> file_names;
+    std::vector<UDType_new> udtypes;
+    public:
+    FileCollection(std::vector<std::string>& file_names_in/*, bool binary*/)
+    {
+        for (int i = 0; i < file_names_in.size()/* - (binary ? 1 : 0)*/; ++i)
+        {
+            file_names.push_back(file_names_in[i]);
+        }
+    }
+    int detect_types();
+};
+
 /* variable_name, variable_size, variable_type, alignment_type */
 using variable_info = std::tuple<std::string, size_t, std::string, std::string>;
 
@@ -27,15 +51,19 @@ size_t get_type_size(std::string type, std::string array_match);
 
 struct UDType
 {
+    char a[5] = {'a', 'b', 'c', 'd', 'e'};
+    std::array<char, 4> aa;
+    std::array<char, 4> aaa;
+    std::array<std::array<char, 2>, 500> aaaa;
     std::string name;
     std::string class_info;
     std::vector<variable_info> types_list;
-    bool has_auto = false;
     bool has_virtual = false;
     size_t total_size;
     bool is_child = false;
     std::string parent_name = "";
     UDType* parent_class = nullptr;
+    bool has_auto = false;
     public:
     UDType(std::string name, std::string class_info)
         : name(name), class_info(class_info) {}

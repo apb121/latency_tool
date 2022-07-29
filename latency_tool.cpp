@@ -29,11 +29,22 @@ int main(int argc, char** argv)
 {
     UserOptions uo;
 
+    UDType a("", "");
+    a.a[0] = 'b';
+    a.aa[0] = 'c';
+
     int ret = uo.parse_flags(argc, argv);
     if (ret) { return ret; }
 
     ret = uo.run_cache_setup();
     if (ret) { return ret; }
+
+    // serious issue with source code only option and using binary for class info
+
+    FileCollection fc(uo.file_names);
+    fc.detect_types();
+
+    return 0;
 
     ret = uo.run_analysis();
     if (ret) { return ret; }
