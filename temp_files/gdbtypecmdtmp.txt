@@ -1,8 +1,6 @@
 ptype /o Member
 ptype /o UDType_new
 ptype /o FileCollection
-ptype /o UDType
-ptype /o File
 ptype /o UserOptions
 ptype /o ProblemGroup
 ptype /o Function

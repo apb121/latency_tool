@@ -28,15 +28,26 @@ struct UserOptions
     int comp = 256;
     int ranking_length = 10;
     std::vector<std::string> file_names;
-    std::vector<File> files;
-    std::vector<UDType> all_user_types;
-    std::map<std::string, size_t> udtype_sizes;
+    FileCollection fc;
     Processor proc;
     int parse_flags(int argc, char** argv);
     int run_file_setup();
     int run_cache_setup();
     int run_analysis();
     ~UserOptions();
+};
+
+struct Inefficient
+{
+    char c;
+    double d;
+    short s;
+    int i;
+};
+
+struct Large
+{
+    char a[1024];
 };
 
 #endif

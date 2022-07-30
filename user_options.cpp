@@ -440,58 +440,11 @@ int UserOptions::run_analysis()
     std::cout << "If access patterns involve accessing the same data members across multiple contiguous objects, this may create latency problems." << std::endl << std::endl;
     std::cout << "Analysing your source code..." << std::endl << std::flush;
 
-    for (size_t i = 0; i < file_names.size(); ++i)
-    {
-      files.push_back(file_names[i]);
-    }
-    for (size_t i = 0; i < files.size(); ++i)
-    {
-      std::vector<UDType> types = files[i].detect_types();
-      for (size_t j = 0; j < types.size(); ++j)
-      {
-        udtype_sizes[types[j].get_name()] = 0;
-      }
-      all_user_types.insert(all_user_types.end(), types.begin(), types.end());
-    }
-    
-    for (size_t i = 0; i < all_user_types.size(); ++i)
-    {
-      if (all_user_types[i].is_child == true)
-      {
-        for (size_t j = 0; j < all_user_types.size(); ++j)
-        {
-          if (j == i) { continue; }
-          if (all_user_types[i].get_parent_name() == all_user_types[j].get_name())
-          {
-            all_user_types[i].parent_class = &(all_user_types[j]);
-          }
-        }
-      }
-    }
+    fc.populate_file_names(file_names);
 
-    int num_unknown = 0, prev_unknown = 1;
-    while (num_unknown != prev_unknown)
-    {
-      prev_unknown = num_unknown;
-      num_unknown = 0;
-      for (size_t i = 0; i < all_user_types.size(); ++i)
-      {
-        int size = all_user_types[i].calculate_size(udtype_sizes);
-        if (size <= 0)
-        {
-          ++num_unknown;
-        }
-        else
-        {
-          udtype_sizes[all_user_types[i].get_name()] = size;
-        }
-      }
-    }
-    for (size_t i = 0; i < all_user_types.size(); ++i)
-    {
-      std::cout << "Analysing class: " << all_user_types[i].get_name() << std::endl;
-      all_user_types[i].suggest_optimisations(udtype_sizes, proc.l1d->get_critical_stride());
-    }
+    fc.detect_types();
+
+    fc.suggest_optimisations(proc.l1d->get_critical_stride());
   }
   else
   {
@@ -507,62 +460,12 @@ int UserOptions::run_analysis()
       std::cout << "If access patterns involve accessing the same data members across multiple contiguous objects, this may create latency problems." << std::endl << std::endl;
       std::cout << "Analysing your source code..." << std::endl << std::endl << std::flush;
     }
-    for (size_t i = 0; i < file_names.size(); ++i)
-    {
-      files.push_back(file_names[i]);
-    }
-    for (size_t i = 0; i < files.size(); ++i)
-    {
-      std::vector<UDType> types = files[i].detect_types();
-      for (size_t j = 0; j < types.size(); ++j)
-      {
-        udtype_sizes[types[j].get_name()] = 0;
-      }
-      all_user_types.insert(all_user_types.end(), types.begin(), types.end());
-    }
-    
-    for (size_t i = 0; i < all_user_types.size(); ++i)
-    {
-      if (all_user_types[i].is_child == true)
-      {
-        for (size_t j = 0; j < all_user_types.size(); ++j)
-        {
-          if (j == i) { continue; }
-          if (all_user_types[i].get_parent_name() == all_user_types[j].get_name())
-          {
-            all_user_types[i].parent_class = &(all_user_types[j]);
-          }
-        }
-      }
-    }
 
-    int num_unknown = 0, prev_unknown = 1;
-    while (num_unknown != prev_unknown)
-    {
-      prev_unknown = num_unknown;
-      num_unknown = 0;
-      for (size_t i = 0; i < all_user_types.size(); ++i)
-      {
-        int size = all_user_types[i].calculate_size(udtype_sizes);
-        if (size <= 0)
-        {
-          ++num_unknown;
-        }
-        else
-        {
-          udtype_sizes[all_user_types[i].get_name()] = size;
-        }
-      }
-    }
+    fc.populate_file_names(file_names);
 
-    bool optimised = false;
-    for (size_t i = 0; i < all_user_types.size(); ++i)
-    {
-      if (all_user_types[i].suggest_optimisations(udtype_sizes, proc.l1d->get_critical_stride()))
-      {
-        optimised = true;
-      }
-    }
+    fc.detect_types();
+
+    bool optimised = fc.suggest_optimisations(proc.l1d->get_critical_stride());
 
     if (optimised)
     {
@@ -570,6 +473,10 @@ int UserOptions::run_analysis()
       std::cout << "It is recommended, unless there is a specific reason to retain an inefficient ordering, that any reorderings identified above are implemented." << std::endl;
       std::cout << "If the overall size of a type may cause problems in the context of access patterns and the critical stride of the data cache, attempting to make the data structure smaller (perhaps by using different data types as sub-members or by using highly compact types like bitfields) is the ideal solution." << std::endl;
       std::cout << "Failing that, it may (counterintuitively) be worth trying to make the object slightly larger to reduce the chance of desired accesses evicting useful data from the cache by increasing the Least Common Multiple of the object size and the critical stride." << std::endl << std::endl;
+    }
+    else
+    {
+      std::cout << "No data ordering or type-size inefficiencies have been detected!" << std::endl;
     }
     
     std::cout << std::endl << "===========================================================" << std::endl << std::endl;
@@ -581,7 +488,7 @@ int UserOptions::run_analysis()
     std::cout << "The larger the region of cache memory that the functions compete for, the more code needs to be fetched from lower level caches the next time the evicted function needs to be executed, and the more significant the latency penalties are." << std::endl << std::endl;
     std::cout << "Analysing your binary..." << std::endl << std::endl;
 
-    Binary* bin = new Binary(file_names[file_names.size() - 1], all_user_types);
+    Binary* bin = new Binary(file_names[file_names.size() - 1], fc.get_user_types());
     int bin_ret = 0;
     bin_ret = bin->get_functions(*this);
     if (bin_ret != 0)
