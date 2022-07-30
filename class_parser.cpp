@@ -95,7 +95,6 @@ int FileCollection::detect_types()
       int name_end = name_start;
       while (line[name_end] != ';') { ++name_end; }
       std::string type_name_full = line.substr(name_start, name_end - name_start);
-      // std::cout << type_name_full << std::endl;
       types_full.push_back(type_name_full);
     }
     getline(full_types_file, line);
@@ -105,7 +104,6 @@ int FileCollection::detect_types()
   system("touch ./temp_files/gdbtypecmdtmp.txt");
   std::ofstream gdb_type_cmd_stream("./temp_files/gdbtypecmdtmp.txt");
   std::string gdb_type_cmd;
-  // std::cout << "typesfullsize: " << types_full.size() << std::endl;
   for (int i = 0; i < types_full.size(); ++i)
   {
     gdb_type_cmd += "ptype /o " + types_full[i] + "\n";
@@ -134,13 +132,10 @@ int FileCollection::detect_types()
 
   while (std::regex_search(classes_file, type_out_class_match, type_out_class_regex))
   {
-    // std::cout << "here0" << std::endl;
     std::string class_string = type_out_class_match.str();
-    // std::cout << "here00" << std::endl;
     int pos = 0;
     int bracket_depth = 1;
     classes_file = type_out_class_match.suffix();
-    // std::cout << "here000" << std::endl;
     while (bracket_depth > 0)
     {
       if (classes_file[pos] == '{') { ++bracket_depth; }
@@ -151,9 +146,6 @@ int FileCollection::detect_types()
       if (classes_file[pos] == '}') { --bracket_depth; }
       ++pos;
     }
-    // std::cout << "here1" << std::endl;
-    // std::cout << "====== CLASS ======" << std::endl;
-    // std::cout << class_string << std::endl;
 
     // find the name
     int class_find = class_string.find("class");
@@ -171,7 +163,7 @@ int FileCollection::detect_types()
     {
       cs_min = std::min(class_find, struct_find);
     }
-    // std::cout << "here2" << std::endl;
+
     // cs_min is now at the start of 'class'/'struct'
     int name_start = cs_min;
     while (!isspace(class_string[name_start])) { ++name_start; }
@@ -179,9 +171,6 @@ int FileCollection::detect_types()
     int name_end = name_start;
     while (!isspace(class_string[name_end])) { ++name_end; }
     std::string udt_name = class_string.substr(name_start, name_end - name_start);
-    // std::cout << udt_name << std::endl;
-
-    // std::cout << "here3" << std::endl;
 
     std::vector<Member> member_variables;
 
@@ -190,9 +179,6 @@ int FileCollection::detect_types()
     std::string member_string;
     while (regex_search(class_string, member_match, member_regex))
     {
-      // std::cout << "=== MEMBER ===" << std::endl;
-      // std::cout << member_match.str() << std::endl;
-
       // get name
       member_string = member_match.str();
       int name_end = member_string.length() - 1;
@@ -206,10 +192,8 @@ int FileCollection::detect_types()
         }
         --name_start;
       }
-      // std::cout << "here4" << std::endl;
       ++name_start;
       std::string member_name = member_string.substr(name_start, name_end - name_start);
-      // std::cout << "Name: " << member_name << std::endl;
 
       // get size
       std::string size_string;
@@ -221,34 +205,28 @@ int FileCollection::detect_types()
       while (isspace(member_string[size_start])) { ++size_start; }
       int size_end = size_start;
       while (isdigit(member_string[size_end])) { ++size_end; }
-      int member_size = stoi(member_string.substr(size_start, size_end - size_start));
-      // std::cout << "Size: " << member_size << std::endl;
-
-      // std::cout << "here5" << std::endl;
+      size_t member_size = stoull(member_string.substr(size_start, size_end - size_start));
 
       // get align...
       int align_start = size_end;
       while (!isalpha(member_string[align_start])) { ++align_start; }
       std::string align_string = member_string.substr(align_start, name_start - align_start);
-      // std::cout << "Align: " << align_string << std::endl;
-      int member_align;
+      size_t member_align;
       if (!is_array)
       {
         member_align = member_size;
       }
       else
       {
-        member_align = -1; //get_alignment(align_string);
+        member_align = 0; //get_alignment(align_string);
       }
 
-      member_variables.push_back(Member(member_name, member_size, align_string, member_align));
+      Member m({member_name, member_size, align_string, member_align});
+
+      member_variables.push_back(m);
 
       class_string = member_match.suffix();
     }
-    // std::cout << "CLASS LEFTOVER" << std::endl;
-    // std::cout << class_string << std::endl;
-
-    // std::cout << "here6" << std::endl;
 
     int total_size_end = class_string.length() - 1;
     while (!isdigit(class_string[total_size_end])) { --total_size_end; }
@@ -257,58 +235,15 @@ int FileCollection::detect_types()
     while (isdigit(class_string[total_size_start])) { --total_size_start; }
     ++total_size_start;
     int total_class_size = stoi(class_string.substr(total_size_start, total_size_end - total_size_start));
-    // std::cout << "Total class size: " << total_class_size << std::endl;
 
-    // std::cout << member_variables.size() << std::endl;
+    UDType_new ud(udt_name, member_variables, total_class_size);
 
-    // std::cout << udt_name << std::endl;
-    // std::cout << member_variables.size() << std::endl;
-    // std::cout << total_class_size << std::endl;
+    udtypes.push_back(ud);
 
-    // UDType_new ud(udt_name, member_variables, total_class_size);
+    // alignment calculation
+      // if it begins with class std::array or just std::array, jump beyond that and recursively call the function
 
-    // std::cout << "hello" << std::endl;
-
-    std::cout << "=== CLASS ===" << std::endl;
-    std::cout << "Name: " << udt_name << std::endl;
-    std::cout << "Total size: " << total_class_size << std::endl;
-    for (int j = 0; j < member_variables.size(); ++j)
-    {
-      std::cout << "== MEMBER ==" << std::endl;
-      std::cout << "Name: " << (member_variables[j]).name << std::endl;
-      std::cout << "Size: " << (member_variables[j]).size << std::endl;
-      // type also
-      std::cout << "Alignment: " << (member_variables[j]).alignment << std::endl;
-    } 
-
-    // udtypes.push_back(ud);
-
-    // note that for the name, if the position of [ is not npos, the name ends at the [
-
-    // find members and their sizes
-
-    // (while) regex search within class_string for members (they start with /* and end with a semicolon)
-      // the size is the first number after the |
-      // the name of the variable is the very last word before the semicolon
-      // the name of the type is everything between the first /* and the beginning of the name
-        // leave it up to the get_alignment function to deal with other stuff
-          // in the alignment function:
-            // if the 
-              // if there is no std::array or the first std::array is after the first <
-                // the type is just whatever is before the <
-                  // then do ordinary vector/set/etc.
-            //else (if there is no <)
-              // the type is 
-
-    // std::cout << "here" << std::endl;
-
-    // std::cout << "pos: " << pos << std::endl;
-    // std::cout << "cf size: " << classes_file.length() << std::endl;
     classes_file = classes_file.substr(pos + 1);
-    // classes_file = type_out_class_match.suffix();
-    // std::cout << classes_file.length() << std::endl;
-    // std::cout << "now here" << std::endl;
-    // std::cout << classes_file << std::endl;
   }
 
   for (int i = 0; i < udtypes.size(); ++i)
@@ -319,10 +254,10 @@ int FileCollection::detect_types()
     for (int j = 0; j < udtypes[i].member_variables.size(); ++j)
     {
       std::cout << "== MEMBER ==" << std::endl;
-      std::cout << "Name: " << (udtypes[i].member_variables[j]).name << std::endl;
-      std::cout << "Size: " << (udtypes[i].member_variables[j]).size << std::endl;
+      std::cout << "Name: " << udtypes[i].member_variables[j].name << std::endl;
+      std::cout << "Size: " << udtypes[i].member_variables[j].size << std::endl;
       // type also
-      std::cout << "Alignment: " << (udtypes[i].member_variables[j]).alignment << std::endl;
+      std::cout << "Alignment: " << udtypes[i].member_variables[j].alignment << std::endl;
     } 
   }
 

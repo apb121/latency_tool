@@ -1,27 +1,27 @@
-All types matching regular expression "^UDType_new$":
-
-File class_parser.hpp:
-26:	UDType_new;
-All types matching regular expression "^UDType_new<.*>$":
 All types matching regular expression "^Member$":
 
 File class_parser.hpp:
-65:	Member;
+26:	Member;
 All types matching regular expression "^Member<.*>$":
+All types matching regular expression "^UDType_new$":
+
+File class_parser.hpp:
+34:	UDType_new;
+All types matching regular expression "^UDType_new<.*>$":
 All types matching regular expression "^FileCollection$":
 
 File class_parser.hpp:
-90:	FileCollection;
+57:	FileCollection;
 All types matching regular expression "^FileCollection<.*>$":
 All types matching regular expression "^UDType$":
 
 File class_parser.hpp:
-110:	UDType;
+77:	UDType;
 All types matching regular expression "^UDType<.*>$":
 All types matching regular expression "^File$":
 
 File class_parser.hpp:
-138:	File;
+105:	File;
 All types matching regular expression "^File<.*>$":
 All types matching regular expression "^G$":
 All types matching regular expression "^G<.*>$":

@@ -23,8 +23,13 @@
 /* variable_name, variable_size, variable_type, alignment */
 using variable_info_new = std::tuple<std::string, size_t, std::string, size_t>;
 
-
-struct Member;
+struct Member
+{
+    std::string name;
+    size_t size = 0;
+    std::string align_string;
+    size_t alignment = 0;
+};
 
 class UDType_new
 {
@@ -32,59 +37,21 @@ class UDType_new
     size_t total_size = 0;
     public:
     std::vector<Member> member_variables;
-    UDType_new(std::string name, std::vector<Member>& member_variables_in, size_t total_size)
-        : name(name), total_size(total_size)
-    {
-        // std::cout << "udtype new constructor" << std::endl;
-        // std::cout << member_variables_in.size() << std::endl;
-        for (int i = 0; i < member_variables_in.size(); ++i)
-        {
-            member_variables.push_back(member_variables_in[i]);
-        }
-    }
+    UDType_new(std::string name, std::vector<Member>& member_variables, size_t total_size)
+        : name(name), member_variables(member_variables), total_size(total_size) {}
     UDType_new(UDType_new const& other)
     {
         name = other.name;
         total_size = other.total_size;
-        // std::cout << "udtype new copy constructor" << std::endl;
-        // std::cout << other.member_variables.size() << std::endl;
         for (int i = 0; i < other.member_variables.size(); ++i)
         {
             member_variables.push_back(other.member_variables[i]);
         }
-        // std::cout << "leaving udtype new copy constructor" << std::endl;
-    }
-    ~UDType_new()
-    {
-        std::cout << "destructor!" << std::endl;
     }
     std::string get_name() { return name; }
     size_t get_total_size() { return total_size; }
-};
-
-struct Member
-{
-    std::string name;
-    size_t size = 0;
-    std::string align_string;
-    size_t alignment = 0;
-    Member(std::string name, size_t size, std::string align_string, size_t alignment)
-        : name(name), size(size), align_string(align_string), alignment(alignment)
-    {
-        // std::cout << "Member constructor" << std::endl;
-    }
-    Member(Member const& other)
-    {
-        // std::cout << "Member copy constructor" << std::endl;
-        // std::cout << "copying name" << std::endl;
-        name = other.name;
-        // std::cout << "copying size" << std::endl;
-        size = other.size;
-        // std::cout << "copying align string" << std::endl;
-        align_string = other.align_string;
-        // std::cout << "copying alignment" << std::endl;
-        alignment = other.alignment;
-    }
+    void set_name(std::string new_name) { name = new_name; }
+    void set_size(size_t new_size) { total_size = new_size; }
 };
 
 class FileCollection

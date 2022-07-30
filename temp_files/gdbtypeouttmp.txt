@@ -1,13 +1,3 @@
-/* offset    |  size */  type = class UDType_new {
-                         private:
-/*    0      |    24 */    class std::vector<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long>, std::allocator<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long> > > [with _Tp = std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long>, _Alloc = std::allocator<std::tuple<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, unsigned long> >] : protected std::_Vector_base<_Tp, _Alloc> {
-
-                               /* total size (bytes):   24 */
-                           } member_variables;
-/*   24      |     8 */    size_t total_size;
-
-                           /* total size (bytes):   32 */
-                         }
 /* offset    |  size */  type = struct Member {
 /*    0      |    32 */    std::string name;
 /*   32      |     8 */    size_t size;
@@ -15,6 +5,18 @@
 /*   72      |     8 */    size_t alignment;
 
                            /* total size (bytes):   80 */
+                         }
+/* offset    |  size */  type = class UDType_new {
+                         private:
+/*    0      |    32 */    std::string name;
+/*   32      |     8 */    size_t total_size;
+                         public:
+/*   40      |    24 */    class std::vector<Member, std::allocator<Member> > [with _Tp = Member, _Alloc = std::allocator<Member>] : protected std::_Vector_base<_Tp, _Alloc> {
+
+                               /* total size (bytes):   24 */
+                           } member_variables;
+
+                           /* total size (bytes):   64 */
                          }
 /* offset    |  size */  type = class FileCollection {
                          private:

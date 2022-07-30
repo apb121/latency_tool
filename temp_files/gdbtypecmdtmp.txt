@@ -1,5 +1,5 @@
-ptype /o UDType_new
 ptype /o Member
+ptype /o UDType_new
 ptype /o FileCollection
 ptype /o UDType
 ptype /o File
