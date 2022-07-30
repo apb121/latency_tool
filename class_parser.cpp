@@ -128,23 +128,31 @@ int FileCollection::detect_types()
   {
     classes_file += type_out_stream.get();
   }
+
   std::regex type_out_class_regex("/\\*\\s*offset\\s*\\|\\s*size\\s*\\*/\\s*type\\s*=\\s*(class |struct )?([a-zA-Z_][a-zA-Z0-9_]*)\\s*(\\s*:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{");
   std::smatch type_out_class_match;
 
   while (std::regex_search(classes_file, type_out_class_match, type_out_class_regex))
   {
+    // std::cout << "here0" << std::endl;
     std::string class_string = type_out_class_match.str();
+    // std::cout << "here00" << std::endl;
     int pos = 0;
     int bracket_depth = 1;
     classes_file = type_out_class_match.suffix();
+    // std::cout << "here000" << std::endl;
     while (bracket_depth > 0)
     {
-      class_string += classes_file[pos];
       if (classes_file[pos] == '{') { ++bracket_depth; }
+      if (bracket_depth == 1)
+      {
+        class_string += classes_file[pos]; // there can be some semicolons in the middle of detailed explications of classes
+      }
       if (classes_file[pos] == '}') { --bracket_depth; }
       ++pos;
     }
-    std::cout << "====== CLASS ======" << std::endl;
+    // std::cout << "here1" << std::endl;
+    // std::cout << "====== CLASS ======" << std::endl;
     // std::cout << class_string << std::endl;
 
     // find the name
@@ -163,6 +171,7 @@ int FileCollection::detect_types()
     {
       cs_min = std::min(class_find, struct_find);
     }
+    // std::cout << "here2" << std::endl;
     // cs_min is now at the start of 'class'/'struct'
     int name_start = cs_min;
     while (!isspace(class_string[name_start])) { ++name_start; }
@@ -170,7 +179,109 @@ int FileCollection::detect_types()
     int name_end = name_start;
     while (!isspace(class_string[name_end])) { ++name_end; }
     std::string udt_name = class_string.substr(name_start, name_end - name_start);
-    std::cout << udt_name << std::endl;
+    // std::cout << udt_name << std::endl;
+
+    // std::cout << "here3" << std::endl;
+
+    std::vector<Member> member_variables;
+
+    std::regex member_regex("/\\*\\s*[0-9]+([^;])*;");
+    std::smatch member_match;
+    std::string member_string;
+    while (regex_search(class_string, member_match, member_regex))
+    {
+      // std::cout << "=== MEMBER ===" << std::endl;
+      // std::cout << member_match.str() << std::endl;
+
+      // get name
+      member_string = member_match.str();
+      int name_end = member_string.length() - 1;
+      int name_start = name_end - 1;
+      bool is_array = false;
+      while (isalnum(member_string[name_start]) || member_string[name_start] == '_' || member_string[name_start] == '[' || member_string[name_start] == ']')
+      {
+        if (member_string[name_start] == '[' || member_string[name_start] == ']')
+        {
+          is_array = true;
+        }
+        --name_start;
+      }
+      // std::cout << "here4" << std::endl;
+      ++name_start;
+      std::string member_name = member_string.substr(name_start, name_end - name_start);
+      // std::cout << "Name: " << member_name << std::endl;
+
+      // get size
+      std::string size_string;
+      int size_start = 2;
+      while (isspace(member_string[size_start])) { ++size_start; }
+      while (isdigit(member_string[size_start])) { ++size_start; }
+      while (isspace(member_string[size_start])) { ++size_start; }
+      ++size_start;
+      while (isspace(member_string[size_start])) { ++size_start; }
+      int size_end = size_start;
+      while (isdigit(member_string[size_end])) { ++size_end; }
+      int member_size = stoi(member_string.substr(size_start, size_end - size_start));
+      // std::cout << "Size: " << member_size << std::endl;
+
+      // std::cout << "here5" << std::endl;
+
+      // get align...
+      int align_start = size_end;
+      while (!isalpha(member_string[align_start])) { ++align_start; }
+      std::string align_string = member_string.substr(align_start, name_start - align_start);
+      // std::cout << "Align: " << align_string << std::endl;
+      int member_align;
+      if (!is_array)
+      {
+        member_align = member_size;
+      }
+      else
+      {
+        member_align = -1; //get_alignment(align_string);
+      }
+
+      member_variables.push_back(Member(member_name, member_size, align_string, member_align));
+
+      class_string = member_match.suffix();
+    }
+    // std::cout << "CLASS LEFTOVER" << std::endl;
+    // std::cout << class_string << std::endl;
+
+    // std::cout << "here6" << std::endl;
+
+    int total_size_end = class_string.length() - 1;
+    while (!isdigit(class_string[total_size_end])) { --total_size_end; }
+    int total_size_start = total_size_end;
+    ++total_size_end;
+    while (isdigit(class_string[total_size_start])) { --total_size_start; }
+    ++total_size_start;
+    int total_class_size = stoi(class_string.substr(total_size_start, total_size_end - total_size_start));
+    // std::cout << "Total class size: " << total_class_size << std::endl;
+
+    // std::cout << member_variables.size() << std::endl;
+
+    // std::cout << udt_name << std::endl;
+    // std::cout << member_variables.size() << std::endl;
+    // std::cout << total_class_size << std::endl;
+
+    // UDType_new ud(udt_name, member_variables, total_class_size);
+
+    // std::cout << "hello" << std::endl;
+
+    std::cout << "=== CLASS ===" << std::endl;
+    std::cout << "Name: " << udt_name << std::endl;
+    std::cout << "Total size: " << total_class_size << std::endl;
+    for (int j = 0; j < member_variables.size(); ++j)
+    {
+      std::cout << "== MEMBER ==" << std::endl;
+      std::cout << "Name: " << (member_variables[j]).name << std::endl;
+      std::cout << "Size: " << (member_variables[j]).size << std::endl;
+      // type also
+      std::cout << "Alignment: " << (member_variables[j]).alignment << std::endl;
+    } 
+
+    // udtypes.push_back(ud);
 
     // note that for the name, if the position of [ is not npos, the name ends at the [
 
@@ -189,13 +300,32 @@ int FileCollection::detect_types()
             //else (if there is no <)
               // the type is 
 
+    // std::cout << "here" << std::endl;
 
-    classes_file = classes_file.substr(pos);
+    // std::cout << "pos: " << pos << std::endl;
+    // std::cout << "cf size: " << classes_file.length() << std::endl;
+    classes_file = classes_file.substr(pos + 1);
+    // classes_file = type_out_class_match.suffix();
+    // std::cout << classes_file.length() << std::endl;
+    // std::cout << "now here" << std::endl;
+    // std::cout << classes_file << std::endl;
   }
 
-  // make a string of the whole class using bracket depth
-    // regex search for each member
-      // get the info from each
+  for (int i = 0; i < udtypes.size(); ++i)
+  {
+    std::cout << "=== CLASS ===" << std::endl;
+    std::cout << "Name: " << udtypes[i].get_name() << std::endl;
+    std::cout << "Total size: " << udtypes[i].get_total_size() << std::endl;
+    for (int j = 0; j < udtypes[i].member_variables.size(); ++j)
+    {
+      std::cout << "== MEMBER ==" << std::endl;
+      std::cout << "Name: " << (udtypes[i].member_variables[j]).name << std::endl;
+      std::cout << "Size: " << (udtypes[i].member_variables[j]).size << std::endl;
+      // type also
+      std::cout << "Alignment: " << (udtypes[i].member_variables[j]).alignment << std::endl;
+    } 
+  }
+
   return 0;
 }
 

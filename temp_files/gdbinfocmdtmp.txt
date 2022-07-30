@@ -1,5 +1,7 @@
 info types ^UDType_new$
 info types ^UDType_new<.*>$
+info types ^Member$
+info types ^Member<.*>$
 info types ^FileCollection$
 info types ^FileCollection<.*>$
 info types ^UDType$
