@@ -1,18 +1,7 @@
---gdb plan
-    -- find types in files in the normal way
-    -- put the names of user classes into a vector
-    -- make a file called gdbinfocmdtmp.txt with the following commands on consecutive lines:
-        -- info types "user_type(<.*>)?"
-    -- run the following command (sending the output to a file called gdbinfoouttmp.txt)
-        -- gdb -x gdbinfocmdtmp.txt -batch <binary_file> > gdbinfoouttmp.txt
-    -- read the class names from gdbinfoouttmp.txt into a vector of all class names (including templated)
-    -- make a file called gdbptypecmdtmp.txt with the following commands on consecutive lines:
-        -- ptype /o <user_type>
-    -- run the following command (sending the output to a file called gdbptypeouttmp.txt)
-        -- gdb -x gdbptypecmdtmp.txt -batch <binary_file> > gdbptypeouttmp.txt
-    -- read the file gdbtypeouttmp.txt and get types/sizes/alignments
-    -- suggest better orderings!
-    -- (NOTE: still need to check for virtual manually)
+-- the number of groups of particular sizes at, e.g., 256, 512, 1024, 2048, 4096 aligned functions is a new way to visualise the cache problems associated with those alignments
+    -- specifically
+        -- at 512, there is one competing coexecuting group of 5 functions, and many of 4 and below
+        -- at 1024, there is one group of 9, and several of 8, etc.
 
 report stuff (talking points)
 
@@ -63,51 +52,57 @@ report stuff (talking points)
                 -- how to choose critical stride direct or size / assoc
                     -- powers of two? (see code)
     -- class parser
-        -- detecting classes
-            -- regex: "(class|struct)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{"
-                -- recursion to find balanced brackets
-                    -- regular expressions, like FSMs cannot do counting
-                        -- so it's only really possible to detect the start of a class with regex
-                            -- end of a class: } <variable name> ;
-            -- inbuilt types
+        -- original attempt
+            -- detecting classes
+                -- regex: "(class|struct)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{"
+                    -- recursion to find balanced brackets
+                        -- regular expressions, like FSMs cannot do counting
+                            -- so it's only really possible to detect the start of a class with regex
+                                -- end of a class: } <variable name> ;
+                -- inbuilt types
+                    
+                -- class hierarchies
+                -- user defined types containing other types
+                -- other code parsing issues
+                    -- ignoring things in speech marks... but not based on speech marks that are themselves in speech marks!
+            -- detecting types and calculating their sizes
+                -- regex "(?:(?:virtual *|auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *\\* *|bitset *<.*> *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=])|(((\\[ *[0-9]* *\\])+)))"
+                    -- putting user defined types in the middle!
+                -- some tricks
+                    -- ignore anything in curly brackets
                 
-            -- class hierarchies
-            -- user defined types containing other types
-            -- other code parsing issues
-                -- ignoring things in speech marks... but not based on speech marks that are themselves in speech marks!
-        -- detecting types and calculating their sizes
-            -- regex "(?:(?:virtual *|auto *|static *|const *|unsigned *|signed *|register *|volatile *|void *\\* *|bitset *<.*> *|array *<.*> *|std::vector *<.*> *|deque *<.*> *|forward_list *<.*> *|list *<.*> *|stack *<.*> *|queue *<.*> *|priority_queue *<.*> *|set *<.*> *|multiset *<.*> *|map *<.*> *|multimap *<.*> *|unordered_set *<.*> *|unordered_multiset *<.*> *|unordered_map *<.*> *|unordered_multimap *<.*> *|size_t *|std::string *|short *|long *|char *|wchar_t *|char8_t *|char16_t *|int *|float *|double *| bool *|complex *)+)[\\*]*(?: +\\*?\\*? *)( *const *)?([a-zA-Z_][a-zA-Z0-9_]*) *(([{;,=])|(((\\[ *[0-9]* *\\])+)))"
-                -- putting user defined types in the middle!
-            -- some tricks
-                -- ignore anything in curly brackets
-            
-            -- function parameters
-                -- func(int a = 5, char g = 'f')
-            -- variable declarations inside functions (especially inline)
-            -- pointers
-                -- vector<normal> vs vector<bool>
-                -- asterisks inside template parameters vs outside them
-                    -- vector<string*> vs vector<string>*
-                -- char const * const * c;
-            -- pure virtual functions
-                -- virtual int function = 0;
-                -- keep virtual in the regex and discard later
-            -- array lengths
-                -- char a[5]
-                -- vector<char[5]> vs vector<char>[5]
-            -- static variables
-            -- parent/child class hierarchies
-                -- use parents to calculate size of children
-            -- array<array<char[5], 6>, 7>[3]
-                -- aligns by char!
-            -- user defined types inside user-defined types
-                -- iterative building these into the checkers
-            -- remaining issues
-                -- recursive array<>
-                -- comma separated declarations
-        -- alignments
-            -- vector<char[5]>, e.g., aligns by char
-        -- reordering
+                -- function parameters
+                    -- func(int a = 5, char g = 'f')
+                -- variable declarations inside functions (especially inline)
+                -- pointers
+                    -- vector<normal> vs vector<bool>
+                    -- asterisks inside template parameters vs outside them
+                        -- vector<string*> vs vector<string>*
+                    -- char const * const * c;
+                -- pure virtual functions
+                    -- virtual int function = 0;
+                    -- keep virtual in the regex and discard later
+                -- array lengths
+                    -- char a[5]
+                    -- vector<char[5]> vs vector<char>[5]
+                -- static variables
+                -- parent/child class hierarchies
+                    -- use parents to calculate size of children
+                -- array<array<char[5], 6>, 7>[3]
+                    -- aligns by char!
+                -- user defined types inside user-defined types
+                    -- iterative building these into the checkers
+                -- remaining issues
+                    -- recursive array<>
+                    -- comma separated declarations
+            -- alignments
+                -- vector<char[5]>, e.g., aligns by char
+            -- reordering
+        -- using llvm-dwarfdump
+            -- complex parsing
+            -- files much too large to process in a timely fashion
+        -- using gdb command
+            -- more parsing
     -- binary analyser
         -- identify functions
             -- nm -v -C -l --radix=d --print-size <filename> > ./temp_files/nmtmp.txt
@@ -149,10 +144,6 @@ report stuff (talking points)
 --try to optimise OOP coursework!
 
 code stuff
-
--- make hacky overloading of calculate_size() better
-
--- make the optimise data ordering function more efficient
 
 -- add warnings for potentially problematic flag choices
     -- e.g.,

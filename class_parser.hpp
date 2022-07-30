@@ -20,6 +20,14 @@
 #include <cmath>
 #include <algorithm>
 
+#define BINARY_ONLY 6
+#define CACHE_INFO_ONLY 5
+#define MANUAL_CACHE 4
+#define NO_EMPIRICAL 3
+#define KEEP_TEMP 2
+#define EXISTING_TEMP_FILES 1
+
+
 struct Member
 {
     std::string name;
@@ -63,7 +71,7 @@ class FileCollection
     {
         file_names = file_names_in;
     }
-    int detect_types();
+    int detect_types(std::bitset<8>& flags);
     size_t get_alignment(std::string alignment_string);
     bool suggest_optimisations(int critical_stride);
     std::vector<UDType_new> get_user_types() { return udtypes; }

@@ -44,7 +44,7 @@ int L1d_cache::empirical_assoc_test(std::bitset<8>& uo_flags)
     /*  
         varying the number of regions that compete for the cache
     */
-    if (uo_flags.test(1))
+    if (uo_flags.test(EXISTING_TEMP_FILES))
     {
         std::ifstream exist_test("./temp_files/assoctmpd.txt");
         if (!exist_test.good())
@@ -153,13 +153,13 @@ int L1d_cache::empirical_stride_test(std::bitset<8>& uo_flags)
     /*  
         varying the alignment to force the data onto
     */
-    if (uo_flags.test(1))
+    if (uo_flags.test(EXISTING_TEMP_FILES))
     {
         std::ifstream exist_test("./temp_files/cstmpd.txt");
         if (!exist_test.good())
         {
             std::cout << std::endl << std::endl << "There is no existing temp file for the data-cache critical stride!" << std::endl;
-            return -1;
+            return 1;
         }
     }
     else
@@ -265,13 +265,13 @@ int L1i_cache::empirical_assoc_test(std::bitset<8>& uo_flags)
     /*  
         varying the number of functions competing for the cache
     */
-    if (uo_flags.test(1))
+    if (uo_flags.test(EXISTING_TEMP_FILES))
     {
         std::ifstream exist_test("./temp_files/assoctmpi.txt");
         if (!exist_test.good())
         {
             std::cout << std::endl << std::endl << "There is no existing temp file for the instruction-cache associativity!" << std::endl;
-            return -1;
+            return 1;
         }
     }
     else
@@ -306,6 +306,7 @@ int L1i_cache::empirical_assoc_test(std::bitset<8>& uo_flags)
             pclose(cmd_stream);
         }
     }
+
     std::cout << std::endl << std::flush;
     std::ifstream assoc_file;
     assoc_file.open("./temp_files/assoctmpi.txt");
@@ -379,13 +380,13 @@ int L1i_cache::empirical_stride_test(std::bitset<8>& uo_flags)
     /*  
         varying the alignment to force the functions onto
     */
-    if (uo_flags.test(1))
+    if (uo_flags.test(EXISTING_TEMP_FILES))
     {
         std::ifstream exist_test("./temp_files/cstmpi.txt");
         if (!exist_test.good())
         {
             std::cout << std::endl << std::endl << "There is no existing temp file for the instruction-cache critical stride!" << std::endl;
-            return -1;
+            return 1;
         }
     }
     else
@@ -414,6 +415,7 @@ int L1i_cache::empirical_stride_test(std::bitset<8>& uo_flags)
             pclose(cmd_stream);
         }
     }
+
     std::cout << std::endl << std::flush;
     std::ifstream assoc_file;
     assoc_file.open("./temp_files/cstmpi.txt");

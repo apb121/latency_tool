@@ -8,6 +8,14 @@
 #include <bitset>
 #include <iostream>
 
+#define BINARY_ONLY 6
+#define CACHE_INFO_ONLY 5
+#define MANUAL_CACHE 4
+#define NO_EMPIRICAL 3
+#define KEEP_TEMP 2
+#define EXISTING_TEMP_FILES 1
+
+
 class L1d_cache;
 class L1i_cache;
 class L2_cache;

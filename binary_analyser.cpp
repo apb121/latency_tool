@@ -3,7 +3,7 @@
 int Binary::get_functions(UserOptions& uo)
 {
     std::string nm_cmd = "nm -v -C -l --radix=d --print-size " + file_name + " > ./temp_files/nmtmp.txt";
-    if (uo.flags.test(1))
+    if (uo.flags.test(EXISTING_TEMP_FILES))
     {
         std::ifstream exist_test("./temp_files/nmtmp.txt");
         if (!exist_test.good())
@@ -105,7 +105,7 @@ int Binary::get_functions(UserOptions& uo)
                 UDT_func = true;
             }
         }
-        if (UDT_func == false/* && !uo.flags.test(BINARY_ONLY)*/ && buf[2][0] != 'T')
+        if (UDT_func == false && buf[2][0] != 'T')
         {
             while (nm_file.get() != '\n' && !nm_file.eof()) {};
             continue;
@@ -183,14 +183,14 @@ int Binary::populate_coexecution_vectors(UserOptions& uo)
     */
     std::string objdump_cmd = "objdump -d -C -Mintel --no-show-raw-insn " + file_name + " > ./temp_files/objdumptmp.txt";
     std::string objdump_rm = "rm ./temp_files/objdumptmp.txt";
-    if (uo.flags.test(1))
+    if (uo.flags.test(EXISTING_TEMP_FILES))
     {
         std::ifstream exist_test("./temp_files/objdumptmp.txt");
         if (!exist_test.good())
         {
             exist_test.close();
             std::cout << std::endl << std::endl << "There is no existing temp (objdump) file for the binary!" << std::endl;
-            return -1;
+            return 1;
         }
     }
     else
@@ -199,7 +199,7 @@ int Binary::populate_coexecution_vectors(UserOptions& uo)
         if (ret_objdump)
         {
             std::cout << "objdump failed!" << std::endl;
-            return -1;
+            return 1;
         }
     }
     std::ifstream objdump_file;
@@ -383,9 +383,9 @@ int Binary::find_problem_function_groups(UserOptions& uo)
                     if (call_dest.find_first_not_of("0123456789abcdef") == std::string::npos)
                     {
                         long dec_addr_dest = strtol(call_dest.c_str(), nullptr, 16);
-                        for (auto& i : functions_list)
+                        for (auto& i : group)
                         {
-                            if (i.first == dec_addr_dest)
+                            if (functions_list[i].get_address() == dec_addr_dest)
                             {
                                 coexecution_count++;
                                 break;
@@ -424,11 +424,11 @@ int Binary::find_problem_function_groups(UserOptions& uo)
             std::cout << functions_list[j].get_name() << std::endl;
         }
 
-        std::cout << std::endl << "These " << group.size() << " coexecuting functions call each other directly " << i->second.coexecutions << " times and compete for the same " << i->second.overlap << "-byte region of the cache" << std::endl << std::endl;
+        std::cout << std::endl << "These " << group.size() << " coexecuting functions call each other (directly) " << i->second.coexecutions << " times and compete for the same " << i->second.overlap << "-byte region of the cache" << std::endl << std::endl;
 
         ++ranking_num;
     }
-    if (problem_groups_ranked.size() > 0)
+    if (problem_groups_ranked.size() > 1)
     {
         std::cout << std::endl << std::endl << "===== Suggestions =====" << std::endl << std::endl;
         std::cout << "There are a number of things that programmers can do to mitigate these problems." << std::endl << std::endl;

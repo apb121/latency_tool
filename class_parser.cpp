@@ -122,7 +122,7 @@ size_t FileCollection::get_alignment(std::string alignment_string)
   return 8;
 }
 
-int FileCollection::detect_types()
+int FileCollection::detect_types(std::bitset<8>& flags)
 {
   std::vector<std::string> type_names;
   for (int i = 0; i < file_names.size(); ++i)
@@ -168,6 +168,7 @@ int FileCollection::detect_types()
     }
     file_stream.close();
   }
+  
   std::ifstream exist_test("./temp_files/gdbinfocmdtmp.txt");
   if (exist_test.good())
   {
@@ -406,7 +407,7 @@ size_t UDType_new::calculate_size()
         if (align_target == 0)
         {
             std::cout << "Alignment 0 error" << std::endl;
-            return 0;
+            return 1;
         }
         while (curr_align % align_target != 0) { curr_align++; }
     }

@@ -3,50 +3,50 @@
 int UserOptions::parse_flags(int argc, char** argv)
 {
   int i = 1;
-  for (i = 1; i < argc; ++i)
+  for (; i < argc; ++i)
   {
-    if (strncmp(argv[i], "-s", 2) == 0 || strncmp(argv[i], "--s", 3) == 0)
+    if (strncmp(argv[i], "-b", 2) == 0 || strncmp(argv[i], "--b", 3) == 0)
     {
-      if (flags.test(6))
-      {
-        std::cerr << "Incompatible combination of flags (--source-code-only and --binary-only)." << std::endl;
-        return 1;
-      }
-      flags.set(7, true);
-    }
-    else if (strncmp(argv[i], "-b", 2) == 0 || strncmp(argv[i], "--b", 3) == 0)
-    {
-      if (flags.test(7))
-      {
-        std::cerr << "Incompatible combination of flags (--source-code-only and --binary-only)." << std::endl;
-        return 1;
-      }
-      flags.set(6, true);
+      flags.set(BINARY_ONLY, true);
     }
     else if (strncmp(argv[i], "-c", 2) == 0 || strncmp(argv[i], "--c", 3) == 0)
     {
-      if (flags.test(4))
+      if (flags.test(MANUAL_CACHE))
       {
         std::cerr << "Incompatible combination of flags (--cache-info-only and --manual-cache)." << std::endl;
         return 1;
       }
-      flags.set(5, true);
+      flags.set(CACHE_INFO_ONLY, true);
     }
     else if (strncmp(argv[i], "-m", 2) == 0 || strncmp(argv[i], "--m", 3) == 0)
     {
-      if (flags.test(5))
+      if (flags.test(MANUAL_CACHE))
+      {
+        std::cout << "(Superfluous manual cache specifications ignored.)" << std::endl;
+        continue;
+      }
+      if (flags.test(CACHE_INFO_ONLY))
       {
         std::cerr << "Incompatible combination of flags (--cache-info-only and --manual-cache)." << std::endl;
         return 1;
       }
-      flags.set(4, true);
-      std::regex m_flag_regex("((-m=)|(--manual-cache=))([0-9]+:[0-9]+:[0-9]+)(::[0-9]+:[0-9]+:[0-9]+)*");
+      flags.set(MANUAL_CACHE, true);
+      std::regex m_flag_regex("((-m=)|(--manual-cache=))(([0-9]+:[0-9]+:[0-9]+)(::[0-9]+:[0-9]+:[0-9]+)*|default)");
       if (!regex_match(argv[i], m_flag_regex))
       {
         std::cerr << "Invalid -manual-cache flag format." << std::endl;
         return 1;
       }
       std::string flag(argv[i]);
+      if (flag.substr(flag.length() - 7, 7) == "default")
+      {
+        proc.l1d = new L1d_cache(32768, 64, 8);
+        proc.l1i = new L1i_cache(32768, 64, 8);
+        proc.l2 = new L2_cache(262144, 64, 4);
+        proc.l3 = new L3_cache(12582912, 64, 16);
+        proc.l4 = new L4_cache(0, 0, 0);
+        continue;
+      }
       std::regex cache_size("[0-9]+");
       std::smatch size_match;
       int size_int[3];
@@ -84,14 +84,20 @@ int UserOptions::parse_flags(int argc, char** argv)
     }
     else if (strncmp(argv[i], "-n", 2) == 0 || strncmp(argv[i], "--n", 3) == 0)
     {
-      flags.set(3, true);
+      flags.set(NO_EMPIRICAL, true);
     }
     else if (strncmp(argv[i], "-k", 2) == 0 || strncmp(argv[i], "--k", 3) == 0)
     {
-      flags.set(2, true); 
+      flags.set(KEEP_TEMP, true); 
     }
     else if (strncmp(argv[i], "-l", 2) == 0 || strncmp(argv[i], "--coe", 3) == 0)
     {
+      static bool set = false;
+      if (set)
+      {
+        std::cout << "(Superfluous coexecution level specifications ignored.)" << std::endl;
+        continue;
+      }
       std::regex l_flag_regex("((-l=)|(--coexecution-level=))([0-9]+)");
       if (!regex_match(argv[i], l_flag_regex))
       {
@@ -103,15 +109,26 @@ int UserOptions::parse_flags(int argc, char** argv)
       std::string flag(argv[i]);
       regex_search(flag, level_match, coex_level_regex);
       int coex_level = stoi(level_match.str());
-      if (coex_level < 0 || coex_level > 100)
+      if (coex_level < 0)
       {
         std::cerr << "Invalid coexecution level." << std::endl;
         return 1;
       }
+      if (coex_level > 2)
+      {
+        std::cout << "Warning: high coexecution levels may cause long processing times." << std::endl;
+      }
       coex = coex_level;
+      set = true;
     }
     else if (strncmp(argv[i], "-t", 2) == 0 || strncmp(argv[i], "--com", 3) == 0)
     {
+      static bool set = false;
+      if (set)
+      {
+        std::cout << "(Superfluous competition threshold specifications ignored.)" << std::endl;
+        continue;
+      }
       std::regex t_flag_regex("((-t=)|(--competition-threshold=))([0-9]+)");
       if (!regex_match(argv[i], t_flag_regex))
       {
@@ -123,21 +140,27 @@ int UserOptions::parse_flags(int argc, char** argv)
       std::string flag(argv[i]);
       regex_search(flag, threshold_match, comp_level_regex);
       int comp_level = stoi(threshold_match.str());
-      if (comp_level < 1 || comp_level > 100000)
+      if (comp_level < 1)
       {
         std::cerr << "Invalid competition thredhold." << std::endl;
         return 1;
       }
       comp = comp_level;
+      set = true;
     }
     else if (strncmp(argv[i], "-e", 2) == 0 || strncmp(argv[i], "--use", 3) == 0)
     {
-
-      flags.set(1, true);
-      flags.set(2, true);
+      flags.set(EXISTING_TEMP_FILES, true);
+      flags.set(KEEP_TEMP, true);
     }
     else if (strncmp(argv[i], "-r", 2) == 0 || strncmp(argv[i], "--ran", 3) == 0)
     {
+      static bool set = false;
+      if (set)
+      {
+        std::cout << "(Superfluous ranking length specifications ignored.)" << std::endl;
+        continue;
+      }
       std::regex r_flag_regex("((-r=)|(--ranking-length=))([0-9]+)");
       if (!regex_match(argv[i], r_flag_regex))
       {
@@ -155,6 +178,7 @@ int UserOptions::parse_flags(int argc, char** argv)
         return 1;
       }
       ranking_length = rank_len;
+      set = true;
     }
     else if (strncmp(argv[i], "-", 1) == 0)
     {
@@ -427,43 +451,28 @@ int UserOptions::run_cache_setup()
 }
 
 int UserOptions::run_analysis()
-{
-  if (flags.test(SOURCE_CODE_ONLY))
+{ 
+  if (file_names.size() > 1)
   {
     std::cout << std::endl << "===========================================================" << std::endl << std::endl;
     std::cout << "SOURCE CODE ANALYSIS" << std::endl;
     std::cout << std::endl << "===========================================================" << std::endl << std::endl;
     std::cout << "This tool analyses your source code files to discover cache-inefficient data layouts in user-defined types." << std::endl;
-    std::cout << "Any user-defined types which can be optimised by reordering its data members will be reported, along with a suggestion for a new layout." << std::endl << std::endl;
+    std::cout << "Any user-defined types which can be optimised by reordering their data members will be reported, along with suggestions for new layouts." << std::endl << std::endl;
     std::cout << "Additionally, this tool will identify any user-defined types where the Least Common Multiple of the size of the type and the critical stride of your processor is small." << std::endl;
-    std::cout << "If objects of these types are stored in contiguous memory (such as an array or a vector), the same members of the class in different objects may compete for space in the cache." << std::endl;
+    std::cout << "If objects of these types are stored in contiguous memory (such as an array or vector), the same data members in different objects may compete for space in the cache." << std::endl;
     std::cout << "If access patterns involve accessing the same data members across multiple contiguous objects, this may create latency problems." << std::endl << std::endl;
-    std::cout << "Analysing your source code..." << std::endl << std::flush;
+    std::cout << "Analysing your source code..." << std::endl << std::endl << std::flush;
 
     fc.populate_file_names(file_names);
 
-    fc.detect_types();
-
-    fc.suggest_optimisations(proc.l1d->get_critical_stride());
-  }
-  else
-  {
-    if (file_names.size() > 1)
+    int src_ret = fc.detect_types(flags);
+    if (src_ret)
     {
-      std::cout << std::endl << "===========================================================" << std::endl << std::endl;
-      std::cout << "SOURCE CODE ANALYSIS" << std::endl;
-      std::cout << std::endl << "===========================================================" << std::endl << std::endl;
-      std::cout << "This tool analyses your source code files to discover cache-inefficient data layouts in user-defined types." << std::endl;
-      std::cout << "Any user-defined types which can be optimised by reordering their data members will be reported, along with suggestions for new layouts." << std::endl << std::endl;
-      std::cout << "Additionally, this tool will identify any user-defined types where the Least Common Multiple of the size of the type and the critical stride of your processor is small." << std::endl;
-      std::cout << "If objects of these types are stored in contiguous memory (such as an array or vector), the same data members in different objects may compete for space in the cache." << std::endl;
-      std::cout << "If access patterns involve accessing the same data members across multiple contiguous objects, this may create latency problems." << std::endl << std::endl;
-      std::cout << "Analysing your source code..." << std::endl << std::endl << std::flush;
+      std::cout << "Error detecting types vectors." << std::endl;
+      std::cout << "Exiting." << std::endl;
+      return 1;
     }
-
-    fc.populate_file_names(file_names);
-
-    fc.detect_types();
 
     bool optimised = fc.suggest_optimisations(proc.l1d->get_critical_stride());
 
@@ -478,57 +487,73 @@ int UserOptions::run_analysis()
     {
       std::cout << "No data ordering or type-size inefficiencies have been detected!" << std::endl;
     }
-    
-    std::cout << std::endl << "===========================================================" << std::endl << std::endl;
-    std::cout << "BINARY ANALYSIS" << std::endl;
-    std::cout << std::endl << "===========================================================" << std::endl << std::endl;
-    std::cout << "Groups of functions that call each other and compete for the same portion of the cache may cause latency problems." << std::endl;
-    std::cout << "If the number of functions in the group is above the associativity of the instruction cache ("<< proc.l1d->get_assoc() << " on this processor), these functions will definitely evict each other from the cache." << std::endl;
-    std::cout << "If the number of functions in the group is equal to or slighly below the associativity of the instruction cache, there is a significant probability that the functions will evict each other from the cache. The uncertainty (standard deviation) of this probability can also be a source of jitter at runtime." << std::endl;
-    std::cout << "The larger the region of cache memory that the functions compete for, the more code needs to be fetched from lower level caches the next time the evicted function needs to be executed, and the more significant the latency penalties are." << std::endl << std::endl;
-    std::cout << "Analysing your binary..." << std::endl << std::endl;
-
-    Binary* bin = new Binary(file_names[file_names.size() - 1], fc.get_user_types());
-    int bin_ret = 0;
-    bin_ret = bin->get_functions(*this);
-    if (bin_ret != 0)
-    {
-      std::cout << std::endl << "Error reading functions from " << file_names[file_names.size() - 1] << "." << std::endl;
-      std::cout << "Exiting." << std::endl;
-      return 1;
-    }
-    bin_ret = bin->populate_competition_vectors(*this);
-    if (bin_ret != 0)
-    {
-      std::cout << std::endl << "Error populating competition vectors from " << file_names[file_names.size() - 1] << "." << std::endl;
-      std::cout << "Exiting." << std::endl;
-      return 1;
-    }
-    bin_ret = bin->populate_coexecution_vectors(*this);
-    if (bin_ret != 0)
-    {
-      std::cout << std::endl << "Error populating coexecution vectors from " << file_names[file_names.size() - 1] << "." << std::endl;
-      std::cout << "Exiting." << std::endl;
-      return 1;
-    }
-    bin_ret = bin->find_problem_function_groups(*this);
-    if (bin_ret != 0)
-    {
-      std::cout << std::endl << "Error finding problem function groups." << std::endl;
-      std::cout << "Exiting." << std::endl;
-      return 1;
-    }
-    delete bin;
-    std::cout << std::endl;
   }
+  
+  std::cout << std::endl << "===========================================================" << std::endl << std::endl;
+  std::cout << "BINARY ANALYSIS" << std::endl;
+  std::cout << std::endl << "===========================================================" << std::endl << std::endl;
+  std::cout << "Groups of functions that call each other and compete for the same portion of the cache may cause latency problems." << std::endl;
+  std::cout << "If the number of functions in the group is above the associativity of the instruction cache ("<< proc.l1d->get_assoc() << " on this processor), these functions will definitely evict each other from the cache." << std::endl;
+  std::cout << "If the number of functions in the group is equal to or slighly below the associativity of the instruction cache, there is a significant probability that the functions will evict each other from the cache. The uncertainty (standard deviation) of this probability can also be a source of jitter at runtime." << std::endl;
+  std::cout << "The larger the region of cache memory that the functions compete for, the more code needs to be fetched from lower level caches the next time the evicted function needs to be executed, and the more significant the latency penalties are." << std::endl << std::endl;
+  if (comp < 256)
+  {
+    std::cout << "(Warning: low competition thresholds may lead to long processing times.)" << std::endl << std::endl;
+  }
+  if (coex > 2)
+  {
+    std::cout << "(Warning: high coexecution levels may lead to long processing times.)" << std::endl << std::endl;
+  }
+  std::cout << "Analysing your binary..." << std::endl << std::endl;
+  
+  
+
+  Binary b(file_names[file_names.size() - 1], fc.get_user_types());
+
+  int bin_ret = 0;
+  bin_ret = b.get_functions(*this);
+  if (bin_ret != 0)
+  {
+    std::cout << std::endl << "Error reading functions from " << file_names[file_names.size() - 1] << "." << std::endl;
+    std::cout << "Exiting." << std::endl;
+    return 1;
+  }
+
+  bin_ret = b.populate_competition_vectors(*this);
+  if (bin_ret != 0)
+  {
+    std::cout << std::endl << "Error populating competition vectors from " << file_names[file_names.size() - 1] << "." << std::endl;
+    std::cout << "Exiting." << std::endl;
+    return 1;
+  }
+  
+  bin_ret = b.populate_coexecution_vectors(*this);
+  if (bin_ret != 0)
+  {
+    std::cout << std::endl << "Error populating coexecution vectors from " << file_names[file_names.size() - 1] << "." << std::endl;
+    std::cout << "Exiting." << std::endl;
+    return 1;
+  }
+
+  bin_ret = b.find_problem_function_groups(*this);
+  if (bin_ret != 0)
+  {
+    std::cout << std::endl << "Error finding problem function groups." << std::endl;
+    std::cout << "Exiting." << std::endl;
+    return 1;
+  }
+  std::cout << std::endl;
+
   return 0;
 }
 
 UserOptions::~UserOptions()
 {
-  if (!flags.test(2))
+  if (!flags.test(KEEP_TEMP))
   {
-    std::string cmd_rm_tmp = "rm ./temp_files/*";
+    std::string cmd_rm_tmp = "rm ./temp_files/* > ./temp_files/debugtmp.txt";
     system(cmd_rm_tmp.c_str());
+    std::string finished = "echo \"run finished " + std::to_string(std::time(0)) + "\" > ./temp_files/debugtmp.txt";
+    system(finished.c_str());
   }
 }
