@@ -18,6 +18,8 @@ struct ProblemGroup
     std::set<size_t> functions;
     size_t coexecutions = 0;
     size_t overlap = 0;
+    ProblemGroup(std::set<size_t> functions, size_t coexecutions, size_t overlap)
+        : functions(functions), coexecutions(coexecutions), overlap(overlap) {}
 };
 
 class Function

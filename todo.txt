@@ -3,6 +3,8 @@
         -- at 512, there is one competing coexecuting group of 5 functions, and many of 4 and below
         -- at 1024, there is one group of 9, and several of 8, etc.
 
+-- also demonstrate that simply moving functions around in the code can change the number of problem functions
+
 report stuff (talking points)
 
 -- change bitflag ints to #define s

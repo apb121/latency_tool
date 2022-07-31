@@ -275,6 +275,7 @@ int Binary::populate_coexecution_vectors(UserOptions& uo)
             }
         }
     }
+
     return 0;
 }
 
@@ -301,7 +302,7 @@ int Binary::find_problem_function_groups(UserOptions& uo)
 
     int num_groups = 1;
 
-    for (int depth = uo.proc.l1i->get_assoc() / 2; num_groups != 0; ++depth)
+    for (int depth = 2 /*uo.proc.l1i->get_assoc() / 2*/; num_groups != 0; ++depth)
     {
         problem_groups.clear();
 
@@ -395,10 +396,13 @@ int Binary::find_problem_function_groups(UserOptions& uo)
                 }
             }
             size_t group_score = (pow(2, group.size()) * overlap_extent) * coexecution_count;
+            problem_groups_ranked.insert(std::pair<size_t, ProblemGroup>(group_score, ProblemGroup(group, coexecution_count, overlap_extent)));
+            /*
             if (overlap_extent > 0)
             {
-                problem_groups_ranked.insert(std::pair<size_t, ProblemGroup>(group_score, {group, coexecution_count, overlap_extent}));
+                
             }
+            */
         }
     }
 
@@ -413,13 +417,13 @@ int Binary::find_problem_function_groups(UserOptions& uo)
     std::cout << "This has been calculated based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << ", as well as a coexecution indirection level of " << uo.coex << " and competition overlap threshold of " << uo.comp << " bytes." << std::endl << std::endl;
     
     int ranking_num = 0;
-    std::map<size_t, ProblemGroup>::iterator i = problem_groups_ranked.end();
-    for (--i ; i != problem_groups_ranked.begin() && ranking_num < uo.ranking_length; --i)
+
+    for (std::map<size_t, ProblemGroup>::reverse_iterator i = problem_groups_ranked.rbegin(); i != problem_groups_ranked.rend() && ranking_num < uo.ranking_length; ++i)
     {
         std::cout << "=== Group ===" << std::endl << std::endl;
         size_t score = i->first;
         std::set<size_t> group = i->second.functions;
-        for (auto j : group)
+        for (auto& j : group)
         {
             std::cout << functions_list[j].get_name() << std::endl;
         }
@@ -428,6 +432,11 @@ int Binary::find_problem_function_groups(UserOptions& uo)
 
         ++ranking_num;
     }
+
+    // print some analysis including whether
+    // the number of functions in the groups indicate that there could be any jitter
+    // or indeed any serious competition for the cache
+
     if (problem_groups_ranked.size() > 1)
     {
         std::cout << std::endl << std::endl << "===== Suggestions =====" << std::endl << std::endl;
