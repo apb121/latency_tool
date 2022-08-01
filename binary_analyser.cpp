@@ -302,6 +302,12 @@ int Binary::find_problem_function_groups(UserOptions& uo)
 
     int num_groups = 1;
 
+    int max_group_size = 0;
+
+    int jitter_risks = 0;
+
+    int eviction_risks = 0;
+
     for (int depth = 2 /*uo.proc.l1i->get_assoc() / 2*/; num_groups != 0; ++depth)
     {
         problem_groups.clear();
@@ -318,6 +324,20 @@ int Binary::find_problem_function_groups(UserOptions& uo)
         }
 
         num_groups = problem_groups.size();
+
+        if (num_groups > 0)
+        {
+            max_group_size = depth;
+        }
+
+        if (depth > uo.proc.l1i->get_assoc() - 4 && depth <= uo.proc.l1i->get_assoc())
+        {
+            jitter_risks += num_groups;
+        }
+        else if (depth > uo.proc.l1i->get_assoc())
+        {
+            eviction_risks += num_groups;
+        }
 
         /* rank problem groups */
 
@@ -397,12 +417,6 @@ int Binary::find_problem_function_groups(UserOptions& uo)
             }
             size_t group_score = (pow(2, group.size()) * overlap_extent) * coexecution_count;
             problem_groups_ranked.insert(std::pair<size_t, ProblemGroup>(group_score, ProblemGroup(group, coexecution_count, overlap_extent)));
-            /*
-            if (overlap_extent > 0)
-            {
-                
-            }
-            */
         }
     }
 
@@ -439,8 +453,27 @@ int Binary::find_problem_function_groups(UserOptions& uo)
 
     if (problem_groups_ranked.size() > 1)
     {
+        std::cout << std::endl << std::endl << "===== Description =====" << std::endl << std::endl;
+        std::cout << "The largest identified group of coexecuting functions that compete for cache space contains " << max_group_size << " functions." << std::endl << std::endl;
+        if (jitter_risks > 0)
+        {
+            std::cout << "The number of groups whose size is close to or equal to the associativity of the L1 instruction cache is: " << jitter_risks << "." << std::endl;
+            std::cout << "Such groups of functions may cause an increase in the standard deviation (jitter) among run-time latencies, because there is a risk of cache evictions." << std::endl << std::endl;
+            if (eviction_risks > 0)
+            {
+                std::cout <<  "The number of groups whose size is above the associativity of the L1 instruction cache is: " << eviction_risks << "." << std::endl;
+                std::cout << "Such groups of functions are likely to cause an increase in latencies, because they will evict each other from the cache." << std::endl << std::endl;
+            }
+            std::cout << "The suggestions below may help to mitigate problems that may arise as a result of these functions competing for cache space." << std::endl;
+        }
+        else
+        {
+            std::cout << "The size of this group of functions is well below the associativity of the L1 instruction cache, and should therefore not be a source of serious latency issues. It may still be worth trying to reduce the competition between these functions by following the suggestions below." << std::endl;
+        }
+        // max group size
+        // number of groups that may cause jitter / cache evictions
         std::cout << std::endl << std::endl << "===== Suggestions =====" << std::endl << std::endl;
-        std::cout << "There are a number of things that programmers can do to mitigate these problems." << std::endl << std::endl;
+        std::cout << "There are a number of things that programmers can do to mitigate problems that might be identified in this analysis." << std::endl << std::endl;
         std::cout << "(1) rewrite the functions to involve less code!" << std::endl;
         std::cout << "(2) inline small functions that may evict parts of larger functions from the cache so that they do not conflict for cache space" << std::endl;
         std::cout << "(3) combine smaller functions that compete for cache space into fewer, longer functions" << std::endl;
