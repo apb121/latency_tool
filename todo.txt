@@ -145,18 +145,15 @@ report stuff (talking points)
         -- specific processor
             -- but all these options are customisable and toggleable
     -- lots of robustness checks
-
--- make a readme!
-
--- overall programme stuff
-    -- put the suggestions in the standard output
-        -- after the binary analysis put:
-            -- suggestions
+    -- suggestions
                 -- inline some functions (then they will not conflict! may also have other advantages...)
                 -- move functions around (put function that are called together together)
                 -- combine functions
                 -- try -falign-functions=...
                 -- (forcibly stop some functions coming into the cache with non temporal code accesses??)
+
+-- make a readme!
+            
     -- make the temp files only overwrite the old temp file at the end (with cp)
         -- so that if the programme is aborted halfway it isn't a problem...
     -- add checks for if data/instruction cache info is present in the analysis functions

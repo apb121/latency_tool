@@ -261,12 +261,14 @@ int UserOptions::run_cache_setup()
 
   // doesn't need to be fatal
   // use each of these checks separately below
+  /*
 
   if (proc.l1d->get_size() <= 0 || proc.l1i->get_size() <= 0)
   {
     std::cout << "It has not been possible to gauge the size of one of the L1 caches. At present, this is a fatal error." << std::endl;
     return 1;
   }
+  */
 
   if (flags.test(NO_EMPIRICAL) && ( proc.l1d->get_assoc() <= 0 ||
                                     proc.l1d->get_critical_stride() <= 0 ||
@@ -276,8 +278,10 @@ int UserOptions::run_cache_setup()
                                     proc.l1i->get_linesize() <= 0 ))
   {
     std::cout << "The following cache dimensions are unknown, but you have chosen not to execute empirical tests:" << std::endl;
+    if (proc.l1d->get_size() <= 0) { std::cout << "-- L1 data cache size" << std::endl; }
     if (proc.l1d->get_assoc() <= 0) { std::cout << "-- L1 data cache associativity" << std::endl; }
     if (proc.l1d->get_linesize() <= 0) { std::cout << "-- L1 data cache linesize" << std::endl; }
+    if (proc.l1i->get_size() <= 0) { std::cout << "-- L1 instruction cache size" << std::endl; }
     if (proc.l1i->get_assoc() <= 0) { std::cout << "-- L1 instruction cache associativity" << std::endl; }
     if (proc.l1i->get_linesize() <= 0) { std::cout << "-- L1 instruction cache linesize" << std::endl; }
     std::cout << "Associativities will default to 8, linesizes to 64, and critical strides to 4096.";
@@ -300,17 +304,15 @@ int UserOptions::run_cache_setup()
       suggested_values[0] = proc.l1d->empirical_assoc_test(flags);
       if (suggested_values[0] <= 0)
       {
-        std::cout << "Error assessing L1 data-cache associativity." << std::endl;
-        std::cout << "Exiting." << std::endl;
-        return 1;
+        std::cout << "Error assessing L1 data-cache associativity. Defaulting to 8." << std::endl;
+        suggested_values[0] = 8;
       }
       std::cout << "Suggested L1 data-cache associativity: " << suggested_values[0] << std::endl;
       suggested_values[1] = proc.l1d->empirical_stride_test(flags);
       if (suggested_values[1] <= 0)
       {
-        std::cout << "Error assessing L1 data-cache critical stride." << std::endl;
-        std::cout << "Exiting." << std::endl;
-        return 1;
+        std::cout << "Error assessing L1 data-cache critical stride. Defaulting to 4096" << std::endl;
+        suggested_values[1] = 4096;
       }
       std::cout << "Suggested L1 data-cache critical stride: " << suggested_values[1] << std::endl;
 
@@ -342,9 +344,8 @@ int UserOptions::run_cache_setup()
       suggested_values[0] = proc.l1d->empirical_assoc_test(flags);
       if (suggested_values[0] <= 0)
       {
-        std::cout << "Error assessing L1 data-cache associativity." << std::endl;
-        std::cout << "Exiting." << std::endl;
-        return 1;
+        std::cout << "Error assessing L1 data-cache associativity. Defaulting to 8." << std::endl;
+        suggested_values[0] = 8;
       }
       std::cout << "Suggested L1 data-cache associativity: " << suggested_values[0] << std::endl;
 
@@ -359,9 +360,8 @@ int UserOptions::run_cache_setup()
       suggested_values[1] = proc.l1d->empirical_stride_test(flags);
       if (suggested_values[1] <= 0)
       {
-        std::cout << "Error assessing L1 data-cache critical stride." << std::endl;
-        std::cout << "Exiting." << std::endl;
-        return 1;
+        std::cout << "Error assessing L1 data-cache critical stride. Defaulting to 4096" << std::endl;
+        suggested_values[1] = 4096;
       }
       std::cout << "Suggested L1 data-cache critical stride: " << suggested_values[1] << std::endl;
 
@@ -376,17 +376,15 @@ int UserOptions::run_cache_setup()
       suggested_values[2] = proc.l1i->empirical_assoc_test(flags);
       if (suggested_values[2] <= 0)
       {
-        std::cout << "Error assessing L1 instruction-cache associativity." << std::endl;
-        std::cout << "Exiting." << std::endl;
-        return 1;
+        std::cout << "Error assessing L1 instruction-cache associativity. Defaulting to 8." << std::endl;
+        suggested_values[2] = 8;
       }
       std::cout << "Suggested L1 instruction-cache associativity: " << suggested_values[2] << std::endl;
       suggested_values[3] = proc.l1i->empirical_stride_test(flags);
       if (suggested_values[3] <= 0)
       {
-        std::cout << "Error assessing L1 instruction-cache critical stride." << std::endl;
-        std::cout << "Exiting." << std::endl;
-        return 1;
+        std::cout << "Error assessing L1 instruction-cache critical stride. Defaulting to 4096." << std::endl;
+        suggested_values[3] = 4096;
       }
       std::cout << "Suggested L1 instruction-cache critical stride: " << suggested_values[3] << std::endl;
 
@@ -420,9 +418,8 @@ int UserOptions::run_cache_setup()
       suggested_values[2] = proc.l1i->empirical_assoc_test(flags);
       if (suggested_values[2] <= 0)
       {
-        std::cout << "Error assessing L1 instruction-cache associativity." << std::endl;
-        std::cout << "Exiting." << std::endl;
-        return 1;
+        std::cout << "Error assessing L1 instruction-cache associativity. Defaulting to 8." << std::endl;
+        suggested_values[2] = 8;
       }
       std::cout << "Suggested instruction-cache associativity: " << suggested_values[2] << std::endl;
 
@@ -437,9 +434,8 @@ int UserOptions::run_cache_setup()
       suggested_values[3] = proc.l1i->empirical_stride_test(flags);
       if (suggested_values[3] <= 0)
       {
-        std::cout << "Error assessing L1 instruction-cache critical stride." << std::endl;
-        std::cout << "Exiting." << std::endl;
-        return 1;
+        std::cout << "Error assessing L1 instruction-cache critical stride. Defaulting to 4096." << std::endl;
+        suggested_values[3] = 4096;
       }
       std::cout << "Suggested instruction-cache critical stride: " << suggested_values[3] << std::endl;
 
@@ -474,7 +470,17 @@ int UserOptions::run_analysis()
       return 1;
     }
 
-    bool optimised = fc.suggest_optimisations(proc.l1d->get_critical_stride());
+    int l1d_critical_stride = 0;
+    if (proc.l1d != nullptr)
+    {
+      l1d_critical_stride = proc.l1d->get_critical_stride();
+    }
+    if (l1d_critical_stride <= 0)
+    {
+      std::cout << std::endl << "(Warning: no L1 data cache critical stride was specified. Defaulting to 4096 bytes.)" << std::endl << std::endl;
+      l1d_critical_stride = 4096;
+    }
+    bool optimised = fc.suggest_optimisations(l1d_critical_stride);
 
     if (optimised)
     {

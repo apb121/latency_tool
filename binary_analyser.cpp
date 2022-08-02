@@ -135,11 +135,26 @@ int Binary::populate_competition_vectors(UserOptions& uo)
     /*
         identify functions that compete with each other for cache sets
     */
-    int critical_stride = uo.proc.l1i->get_critical_stride();
+
+    int critical_stride = 0;
+    if (uo.proc.l1i)
+    {
+        critical_stride = uo.proc.l1i->get_critical_stride();
+    }
     if (critical_stride <= 0)
     {
-        std::cout << "Error populating competition vectors: invalid critical stride of " << critical_stride << std::endl;
-        return -1;
+        std::cout << std::endl << "(Warning: no L1 instruction cache critical stride was specified. Defaulting to 4096 bytes.)" << std::endl << std::endl;
+        critical_stride = 4096;
+    }
+    int associativity = 0;
+    if (uo.proc.l1i)
+    {
+        associativity = uo.proc.l1i->get_assoc();
+    }
+    if (associativity == 0)
+    {
+        std::cout << std::endl << "(Warning: no L1 instruction cache associativity was specified. Defaulting to 8.)" << std::endl << std::endl;
+        associativity = 8;
     }
     int* span = new int[critical_stride];
     for (auto& i : functions_list)
@@ -420,15 +435,34 @@ int Binary::find_problem_function_groups(UserOptions& uo)
         }
     }
 
+    int critical_stride = 0;
+    if (uo.proc.l1i)
+    {
+        critical_stride = uo.proc.l1i->get_critical_stride();
+    }
+    if (critical_stride == 0)
+    {
+        critical_stride = 4096;
+    }
+    int associativity = 0;
+    if (uo.proc.l1i)
+    {
+        associativity = uo.proc.l1i->get_assoc();
+    }
+    if (associativity == 0)
+    {
+        associativity = 8;
+    }
+
     if (problem_groups_ranked.size() == 0)
     {
-        std::cout << "Based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << " and the chosen levels of coexecution indirecion and competition overlap, no cache-competition related sources of latency problems have been identified!" << std::endl << std::endl;
+        std::cout << "Based on the instruction-cache's critical stride of " << critical_stride << " bytes and associativity of " << associativity << " and the chosen levels of coexecution indirecion and competition overlap, no cache-competition related sources of latency problems have been identified!" << std::endl << std::endl;
         return 0;
     }
 
     std::cout << std::endl << "The following groups of functions have been identified as potential sources of latency problems." << std::endl;
     std::cout << "They have been ranked based on a combination of the number of functions in the group and the amount of cache space they compete for." << std::endl;
-    std::cout << "This has been calculated based on the instruction-cache's critical stride of " << uo.proc.l1i->get_critical_stride() << " bytes and associativity of " << uo.proc.l1i->get_assoc() << ", as well as a coexecution indirection level of " << uo.coex << " and competition overlap threshold of " << uo.comp << " bytes." << std::endl << std::endl;
+    std::cout << "This has been calculated based on the instruction-cache's critical stride of " << critical_stride << " bytes and associativity of " << associativity << ", as well as a coexecution indirection level of " << uo.coex << " and competition overlap threshold of " << uo.comp << " bytes." << std::endl << std::endl;
     
     int ranking_num = 0;
 

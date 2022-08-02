@@ -489,6 +489,11 @@ bool UDType_new::suggest_optimisation(int critical_stride)
       std::cout << "This ordering saves " << curr_size - min_size << " bytes." << std::endl << std::endl;
   }
   int lcm = std::lcm(total_size, critical_stride);
+  if (total_size <= 0)
+  {
+    std::cout << "Class size error." << std::endl;
+    return optimised;
+  }
   if ((lcm / total_size) <= 16)
   {
     optimised = true;
