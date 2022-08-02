@@ -476,7 +476,8 @@ int Binary::find_problem_function_groups(UserOptions& uo)
         return 0;
     }
 
-    std::cout << std::endl << "The following groups of functions have been identified as potential sources of latency problems." << std::endl;
+    std::cout << std::endl << "===== Function group analysis =====" << std::endl << std::endl;
+    std::cout << "The following groups of functions have been identified as potential sources of latency problems." << std::endl;
     std::cout << "They have been ranked based on a combination of the number of functions in the group and the amount of cache space they compete for." << std::endl;
     std::cout << "This has been calculated based on the instruction-cache's critical stride of " << critical_stride << " bytes and associativity of " << associativity << ", as well as a coexecution indirection level of " << uo.coex << " and competition overlap threshold of " << uo.comp << " bytes." << std::endl << std::endl;
     

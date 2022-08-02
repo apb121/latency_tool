@@ -118,7 +118,11 @@ report stuff (talking points)
                 -- (note duplicates... and use of map/set)
             -- show output
             -- question: library functions?
+                -- all functions flag
             -- using class names identified from source code analysis
+            -- consider: overloading
+                -- solved by using gdb, including parameters in function 'names'
+            -- consider: templates!
         -- identifying relations between functions
             -- objdump -d -C -Mintel --no-show-raw-insn <filename> > ./temp_files/objdumptmp.txt
                 -d disassemble
@@ -164,17 +168,11 @@ report stuff (talking points)
         -- so that if the programme is aborted halfway it isn't a problem...
     -- might be better if the binary is the first file?
     -- give the user the option to combine the system variables and known, manually-input specific values ??
-    -- have a think about the binary only flag and doing all functions (i.e., including 'W' rather than just 'T')
--- suggestions
--- source code (class) parser
 
 -- empirical cache tests
     -- more sophisticated stddev checking for spikes?
 -- binary analyser
-    -- nm function functionality
-        -- which functions are called near to each other
-        -- consider: overloading
-        -- consider: templates!
+
     -- better to use objdump for many reasons
         -- a lot of function calls (e.g. to constructors, assignment operators, multiple functions from templates, etc.) are not explicit in source code
             -- particularly useful because it can identify slow-downs that could never been seen just by looking at the source code. constructors might conflict!
@@ -185,5 +183,6 @@ report stuff (talking points)
             -- note also that for 1024, you get groups at 4-function intervals!
         -- cool: for the critical stride 1024 test and looking for groups of 9 ... there is 1! (for groups of 8 there are 12 groups)
         -- when commenting out the function "for (auto& i : problem_groups)", the number of 6-large groups of competing functions goes down from 14 to 6
+        -- interesting to compare old run outputs of competing function groups and newer ones
 -- identify discontiguous data structures
 
