@@ -61,7 +61,7 @@ int Binary::get_functions(UserOptions& uo)
         nm_file >> std::ws;
         std::string name = "";
         char c = nm_file.get();
-        while (c != '(' && c != '\n' /*!isspace(c)*/)
+        while (c != '(' && c != '/' && c != '\n' /*!isspace(c)*/)
         {
             name += c;
             c = nm_file.get();
@@ -115,11 +115,12 @@ int Binary::get_functions(UserOptions& uo)
         location += buf[4];
         size_t address = atoi(buf[0]);
         size_t size = atoi(buf[1]);
-
+        
         if (size < uo.comp)
         {
             continue;
         }
+        
 
         /* (nm includes duplicates for some reason...) */
 
@@ -391,6 +392,7 @@ int Binary::find_problem_function_groups(UserOptions& uo)
             {
                 if (overlap[i] == 1) { ++overlap_extent; }
             }
+            
             /* calculate how many times these functions call each other */
 
             size_t coexecution_count = 0;
