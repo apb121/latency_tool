@@ -13,7 +13,7 @@ int UserOptions::parse_flags(int argc, char** argv)
     {
       if (flags.test(MANUAL_CACHE))
       {
-        std::cerr << "Incompatible combination of flags (--cache-info-only and --manual-cache)." << std::endl;
+        std::cout << "Incompatible combination of flags (--cache-info-only and --manual-cache)." << std::endl;
         return 1;
       }
       flags.set(CACHE_INFO_ONLY, true);
@@ -27,14 +27,14 @@ int UserOptions::parse_flags(int argc, char** argv)
       }
       if (flags.test(CACHE_INFO_ONLY))
       {
-        std::cerr << "Incompatible combination of flags (--cache-info-only and --manual-cache)." << std::endl;
+        std::cout << "Incompatible combination of flags (--cache-info-only and --manual-cache)." << std::endl;
         return 1;
       }
       flags.set(MANUAL_CACHE, true);
       std::regex m_flag_regex("((-m=)|(--manual-cache=))(([0-9]+:[0-9]+:[0-9]+)(::[0-9]+:[0-9]+:[0-9]+)*|default)");
       if (!regex_match(argv[i], m_flag_regex))
       {
-        std::cerr << "Invalid -manual-cache flag format." << std::endl;
+        std::cout << "Invalid -manual-cache flag format." << std::endl;
         return 1;
       }
       std::string flag(argv[i]);
@@ -101,7 +101,7 @@ int UserOptions::parse_flags(int argc, char** argv)
       std::regex l_flag_regex("((-l=)|(--coexecution-level=))([0-9]+)");
       if (!regex_match(argv[i], l_flag_regex))
       {
-        std::cerr << "Invalid --coexecution-level flag format." << std::endl;
+        std::cout << "Invalid --coexecution-level flag format." << std::endl;
         return 1;
       }
       std::regex coex_level_regex("[0-9]+");
@@ -111,7 +111,7 @@ int UserOptions::parse_flags(int argc, char** argv)
       int coex_level = stoi(level_match.str());
       if (coex_level < 0)
       {
-        std::cerr << "Invalid coexecution level." << std::endl;
+        std::cout << "Invalid coexecution level." << std::endl;
         return 1;
       }
       if (coex_level > 2)
@@ -132,7 +132,7 @@ int UserOptions::parse_flags(int argc, char** argv)
       std::regex t_flag_regex("((-t=)|(--competition-threshold=))([0-9]+)");
       if (!regex_match(argv[i], t_flag_regex))
       {
-        std::cerr << "Invalid --competition-threshold flag format." << std::endl;
+        std::cout << "Invalid --competition-threshold flag format." << std::endl;
         return 1;
       }
       std::regex comp_level_regex("[0-9]+");
@@ -142,7 +142,7 @@ int UserOptions::parse_flags(int argc, char** argv)
       int comp_level = stoi(threshold_match.str());
       if (comp_level < 1)
       {
-        std::cerr << "Invalid competition thredhold." << std::endl;
+        std::cout << "Invalid competition thredhold." << std::endl;
         return 1;
       }
       comp = comp_level;
@@ -164,7 +164,7 @@ int UserOptions::parse_flags(int argc, char** argv)
       std::regex r_flag_regex("((-r=)|(--ranking-length=))([0-9]+)");
       if (!regex_match(argv[i], r_flag_regex))
       {
-        std::cerr << "Invalid --ranking-length flag format." << std::endl;
+        std::cout << "Invalid --ranking-length flag format." << std::endl;
         return 1;
       }
       std::regex rank_length_regex("[0-9]+");
@@ -174,7 +174,7 @@ int UserOptions::parse_flags(int argc, char** argv)
       int rank_len = stoi(rank_match.str());
       if (rank_len < 1)
       {
-        std::cerr << "Invalid ranking length." << std::endl;
+        std::cout << "Invalid ranking length." << std::endl;
         return 1;
       }
       ranking_length = rank_len;
@@ -182,7 +182,7 @@ int UserOptions::parse_flags(int argc, char** argv)
     }
     else if (strncmp(argv[i], "-", 1) == 0)
     {
-        std::cerr << "Unrecognised flag \"" << argv[i] << "\"" << std::endl;
+        std::cout << "Unrecognised flag \"" << argv[i] << "\"" << std::endl;
         return 1;
     }
     else
@@ -218,7 +218,7 @@ int UserOptions::run_file_setup()
     std::ifstream f(file_names[i]);
     if (!f.good())
     {
-      std::cerr << "The file \"" << file_names[i] << "\" does not exist" << std::endl;
+      std::cout << "The file \"" << file_names[i] << "\" does not exist" << std::endl;
       return 1;
     }
   }
@@ -300,16 +300,16 @@ int UserOptions::run_cache_setup()
       suggested_values[0] = proc.l1d->empirical_assoc_test(flags);
       if (suggested_values[0] <= 0)
       {
-        std::cerr << "Error assessing L1 data-cache associativity." << std::endl;
-        std::cerr << "Exiting." << std::endl;
+        std::cout << "Error assessing L1 data-cache associativity." << std::endl;
+        std::cout << "Exiting." << std::endl;
         return 1;
       }
       std::cout << "Suggested L1 data-cache associativity: " << suggested_values[0] << std::endl;
       suggested_values[1] = proc.l1d->empirical_stride_test(flags);
       if (suggested_values[1] <= 0)
       {
-        std::cerr << "Error assessing L1 data-cache critical stride." << std::endl;
-        std::cerr << "Exiting." << std::endl;
+        std::cout << "Error assessing L1 data-cache critical stride." << std::endl;
+        std::cout << "Exiting." << std::endl;
         return 1;
       }
       std::cout << "Suggested L1 data-cache critical stride: " << suggested_values[1] << std::endl;
@@ -342,8 +342,8 @@ int UserOptions::run_cache_setup()
       suggested_values[0] = proc.l1d->empirical_assoc_test(flags);
       if (suggested_values[0] <= 0)
       {
-        std::cerr << "Error assessing L1 data-cache associativity." << std::endl;
-        std::cerr << "Exiting." << std::endl;
+        std::cout << "Error assessing L1 data-cache associativity." << std::endl;
+        std::cout << "Exiting." << std::endl;
         return 1;
       }
       std::cout << "Suggested L1 data-cache associativity: " << suggested_values[0] << std::endl;
@@ -359,8 +359,8 @@ int UserOptions::run_cache_setup()
       suggested_values[1] = proc.l1d->empirical_stride_test(flags);
       if (suggested_values[1] <= 0)
       {
-        std::cerr << "Error assessing L1 data-cache critical stride." << std::endl;
-        std::cerr << "Exiting." << std::endl;
+        std::cout << "Error assessing L1 data-cache critical stride." << std::endl;
+        std::cout << "Exiting." << std::endl;
         return 1;
       }
       std::cout << "Suggested L1 data-cache critical stride: " << suggested_values[1] << std::endl;
@@ -376,16 +376,16 @@ int UserOptions::run_cache_setup()
       suggested_values[2] = proc.l1i->empirical_assoc_test(flags);
       if (suggested_values[2] <= 0)
       {
-        std::cerr << "Error assessing L1 instruction-cache associativity." << std::endl;
-        std::cerr << "Exiting." << std::endl;
+        std::cout << "Error assessing L1 instruction-cache associativity." << std::endl;
+        std::cout << "Exiting." << std::endl;
         return 1;
       }
       std::cout << "Suggested L1 instruction-cache associativity: " << suggested_values[2] << std::endl;
       suggested_values[3] = proc.l1i->empirical_stride_test(flags);
       if (suggested_values[3] <= 0)
       {
-        std::cerr << "Error assessing L1 instruction-cache critical stride." << std::endl;
-        std::cerr << "Exiting." << std::endl;
+        std::cout << "Error assessing L1 instruction-cache critical stride." << std::endl;
+        std::cout << "Exiting." << std::endl;
         return 1;
       }
       std::cout << "Suggested L1 instruction-cache critical stride: " << suggested_values[3] << std::endl;
@@ -420,8 +420,8 @@ int UserOptions::run_cache_setup()
       suggested_values[2] = proc.l1i->empirical_assoc_test(flags);
       if (suggested_values[2] <= 0)
       {
-        std::cerr << "Error assessing L1 instruction-cache associativity." << std::endl;
-        std::cerr << "Exiting." << std::endl;
+        std::cout << "Error assessing L1 instruction-cache associativity." << std::endl;
+        std::cout << "Exiting." << std::endl;
         return 1;
       }
       std::cout << "Suggested instruction-cache associativity: " << suggested_values[2] << std::endl;
@@ -437,8 +437,8 @@ int UserOptions::run_cache_setup()
       suggested_values[3] = proc.l1i->empirical_stride_test(flags);
       if (suggested_values[3] <= 0)
       {
-        std::cerr << "Error assessing L1 instruction-cache critical stride." << std::endl;
-        std::cerr << "Exiting." << std::endl;
+        std::cout << "Error assessing L1 instruction-cache critical stride." << std::endl;
+        std::cout << "Exiting." << std::endl;
         return 1;
       }
       std::cout << "Suggested instruction-cache critical stride: " << suggested_values[3] << std::endl;

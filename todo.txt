@@ -73,7 +73,6 @@ report stuff (talking points)
                     -- putting user defined types in the middle!
                 -- some tricks
                     -- ignore anything in curly brackets
-                
                 -- function parameters
                     -- func(int a = 5, char g = 'f')
                 -- variable declarations inside functions (especially inline)
@@ -129,6 +128,11 @@ report stuff (talking points)
                 -- combining the two to find groups of functions that call each other and evict each other from the cache
                     -- weighting (and ranking) number of coexecuting functions and amount of competition in bytes
     -- user flags!
+        -- warnings for potentially problematic flag choices
+        -- e.g.,
+            -- high indirection numbers
+            -- low competition thresholds
+            -- large ranking lengths
     -- defaults
     -- flow of information
         -- esp: how different parts use each others' information
@@ -141,26 +145,6 @@ report stuff (talking points)
         -- specific processor
             -- but all these options are customisable and toggleable
     -- lots of robustness checks
-
---emphasise the difficulty of catching appropriate cases of variable declarations and rejecting inappropriate cases
-    -- inline functions
-    -- function parameters
-    -- complex cases (see notebook)
-    -- using nm and objdump
-
-code stuff
-
--- add warnings for potentially problematic flag choices
-    -- e.g.,
-        -- high indirection numbers
-        -- low competition thresholds
-        -- large ranking lengths
-
--- source code analyser
-    -- optimisation: get things that are at the moment being calculated every time to sometimes return just a value
-        -- e.g. calculate_size and parent_size, etc.
-            -- in fact within the calculate size function it could check if the stored size is 0
-                -- at the end of the function if all checks have passed, only then is the value of size in the class is changed from 0
 
 -- make a readme!
 
