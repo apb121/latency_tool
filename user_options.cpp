@@ -5,6 +5,47 @@ int UserOptions::parse_flags(int argc, char** argv)
   int i = 1;
   for (; i < argc; ++i)
   {
+    if (strncmp(argv[i], "-h", 2) == 0 || strncmp(argv[i], "--h", 3) == 0)
+    {
+      std::cout << std::endl << "===== Help =====" << std::endl << std::endl;
+      std::cout << "This tool identifies potential sources of L1-data and -instruction cache inefficiency." << std::endl << std::endl;
+      std::cout << "To use the tool, invoke ./latency_tool with a list of filepaths as command line arguments. The last file listed will be interpreted as a binary (which must be compiled with debugging symbols, e.g., the gcc flag -g), and any other files listed will be interpreted as the C++ source code files from which the binary was compiled." << std::endl << std::endl;
+      std::cout << "Unless guided to to otherwise (see the options available below), the tool will use your processor's cache info to:" << std::endl;
+      std::cout << "-- Identify inefficiently ordered user-defined classes and structs" << std::endl;
+      std::cout << "-- Identify inefficiently sized user-defined classes and structs" << std::endl;
+      std::cout << "-- Identify inefficiently sized functions" << std::endl;
+      std::cout << "-- Identify groups of functions which both coexecute and compete for cache space" << std::endl << std::endl;
+      std::cout << "Options available to the user are as follows: " << std::endl << std::endl;
+
+      std::cout << "  -c/--cache-info-only" << std::endl << std::endl;
+      std::cout << "    With this option, the tool will analyse your processor's caches and print out information about their sizes, linesizes, associativities, and critical stride. If the system does not provide these values directly, they will be analysed using empirical tests (which may take a couple of minutes). This option is incompatible with the -m/-manual-cache flag." << std::endl << std::endl;
+
+      std::cout << "  -m=/--manual-cache=<size>:<associativity>:<linesize>::<size>:<associativity>:<linesize>:: ..." << std::endl << std::endl;
+      std::cout << "    With this option, the tool will run using the cache dimensions you specify manually. The caches should be specified in the order (1) L1 data (2) L1 instruction (3) L2 (4) L3 (5) L4. Any missing caches will be ignored. This option is incompatible with the -c/--cache-info-only flag." << std::endl << std::endl;
+
+      std::cout << "  -n/--no-empirical-tests" << std::endl << std::endl;
+      std::cout << "    With this option, the tool will not run any empirical tests of cache dimensions. If the system does not provide any necessary values, associativities will default to 8, linesizes to 64, and critical strides to 4096." << std::endl << std::endl;
+
+      std::cout << "  -l=/--coexecution-level=<level>" << std::endl << std::endl;
+      std::cout << "    With this option, the user can decide how many levels of coexecution indirection constitutes coexecution. For example, given functions A(), B(), C(), and D() where A calls B, B calls C, and C calls D, A and B would always be considered to coexecute, A and C would be considered to coexecute only with at least 1 level of indirection, and A and D would be considered to coexecute only with at least 2 levels of indirection. High levels of coexecution indirection may cause long analysis times." << std::endl << std::endl;
+
+      std::cout << "  -t=/--competition-threshold=<threshold>" << std::endl << std::endl;
+      std::cout << "    With this option, the user can decide the threshold of overlap in cache space that constitutes competition. For example, with a threshold of 200 bytes, any two functions that only overlap in cache space by less than 200 bytes would not be considered as competing with each other. Low competition thresholds may cause long analysis times." << std::endl << std::endl;
+
+      std::cout << "  -r=/--ranking-length=<length>" << std::endl << std::endl;
+      std::cout << "    With this option, the user can decide how many of the most problematic groups of functions are printed after analysis." << std::endl << std::endl;
+
+      std::cout << "  -a/--all-functions" << std::endl << std::endl;
+      std::cout << "    With this option, the tool will include all functions found in the binary in its analysis, as opposed to the default behaviour of just using user-defined functions and functions in user-defined types. If the binary is not very small or the competition threshold is low, this can cause (extremely) long analysis times." << std::endl << std::endl;
+
+      std::cout << "  -k/--keep-temporary-files" << std::endl << std::endl;
+      std::cout << "    With this option, the tool will not automatically delete the temp files it used for its analysis when it terminates." << std::endl << std::endl;
+
+      std::cout << "  -e/--use-existing-cache-temp-files" << std::endl << std::endl;
+      std::cout << "    With this option, the tool will attempt to find previous empirical cache test temp files and use the results from those rather than run the tests again." << std::endl << std::endl;
+
+      return 1;
+    }
     if (strncmp(argv[i], "-a", 2) == 0 || strncmp(argv[i], "--a", 3) == 0)
     {
       std::cout << std::endl << "(Warning: unless your binary file is very small or your competition threshold is very high, the --all-functions flag can cause (extremely) long execution times." << std::endl;

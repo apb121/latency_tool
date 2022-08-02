@@ -23,7 +23,7 @@
             -a, --all-functions {6} (?) (make sure to look at all functions with binary only)
             -c, --cache-info-only {5}
             -m=..., --manual-cache=<size>:<associativity>:<linesize>::... {4}
-            -n, --no-empirical-tests (default critical stride = 4096?, default assocativity = 8?) {3}
+            -n, --no-empirical-tests (default critical stride = 4096, default assocativity = 8) {3}
             -k, --keep-temporary-files {2}
             -l= --coexecution-level= (default = 1)
             -t= --competition-threshold= (default = 256)
