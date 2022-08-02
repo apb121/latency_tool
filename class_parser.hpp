@@ -20,7 +20,7 @@
 #include <cmath>
 #include <algorithm>
 
-#define BINARY_ONLY 6
+#define ALL_FUNCTIONS 6
 #define CACHE_INFO_ONLY 5
 #define MANUAL_CACHE 4
 #define NO_EMPIRICAL 3

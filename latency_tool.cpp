@@ -2,7 +2,7 @@
 #include <bit>
 #include <bitset>
 
-#define BINARY_ONLY 6
+#define ALL_FUNCTIONS 6
 #define CACHE_INFO_ONLY 5
 #define MANUAL_CACHE 4
 #define NO_EMPIRICAL 3
@@ -20,7 +20,7 @@
             ./latency_tool <binary_file> <source_files>
 
     flags:
-            -b, --binary-only {6} (?) (make sure to look at all functions with binary only)
+            -a, --all-functions {6} (?) (make sure to look at all functions with binary only)
             -c, --cache-info-only {5}
             -m=..., --manual-cache=<size>:<associativity>:<linesize>::... {4}
             -n, --no-empirical-tests (default critical stride = 4096?, default assocativity = 8?) {3}
@@ -33,6 +33,12 @@
 
 int main(int argc, char** argv)
 {
+    TemplateClass<int> i;
+    int i_t = i.get_t();
+
+    TemplateClass<char> c;
+    char c_t = c.get_t();
+
     UserOptions uo;
 
     int ret = uo.parse_flags(argc, argv);

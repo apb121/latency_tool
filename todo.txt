@@ -100,6 +100,8 @@ report stuff (talking points)
                         -- suggest specialisations?
                     -- many-level recursive array<>s
                     -- comma separated lists of variables
+                    -- slash-star comments... (see both/all places where characters (usu. brackets) in comments are ignored)
+                    -- slash-slash comments
             -- alignments
                 -- vector<char[5]>, e.g., aligns by char
             -- reordering
@@ -153,27 +155,22 @@ report stuff (talking points)
                 -- (forcibly stop some functions coming into the cache with non temporal code accesses??)
 
 -- make a readme!
+
+-- add a --help flag!
+
+-- mention also large function detector in binary analysis
             
     -- make the temp files only overwrite the old temp file at the end (with cp)
         -- so that if the programme is aborted halfway it isn't a problem...
-    -- add checks for if data/instruction cache info is present in the analysis functions
     -- might be better if the binary is the first file?
-    -- add makefile functionality (programme executes make?)
     -- give the user the option to combine the system variables and known, manually-input specific values ??
-    -- make it so that not having the size of one of the caches is not fatal (just do data/instructions if the other is missing)
-    -- factor out all the stuff in main if possible
-    -- slash-star comments... (see both/all places where characters (usu. brackets) in comments are ignored)
-    -- slash-slash comments
-    -- size of classes that contain UDTypes as members!
-    -- calculate number of coexecutions of a problem group... (to evaluate problematicness with overlap extent and overall size of group)
-    -- have a think about the binary only flag and doing all functions (i.e., including 'W' rather than just 'T') 
+    -- have a think about the binary only flag and doing all functions (i.e., including 'W' rather than just 'T')
 -- suggestions
 -- source code (class) parser
 
 -- empirical cache tests
     -- more sophisticated stddev checking for spikes?
 -- binary analyser
-    -- makefile functionality?
     -- nm function functionality
         -- which functions are called near to each other
         -- consider: overloading

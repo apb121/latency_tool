@@ -5,9 +5,10 @@ int UserOptions::parse_flags(int argc, char** argv)
   int i = 1;
   for (; i < argc; ++i)
   {
-    if (strncmp(argv[i], "-b", 2) == 0 || strncmp(argv[i], "--b", 3) == 0)
+    if (strncmp(argv[i], "-a", 2) == 0 || strncmp(argv[i], "--a", 3) == 0)
     {
-      flags.set(BINARY_ONLY, true);
+      std::cout << std::endl << "(Warning: unless your binary file is very small or your competition threshold is very high, the --all-functions flag can cause (extremely) long execution times." << std::endl;
+      flags.set(ALL_FUNCTIONS, true);
     }
     else if (strncmp(argv[i], "-c", 2) == 0 || strncmp(argv[i], "--c", 3) == 0)
     {

@@ -10,7 +10,7 @@
 #include <regex>
 #include <ctime>
 
-#define BINARY_ONLY 6
+#define ALL_FUNCTIONS 6
 #define CACHE_INFO_ONLY 5
 #define MANUAL_CACHE 4
 #define NO_EMPIRICAL 3
@@ -36,6 +36,14 @@ struct UserOptions
     int run_cache_setup();
     int run_analysis();
     ~UserOptions();
+};
+
+template <typename T>
+class TemplateClass
+{
+    T t;
+    public:
+    T get_t() { return t; }
 };
 
 struct Inefficient

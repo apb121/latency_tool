@@ -58,15 +58,10 @@ int Binary::get_functions(UserOptions& uo)
             type T: functions in the code section
             type W: weak object, e.g., function in a class
         */
-        if (buf[2][0] != 'T' && buf[2][0] != 'W')
-        {
-            while (nm_file.get() != '\n' && !nm_file.eof()) {};
-            continue;
-        }
         nm_file >> std::ws;
         std::string name = "";
         char c = nm_file.get();
-        while (c != '(' && !isspace(c))
+        while (c != '(' && c != '\n' /*!isspace(c)*/)
         {
             name += c;
             c = nm_file.get();
@@ -88,7 +83,7 @@ int Binary::get_functions(UserOptions& uo)
                 c = nm_file.get();
             }
         }
-        if (name == "_start")
+        if (!uo.flags.test(ALL_FUNCTIONS) && name == "_start")
         {
             while (nm_file.get() != '\n' && !nm_file.eof()) {};
             continue;
@@ -105,13 +100,13 @@ int Binary::get_functions(UserOptions& uo)
                 UDT_func = true;
             }
         }
-        if (UDT_func == false && buf[2][0] != 'T')
+        if (!uo.flags.test(ALL_FUNCTIONS) && UDT_func == false && buf[2][0] != 'T')
         {
             while (nm_file.get() != '\n' && !nm_file.eof()) {};
             continue;
         }
         std::string location;
-        while (c != '/')
+        while (!nm_file.eof() && c != '\n' && c != '/')
         {
             c = nm_file.get();
         }
@@ -120,6 +115,11 @@ int Binary::get_functions(UserOptions& uo)
         location += buf[4];
         size_t address = atoi(buf[0]);
         size_t size = atoi(buf[1]);
+
+        if (size < uo.comp)
+        {
+            continue;
+        }
 
         /* (nm includes duplicates for some reason...) */
 
@@ -159,6 +159,16 @@ int Binary::populate_competition_vectors(UserOptions& uo)
     int* span = new int[critical_stride];
     for (auto& i : functions_list)
     {
+        if (i.second.get_size() < uo.comp)
+        {
+            continue;
+        }
+        if (i.second.get_size() > critical_stride)
+        {
+            std::cout << std::endl << "=== Large function detected ===" << std::endl << std::endl;
+            std::cout << "Function name: " << i.second.get_name() << std::endl << std::endl;
+            std::cout << "This function spans between " << i.second.get_size() / critical_stride << " and " << (i.second.get_size() / critical_stride) + 1 << " critical strides. This means that, when it executes, it will occupy " << (i.second.get_size() / critical_stride) + 1 << " cache ways, and may therefore compete with itself for cache space." << std::endl << std::endl;
+        }
         for (int j = 0; j < critical_stride; ++j)
         {
             span[j] = 0;
@@ -170,6 +180,12 @@ int Binary::populate_competition_vectors(UserOptions& uo)
         }
         for (auto j : functions_list)
         {
+            
+            if (j.second.get_size() < uo.comp)
+            {
+                continue;
+            }
+            
             if (j.second.get_address() == i.second.get_address()) { continue; }
             int comp_stride = 0;
             for (size_t k = 0; k < j.second.get_size(); ++k)
