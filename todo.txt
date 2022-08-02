@@ -13,6 +13,7 @@ report stuff (talking points)
     -- cache info
         -- class structure in my code
             -- class hierarchy
+            -- currently unused class types to add later extensibility to other caches
         -- different cache structures
         -- missing system variables!
             -- show sysconf code
@@ -95,8 +96,11 @@ report stuff (talking points)
                 -- user defined types inside user-defined types
                     -- iterative building these into the checkers
                 -- remaining issues
-                    -- recursive array<>
                     -- comma separated declarations
+                    -- add template functionality to class/variable search
+                        -- suggest specialisations?
+                    -- many-level recursive array<>s
+                    -- comma separated lists of variables
             -- alignments
                 -- vector<char[5]>, e.g., aligns by char
             -- reordering
@@ -143,7 +147,6 @@ report stuff (talking points)
     -- function parameters
     -- complex cases (see notebook)
     -- using nm and objdump
---try to optimise OOP coursework!
 
 code stuff
 
@@ -153,8 +156,6 @@ code stuff
         -- low competition thresholds
         -- large ranking lengths
 
--- print explanations out to read while processing is taking place
-
 -- source code analyser
     -- optimisation: get things that are at the moment being calculated every time to sometimes return just a value
         -- e.g. calculate_size and parent_size, etc.
@@ -163,21 +164,15 @@ code stuff
 
 -- make a readme!
 
--- main needs serious structural cleanup
-    -- maybe put the stuff in the UDType class
-
 -- overall programme stuff
     -- put the suggestions in the standard output
         -- after the binary analysis put:
-            -- explanation
-                -- groups of coexecuting and competing functions near the associativity cause jitter
-                -- groups of coexecuting and competing functions above the associativity are guaranteed to evict each other from the cache and therefore cause latency issues
             -- suggestions
                 -- inline some functions (then they will not conflict! may also have other advantages...)
                 -- move functions around (put function that are called together together)
                 -- combine functions
                 -- try -falign-functions=...
-                -- forcibly stop some functions coming into the cache with non temporal code accesses??
+                -- (forcibly stop some functions coming into the cache with non temporal code accesses??)
     -- make the temp files only overwrite the old temp file at the end (with cp)
         -- so that if the programme is aborted halfway it isn't a problem...
     -- add checks for if data/instruction cache info is present in the analysis functions
@@ -193,10 +188,7 @@ code stuff
     -- have a think about the binary only flag and doing all functions (i.e., including 'W' rather than just 'T') 
 -- suggestions
 -- source code (class) parser
-    -- add template functionality to class/variable search
-        -- suggest specialisations?
-    -- many-level recursive array<>s
-    -- comma separated lists of variables
+
 -- empirical cache tests
     -- more sophisticated stddev checking for spikes?
 -- binary analyser

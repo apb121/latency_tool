@@ -201,7 +201,7 @@ int FileCollection::detect_types(std::bitset<8>& flags)
   getline(full_types_file, line);
   while (!full_types_file.eof())
   {
-    std::regex file_line_regex("[0-9]+:\\s*([a-zA-Z_][a-zA-Z0-9_]*);");
+    std::regex file_line_regex("[0-9]+:\\s*([a-zA-Z_][a-zA-Z0-9_<>]*);");
     std::smatch file_line_match;
     std::string file_line_str;
     if (regex_match(line, file_line_match, file_line_regex))
@@ -250,7 +250,7 @@ int FileCollection::detect_types(std::bitset<8>& flags)
     classes_file += type_out_stream.get();
   }
 
-  std::regex type_out_class_regex("/\\*\\s*offset\\s*\\|\\s*size\\s*\\*/\\s*type\\s*=\\s*(class |struct )?([a-zA-Z_][a-zA-Z0-9_]*)\\s*(\\s*:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{");
+  std::regex type_out_class_regex("/\\*\\s*offset\\s*\\|\\s*size\\s*\\*/\\s*type\\s*=\\s*(class |struct )?([a-zA-Z_][a-zA-Z0-9_<>]*)\\s*.*\\{"); // use the fact that .* does not include newlines
   std::smatch type_out_class_match;
 
   while (std::regex_search(classes_file, type_out_class_match, type_out_class_regex))
@@ -297,7 +297,7 @@ int FileCollection::detect_types(std::bitset<8>& flags)
 
     std::vector<Member> member_variables;
 
-    std::regex member_regex("/\\*\\s*[0-9]+([^;])*;");
+    std::regex member_regex("/\\*\\s*[0-9]+([^;])*;"); // here it is annoying that .* does not include newlines
     std::smatch member_match;
     std::string member_string;
     while (regex_search(class_string, member_match, member_regex))

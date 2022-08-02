@@ -15,6 +15,14 @@
 #define KEEP_TEMP 2
 #define EXISTING_TEMP_FILES 1
 
+template <typename T>
+class TemplateClass
+{
+    T t;
+    public:
+    T get_t() { return t; }
+};
+
 
 class L1d_cache;
 class L1i_cache;
