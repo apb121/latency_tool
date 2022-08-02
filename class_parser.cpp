@@ -149,7 +149,7 @@ int FileCollection::detect_types(std::bitset<8>& flags)
         are not able to count bracket recursions,
         the end of the class is found separately below
     */
-    std::regex class_regex("(class|struct)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*(:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_]*)\\s*)?\\{");
+    std::regex class_regex("(class|struct)\\s*([a-zA-Z_][a-zA-Z0-9_<>]*)\\s*(:\\s*(public|protected|private)\\s*([a-zA-Z_][a-zA-Z0-9_<>]*)\\s*)?\\{");
     std::smatch class_match;
     std::string file_remaining = full_file;
     std::string class_info;

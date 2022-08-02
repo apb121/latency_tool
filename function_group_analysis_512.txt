@@ -1,0 +1,102 @@
+===== Function group analysis =====
+
+The following groups of functions have been identified as potential sources of latency problems.
+They have been ranked based on a combination of the number of functions in the group and the amount of cache space they compete for.
+This has been calculated based on the instruction-cache's critical stride of 4096 bytes and associativity of 8, as well as a coexecution indirection level of 1 and competition overlap threshold of 1 bytes.
+
+=== Group ===
+
+function_1()
+function_9()
+function_17()
+function_25()
+main
+
+These 5 coexecuting functions call each other (directly) 4 times and compete for the same 46-byte region of the cache
+
+=== Group ===
+
+function_9()
+function_17()
+function_25()
+main
+
+These 4 coexecuting functions call each other (directly) 3 times and compete for the same 46-byte region of the cache
+
+=== Group ===
+
+function_1()
+function_17()
+function_25()
+main
+
+These 4 coexecuting functions call each other (directly) 3 times and compete for the same 46-byte region of the cache
+
+=== Group ===
+
+function_1()
+function_9()
+function_25()
+main
+
+These 4 coexecuting functions call each other (directly) 3 times and compete for the same 46-byte region of the cache
+
+=== Group ===
+
+function_1()
+function_9()
+function_17()
+main
+
+These 4 coexecuting functions call each other (directly) 3 times and compete for the same 46-byte region of the cache
+
+=== Group ===
+
+function_17()
+function_25()
+main
+
+These 3 coexecuting functions call each other (directly) 2 times and compete for the same 46-byte region of the cache
+
+=== Group ===
+
+function_9()
+function_25()
+main
+
+These 3 coexecuting functions call each other (directly) 2 times and compete for the same 46-byte region of the cache
+
+=== Group ===
+
+function_9()
+function_17()
+main
+
+These 3 coexecuting functions call each other (directly) 2 times and compete for the same 46-byte region of the cache
+
+=== Group ===
+
+function_1()
+function_25()
+main
+
+These 3 coexecuting functions call each other (directly) 2 times and compete for the same 46-byte region of the cache
+
+=== Group ===
+
+function_1()
+function_17()
+main
+
+These 3 coexecuting functions call each other (directly) 2 times and compete for the same 46-byte region of the cache
+
+
+
+===== Description =====
+
+The largest identified group of coexecuting functions that compete for cache space contains 5 functions.
+
+The number of groups whose size is close to or equal to the associativity of the L1 instruction cache is: 1.
+Such groups of functions may cause an increase in the standard deviation (jitter) among run-time latencies, because there is a risk of cache evictions.
+
+The suggestions below may help to mitigate problems that may arise as a result of these functions competing for cache space.

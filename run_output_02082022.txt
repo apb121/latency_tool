@@ -107,10 +107,43 @@ This has been calculated based on the instruction-cache's critical stride of 409
 
 === Group ===
 
+main
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+UserOptions::run_analysis()
+
+These 4 coexecuting functions call each other (directly) 3 times and compete for the same 348-byte region of the cache
+
+=== Group ===
+
 FileCollection::get_alignment(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >)
 FileCollection::detect_types(std::bitset<8ul>&)
 
 These 2 coexecuting functions call each other (directly) 2 times and compete for the same 1984-byte region of the cache
+
+=== Group ===
+
+main
+UserOptions::run_cache_setup()
+UserOptions::run_analysis()
+
+These 3 coexecuting functions call each other (directly) 2 times and compete for the same 348-byte region of the cache
+
+=== Group ===
+
+main
+UserOptions::parse_flags(int, char**)
+UserOptions::run_analysis()
+
+These 3 coexecuting functions call each other (directly) 2 times and compete for the same 348-byte region of the cache
+
+=== Group ===
+
+main
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+
+These 3 coexecuting functions call each other (directly) 2 times and compete for the same 348-byte region of the cache
 
 === Group ===
 
@@ -119,11 +152,40 @@ Binary::rec_problem_find(unsigned long, std::set<unsigned long, std::less<unsign
 
 These 2 coexecuting functions call each other (directly) 2 times and compete for the same 649-byte region of the cache
 
+=== Group ===
+
+main
+UserOptions::run_analysis()
+
+These 2 coexecuting functions call each other (directly) 1 times and compete for the same 348-byte region of the cache
+
+=== Group ===
+
+main
+UserOptions::run_cache_setup()
+
+These 2 coexecuting functions call each other (directly) 1 times and compete for the same 348-byte region of the cache
+
+=== Group ===
+
+main
+UserOptions::parse_flags(int, char**)
+
+These 2 coexecuting functions call each other (directly) 1 times and compete for the same 348-byte region of the cache
+
+=== Group ===
+
+UserOptions::parse_flags(int, char**)
+UserOptions::run_cache_setup()
+UserOptions::~UserOptions()
+
+These 3 coexecuting functions call each other (directly) 0 times and compete for the same 378-byte region of the cache
+
 
 
 ===== Description =====
 
-The largest identified group of coexecuting functions that compete for cache space contains 2 functions.
+The largest identified group of coexecuting functions that compete for cache space contains 4 functions.
 
 The size of this group of functions is well below the associativity of the L1 instruction cache, and should therefore not be a source of serious latency issues. It may still be worth trying to reduce the competition between these functions by following the suggestions below.
 
