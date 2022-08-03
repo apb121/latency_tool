@@ -39,25 +39,4 @@ struct UserOptions
     ~UserOptions();
 };
 
-template <typename T>
-class TemplateClass
-{
-    T t;
-    public:
-    T get_t() { return t; }
-};
-
-struct Inefficient
-{
-    char c;
-    double d;
-    short s;
-    int i;
-};
-
-struct Large
-{
-    char a[1024];
-};
-
 #endif

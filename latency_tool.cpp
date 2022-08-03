@@ -33,18 +33,6 @@
 
 int main(int argc, char** argv)
 {
-    TemplateClass<int> i; // remove these + test classes from hpps
-    int i_t = i.get_t();
-
-    TemplateClass<char> c;
-    char c_t = c.get_t();
-
-    Large l;
-    l.a[0] = 'a';
-
-    Inefficient in;
-    in.c = 'c';
-
     UserOptions uo;
 
     int ret = uo.parse_flags(argc, argv);
