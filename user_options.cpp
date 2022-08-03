@@ -1,5 +1,48 @@
 #include "user_options.hpp"
 
+int UserOptions::check_requirements()
+{
+  int ret = 0;
+  int err = 0;
+  if (!flags.test(CACHE_INFO_ONLY))
+  {
+    if (!flags.test(NO_EMPIRICAL))
+    {
+      ret = system("g++ --version >> ./temp_files/debugtmp.txt");
+      if (ret)
+      {
+        std::cout << "You need g++ to use this tool." << std::endl;
+        err = 1;
+      }
+      ret = system("perf --version >> ./temp_files/debugtmp.txt");
+      if (ret)
+      {
+        std::cout << "You need perf to use this tool." << std::endl;
+        err = 1;
+      }
+    }
+    ret = system("gdb --version >> ./temp_files/debugtmp.txt");
+    if (ret)
+    {
+      std::cout << "You need gdb to use this tool." << std::endl;
+      err = 1;
+    }
+    ret = system("nm --version >> ./temp_files/debugtmp.txt");
+    if (ret)
+    {
+      std::cout << "You need nm to use this tool." << std::endl;
+      err = 1;
+    }
+    ret = system("objdump --version >> ./temp_files/debugtmp.txt");
+    if (ret)
+    {
+      std::cout << "You need objdump to use this tool." << std::endl;
+      err = 1;
+    }
+  }
+  return err;
+}
+
 int UserOptions::parse_flags(int argc, char** argv)
 {
   int i = 1;
@@ -242,6 +285,13 @@ int UserOptions::parse_flags(int argc, char** argv)
 
 int UserOptions::run_file_setup()
 {
+  if (file_names.size() == 0) // AND if -c flag is not present!
+  {
+    std::cout << "No files specified!" << std::endl;
+    std::cout << "Normal usage: ./latency_tool [--options ...] [source_code_files ...] binary_file" << std::endl;
+    return 1;
+  }
+
   std::ifstream f("./temp_files");
   if (!f.good())
   {
@@ -249,11 +299,7 @@ int UserOptions::run_file_setup()
   }
   f.close();
 
-  if (file_names.size() == 0)
-  {
-    std::cout << "No files specified!" << std::endl;
-    return 1;
-  }
+  // check for test files if -c flag is not present!!
 
   for (size_t i = 0; i < file_names.size(); ++i)
   {

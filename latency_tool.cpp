@@ -33,7 +33,7 @@
 
 int main(int argc, char** argv)
 {
-    TemplateClass<int> i;
+    TemplateClass<int> i; // remove these + test classes from hpps
     int i_t = i.get_t();
 
     TemplateClass<char> c;
@@ -42,6 +42,12 @@ int main(int argc, char** argv)
     UserOptions uo;
 
     int ret = uo.parse_flags(argc, argv);
+    if (ret) { return ret; }
+
+    ret = uo.check_requirements();
+    if (ret) { return ret; }
+
+    ret = uo.run_file_setup();
     if (ret) { return ret; }
 
     ret = uo.run_cache_setup();

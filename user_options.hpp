@@ -31,6 +31,7 @@ struct UserOptions
     std::vector<std::string> file_names;
     FileCollection fc;
     Processor proc;
+    int check_requirements();
     int parse_flags(int argc, char** argv);
     int run_file_setup();
     int run_cache_setup();

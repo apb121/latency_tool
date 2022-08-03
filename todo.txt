@@ -1,3 +1,5 @@
+LOOK at the comments in run_file_setup
+
 replace UDType_new everywhere with UDType
 change class_parser to data_analyser
 change binary analyser to code_analyser
@@ -16,6 +18,11 @@ change binary analyser to code_analyser
                 -- finds groups of functions that may compete for cache space
         -- as far as I can find, no tool that does anything like this exists currently
             -- there are tools that you can use to look at functions in binary files and the structure of classes (nm, objdump, gdb), but nothing that brings this information together and uses it to (a) identify potential sources of data/instruction cache inefficiency and (b) suggest solutions to these problems
+    -- programme setup
+        -- checks for valid command line arguments
+
+        -- checks for programme requirements
+        -- parsing flags
     -- cache analysis
         -- code class structure
             -- currently only performs L1 cache analysis but extensibile to lower cache levels
@@ -24,7 +31,9 @@ change binary analyser to code_analyser
             -- sometimes dimensions are just... missing from the system variables
             -- if missing, default behaviour is to perform empirical tests
                 -- basically does the tests from the data section
-                    -- using perf and analysing cache misses / cache miss %
+                    -- compiles some test files
+                        -- uses perf on them
+                            -- using perf and analysing cache misses / cache miss %
                     -- data cache associativity
                         -- show code
                         -- setup
