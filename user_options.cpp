@@ -11,21 +11,24 @@ int UserOptions::check_requirements()
       ret = system("g++ --version >> ./temp_files/debugtmp.txt");
       if (ret)
       {
-        std::cout << "You need g++ to use this tool." << std::endl;
+        std::cout << "You need g++ to use this tool with those options." << std::endl;
         err = 1;
       }
       ret = system("perf --version >> ./temp_files/debugtmp.txt");
       if (ret)
       {
-        std::cout << "You need perf to use this tool." << std::endl;
+        std::cout << "You need perf to use this tool with those options." << std::endl;
         err = 1;
       }
     }
-    ret = system("gdb --version >> ./temp_files/debugtmp.txt");
-    if (ret)
+    if (file_names.size() > 1)
     {
-      std::cout << "You need gdb to use this tool." << std::endl;
-      err = 1;
+      ret = system("gdb --version >> ./temp_files/debugtmp.txt");
+      if (ret)
+      {
+        std::cout << "You need gdb to use this tool with those options." << std::endl;
+        err = 1;
+      }
     }
     ret = system("nm --version >> ./temp_files/debugtmp.txt");
     if (ret)
@@ -285,10 +288,11 @@ int UserOptions::parse_flags(int argc, char** argv)
 
 int UserOptions::run_file_setup()
 {
-  if (file_names.size() == 0) // AND if -c flag is not present!
+  if (file_names.size() == 0 && !flags.test(CACHE_INFO_ONLY))
   {
     std::cout << "No files specified!" << std::endl;
     std::cout << "Normal usage: ./latency_tool [--options ...] [source_code_files ...] binary_file" << std::endl;
+    std::cout << "For cache info only, invoke with the -c or --cache-only option." << std::endl;
     return 1;
   }
 
@@ -298,8 +302,6 @@ int UserOptions::run_file_setup()
     system("mkdir temp_files");
   }
   f.close();
-
-  // check for test files if -c flag is not present!!
 
   for (size_t i = 0; i < file_names.size(); ++i)
   {

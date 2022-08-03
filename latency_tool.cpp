@@ -44,10 +44,10 @@ int main(int argc, char** argv)
     int ret = uo.parse_flags(argc, argv);
     if (ret) { return ret; }
 
-    ret = uo.check_requirements();
+    ret = uo.run_file_setup();
     if (ret) { return ret; }
 
-    ret = uo.run_file_setup();
+    ret = uo.check_requirements();
     if (ret) { return ret; }
 
     ret = uo.run_cache_setup();

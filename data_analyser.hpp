@@ -36,15 +36,15 @@ struct Member
     size_t alignment = 0;
 };
 
-class UDType_new
+class UDType
 {
     std::string name;
     size_t total_size = 0;
     public:
     std::vector<Member> member_variables;
-    UDType_new(std::string name, std::vector<Member>& member_variables, size_t total_size)
+    UDType(std::string name, std::vector<Member>& member_variables, size_t total_size)
         : name(name), member_variables(member_variables), total_size(total_size) {}
-    UDType_new(UDType_new const& other)
+    UDType(UDType const& other)
     {
         name = other.name;
         total_size = other.total_size;
@@ -65,7 +65,7 @@ class UDType_new
 class FileCollection
 {
     std::vector<std::string> file_names;
-    std::vector<UDType_new> udtypes;
+    std::vector<UDType> udtypes;
     public:
     void populate_file_names(std::vector<std::string> file_names_in)
     {
@@ -74,7 +74,7 @@ class FileCollection
     int detect_types(std::bitset<8>& flags);
     size_t get_alignment(std::string alignment_string);
     bool suggest_optimisations(int critical_stride);
-    std::vector<UDType_new> get_user_types() { return udtypes; }
+    std::vector<UDType> get_user_types() { return udtypes; }
 };
 
 #endif

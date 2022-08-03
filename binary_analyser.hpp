@@ -9,7 +9,7 @@
 #include <cmath>
 
 #include "user_options.hpp"
-#include "class_parser.hpp"
+#include "data_analyser.hpp"
 
 struct UserOptions;
 
@@ -57,9 +57,9 @@ class Binary
     std::string file_name;
     std::map<size_t, Function> functions_list;
     std::set<std::set<size_t>> problem_groups;
-    std::vector<UDType_new> user_types;
+    std::vector<UDType> user_types;
     public:
-    Binary(std::string file_name, std::vector<UDType_new> user_types)
+    Binary(std::string file_name, std::vector<UDType> user_types)
         : file_name(file_name), user_types(user_types) {}
     int get_functions(UserOptions& uo);
     int populate_competition_vectors(UserOptions& uo);

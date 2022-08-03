@@ -1,4 +1,4 @@
-#include "class_parser.hpp"
+#include "data_analyser.hpp"
 
 size_t FileCollection::get_alignment(std::string alignment_string)
 {
@@ -141,7 +141,7 @@ int FileCollection::detect_types(std::bitset<8>& flags)
       full_file += c;
       c = file_stream.get();
     }
-    std::vector<UDType_new> type_info;
+    std::vector<UDType> type_info;
     /*  
         detect classes and structs.
         this regex detects the *start* of a class/struct
@@ -359,7 +359,7 @@ int FileCollection::detect_types(std::bitset<8>& flags)
     ++total_size_start;
     int total_class_size = stoi(class_string.substr(total_size_start, total_size_end - total_size_start));
 
-    UDType_new ud(udt_name, member_variables, total_class_size);
+    UDType ud(udt_name, member_variables, total_class_size);
 
     udtypes.push_back(ud);
 
@@ -397,7 +397,7 @@ int FileCollection::detect_types(std::bitset<8>& flags)
   return 0;
 }
 
-size_t UDType_new::calculate_size()
+size_t UDType::calculate_size()
 {
     size_t curr_align = 0;
     for (int i = 0; i < (int) member_variables.size() - 1; ++i)
@@ -420,7 +420,7 @@ size_t UDType_new::calculate_size()
     return size;
 }
 
-size_t UDType_new::calculate_size(std::vector<Member> proposed_types_list)
+size_t UDType::calculate_size(std::vector<Member> proposed_types_list)
 {
     size_t curr_align = 0;
     for (int i = 0; i < (int) proposed_types_list.size() - 1; ++i)
@@ -443,7 +443,7 @@ size_t UDType_new::calculate_size(std::vector<Member> proposed_types_list)
     return size;
 }
 
-bool UDType_new::suggest_optimisation(int critical_stride)
+bool UDType::suggest_optimisation(int critical_stride)
 {
   bool optimised = false;
   int curr_size = calculate_size();

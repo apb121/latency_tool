@@ -19,7 +19,7 @@
 
 
 #include "cache_info.hpp"
-#include "class_parser.hpp"
+#include "data_analyser.hpp"
 #include "binary_analyser.hpp"
 
 struct UserOptions
