@@ -30,7 +30,7 @@ class Function
     std::string file_location;
     public:
     std::set<size_t> competes_with; /* competes for cache sets with */
-    std::set<size_t> coexecutes_with; /* often executed in conjunction with (according to the objdump) */
+    std::set<size_t> coexecutes_with; /* executed in conjunction with (according to the objdump) */
     std::set<size_t> competes_and_coexecutes_with;
     Function(size_t address, size_t size, std::string name, std::string file_location)
         : address(address), size(size), name(name), file_location(file_location) {}
@@ -43,7 +43,7 @@ class Function
             this should never happen, so it is a problem
             if this code is reached!
         */
-        std::cout << "If we get here, we have a problem!" << std::endl;
+        std::cout << "Unknown function error." << std::endl;
         exit(1);
     }
     size_t get_address() { return address; }

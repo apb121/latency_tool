@@ -10,7 +10,7 @@
 #define EXISTING_TEMP_FILES 1
 
 #include "cache_info.hpp"
-#include "class_parser.hpp"
+#include "data_analyser.hpp"
 #include "user_options.hpp"
 #include "binary_analyser.hpp"
 

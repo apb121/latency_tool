@@ -41,16 +41,14 @@ int L1d_cache::empirical_assoc_test(std::bitset<8>& uo_flags)
     std::string cmd_compile = "g++ -g ./test_files/associativity_test_d.cpp -o ./temp_files/associativity_test_d";
     std::string cmd_no_arg = "perf stat -x , --append -o ./temp_files/assoctmpd.txt -e L1-dcache-load-misses -r 1000 ./temp_files/associativity_test_d ";
     std::string cmd_rm_assoctmp = "rm ./temp_files/assoctmpd.txt";
-    /*  
-        varying the number of regions that compete for the cache
-    */
+    
     if (uo_flags.test(EXISTING_TEMP_FILES))
     {
         std::ifstream exist_test("./temp_files/assoctmpd.txt");
         if (!exist_test.good())
         {
             std::cout << std::endl << std::endl << "There is no existing temp file for the data-cache associativity!" << std::endl;
-            return -1;
+            return 1;
         }
     }
     else
@@ -59,6 +57,7 @@ int L1d_cache::empirical_assoc_test(std::bitset<8>& uo_flags)
         if (ret_compile)
         {
             std::cout << "Compilation failed!" << std::endl;
+            return 1;
         }
         std::ifstream exist_test("./temp_files/assoctmpd.txt");
         if (exist_test.good())
@@ -66,6 +65,9 @@ int L1d_cache::empirical_assoc_test(std::bitset<8>& uo_flags)
             exist_test.close();
             system(cmd_rm_assoctmp.c_str());
         }
+        /*  
+            varying the number of regions that compete for the cache
+        */
         for (int i = 2; i <= 16; i += 2)
         {
             std::cout << "." << std::flush;
@@ -150,9 +152,7 @@ int L1d_cache::empirical_stride_test(std::bitset<8>& uo_flags)
     std::string cmd_compile = "g++ -g ./test_files/critical_stride_test_d.cpp -o ./temp_files/critical_stride_test_d";
     std::string cmd_no_arg = "perf stat -x , --append -o ./temp_files/cstmpd.txt -e L1-dcache-loads,L1-dcache-load-misses,duration_time -r 1000 ./temp_files/critical_stride_test_d ";
     std::string cmd_rm_cstmp = "rm ./temp_files/cstmpd.txt";
-    /*  
-        varying the alignment to force the data onto
-    */
+    
     if (uo_flags.test(EXISTING_TEMP_FILES))
     {
         std::ifstream exist_test("./temp_files/cstmpd.txt");
@@ -175,6 +175,9 @@ int L1d_cache::empirical_stride_test(std::bitset<8>& uo_flags)
             exist_test.close();
             system(cmd_rm_cstmp.c_str());
         }
+        /*  
+            varying the alignment to force the data onto
+        */
         for (int i = 64; i <= 65536; i *= 2)
         {
             std::cout << "." << std::flush;
@@ -262,9 +265,7 @@ int L1i_cache::empirical_assoc_test(std::bitset<8>& uo_flags)
     std::string cmd_no_arg_65536 = "perf stat -x , --append -o ./temp_files/assoctmpi.txt -e L1-icache-load-misses -r 1000 ./temp_files/associativity_test_i_65536 ";
     std::string cmd_no_arg_noalign = "perf stat -x , --append -o ./temp_files/assoctmpi.txt -e L1-icache-load-misses -r 1000 ./temp_files/associativity_test_i_noalign ";
     std::string cmd_rm_assoctmp = "rm ./temp_files/assoctmpi.txt";
-    /*  
-        varying the number of functions competing for the cache
-    */
+    
     if (uo_flags.test(EXISTING_TEMP_FILES))
     {
         std::ifstream exist_test("./temp_files/assoctmpi.txt");
@@ -292,6 +293,9 @@ int L1i_cache::empirical_assoc_test(std::bitset<8>& uo_flags)
             exist_test.close();
             system(cmd_rm_assoctmp.c_str());
         }
+        /*  
+            varying the number of functions competing for the cache
+        */
         for (int i = 2; i <= 16; i += 2)
         {
             std::cout << "." << std::flush;
@@ -377,9 +381,7 @@ int L1i_cache::empirical_stride_test(std::bitset<8>& uo_flags)
     std::string cmd_compile_2 = " ./test_files/critical_stride_test_i.cpp -o ./temp_files/critical_stride_test_i_";
     std::string cmd_no_arg = "perf stat -x , --append -o ./temp_files/cstmpi.txt -e L1-icache-load-misses -r 1000 ./temp_files/critical_stride_test_i_";
     std::string cmd_rm_cstmp = "rm ./temp_files/cstmpi.txt";
-    /*  
-        varying the alignment to force the functions onto
-    */
+    
     if (uo_flags.test(EXISTING_TEMP_FILES))
     {
         std::ifstream exist_test("./temp_files/cstmpi.txt");
@@ -391,6 +393,9 @@ int L1i_cache::empirical_stride_test(std::bitset<8>& uo_flags)
     }
     else
     {
+        /*  
+            varying the alignment to force the functions onto
+        */
         for (int i = 64; i <= 65536; i *= 2)
         {
             std::string cmd_compile_full = cmd_compile_1 + std::to_string(i) + cmd_compile_2 + std::to_string(i);

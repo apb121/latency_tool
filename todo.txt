@@ -27,7 +27,8 @@
         -- default: checks for system variables (sysconf)
             -- (show code)
             -- sometimes dimensions are just... missing from the system variables
-            -- if missing, default behaviour is to perform empirical tests
+                -- show example, e.g., from home desktop
+            -- if missing, default behaviour is to perform empirical tests based on part 1 of the project
                 -- basically does the tests from the data section
                     -- compiles some test files
                         -- uses perf on them
@@ -76,7 +77,7 @@
                 -- if necessary, defaults will be used (user is warned when this happens)
             -- user can choose to use existing empirical temp files (cf. -k flag, which is also automatically set with -e)
                 -- user is informed and programme terminates if the user wants to perform some analysis which requires temp files that don't exist
-    -- class parser
+    -- data analysis
         -- original attempt (got quite far but major problems)
             -- overall
                 -- detecting classes

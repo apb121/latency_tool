@@ -55,7 +55,7 @@ int UserOptions::parse_flags(int argc, char** argv)
     {
       std::cout << std::endl << "===== Help =====" << std::endl << std::endl;
       std::cout << "This tool identifies potential sources of L1-data and -instruction cache inefficiency." << std::endl << std::endl;
-      std::cout << "To use the tool, invoke ./latency_tool with a list of filepaths as command line arguments. The last file listed will be interpreted as a binary (which must be compiled with debugging symbols, e.g., the gcc flag -g), and any other files listed will be interpreted as the C++ source code files from which the binary was compiled." << std::endl << std::endl;
+      std::cout << "To use the tool, invoke ./latency_tool with a list of filepaths as command line arguments: \"./latency_tool [--options ...] [source_code_files ...] binary_file)\". The last file listed will be interpreted as a binary (which must be compiled with debugging symbols, e.g., the gcc flag -g), and any other files listed will be interpreted as the C++ source code files from which the binary was compiled." << std::endl << std::endl;
       std::cout << "Unless guided to to otherwise (see the options available below), the tool will use your processor's cache info to:" << std::endl;
       std::cout << "-- Identify inefficiently ordered user-defined classes and structs" << std::endl;
       std::cout << "-- Identify inefficiently sized user-defined classes and structs" << std::endl;
@@ -292,7 +292,7 @@ int UserOptions::run_file_setup()
   {
     std::cout << "No files specified!" << std::endl;
     std::cout << "Normal usage: ./latency_tool [--options ...] [source_code_files ...] binary_file" << std::endl;
-    std::cout << "For cache info only, invoke with the -c or --cache-only option." << std::endl;
+    std::cout << "For cache info only, invoke with the -c/--cache-only option." << std::endl;
     return 1;
   }
 
@@ -348,17 +348,6 @@ int UserOptions::run_cache_setup()
       sysconf(_SC_LEVEL4_CACHE_ASSOC)
     );
   }
-
-  // doesn't need to be fatal
-  // use each of these checks separately below
-  /*
-
-  if (proc.l1d->get_size() <= 0 || proc.l1i->get_size() <= 0)
-  {
-    std::cout << "It has not been possible to gauge the size of one of the L1 caches. At present, this is a fatal error." << std::endl;
-    return 1;
-  }
-  */
 
   if (flags.test(NO_EMPIRICAL) && ( proc.l1d->get_assoc() <= 0 ||
                                     proc.l1d->get_critical_stride() <= 0 ||

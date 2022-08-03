@@ -11,6 +11,10 @@ size_t FileCollection::get_alignment(std::string alignment_string)
     alignment_string = alignment_string.substr(7);
   }
 
+  /* 
+      any * before a > means a pointer type
+  */
+
   size_t string_end = alignment_string.length() - 1;
   while (string_end > 0)
   {
@@ -157,17 +161,22 @@ int FileCollection::detect_types(std::bitset<8>& flags)
     {
       class_info = class_match.str();
       int name_start = 0;
-      while (isspace(class_info[name_start])) { name_start++; } // get to 'struct'/'class'
-      while (!isspace(class_info[name_start])) { name_start++; } // get to end of 'struct'/'class'
-      while (isspace(class_info[name_start])) { name_start++; } // get to start of class name
+      while (isspace(class_info[name_start])) { name_start++; } /* get to 'struct'/'class' */
+      while (!isspace(class_info[name_start])) { name_start++; } /* get to end of 'struct'/'class' */
+      while (isspace(class_info[name_start])) { name_start++; } /* get to start of class name */
       int name_end = name_start;
-      while (!isspace(class_info[name_end]) && class_info[name_end] != '{' && class_info[name_end] != ':') { name_end++; }
+      while (!isspace(class_info[name_end]) && class_info[name_end] != '{' && class_info[name_end] != ':') { name_end++; } /* get to the end of class name */
       std::string type_name = class_info.substr(name_start, name_end - name_start);
       type_names.push_back(type_name);
       file_remaining = class_match.suffix();
     }
     file_stream.close();
   }
+
+  /*
+      enumerate the list of regex templates for capturing user types
+      including templated types
+  */
   
   std::ifstream exist_test("./temp_files/gdbinfocmdtmp.txt");
   if (exist_test.good())
@@ -218,6 +227,12 @@ int FileCollection::detect_types(std::bitset<8>& flags)
     getline(full_types_file, line);
   }
   full_types_file.close();
+
+  /*
+      enumerate the list of commands for getting member offset/size data
+      for all user types, including templated
+  */
+
   exist_test.open("./temp_files/gdbtypecmdtmp.txt");
   if (exist_test.good())
   {
@@ -236,14 +251,25 @@ int FileCollection::detect_types(std::bitset<8>& flags)
     gdb_type_cmd_stream.put(gdb_type_cmd[i]);
   }
   gdb_type_cmd_stream.close();
+
+  /*
+      get gdb to analyse all user defined classes found
+  */
+
   std::string gdbtypecmd = "gdb -x ./temp_files/gdbtypecmdtmp.txt -batch " + file_names[file_names.size() - 1] + " > ./temp_files/gdbtypeouttmp.txt";
   system(gdbtypecmd.c_str());
+
+  /*
+      parse the gdb output to gauge class member sizes
+  */
+
   std::ifstream type_out_stream("./temp_files/gdbtypeouttmp.txt");
   if (!type_out_stream.is_open())
   {
     std::cout << "Failed to open ./temp_files/gdbtypeouttmp.txt" << std::endl;
     return 1;
   }
+
   std::string classes_file;
   while (!type_out_stream.eof())
   {
@@ -264,13 +290,14 @@ int FileCollection::detect_types(std::bitset<8>& flags)
       if (classes_file[pos] == '{') { ++bracket_depth; }
       if (bracket_depth == 1)
       {
-        class_string += classes_file[pos]; // there can be some semicolons in the middle of detailed explications of classes
+        class_string += classes_file[pos]; /* there can be some semicolons in the middle of detailed explications of classes */
       }
       if (classes_file[pos] == '}') { --bracket_depth; }
       ++pos;
     }
 
-    // find the name
+    /* find the class name */
+
     int class_find = class_string.find("class");
     int struct_find = class_string.find("struct");
     int cs_min;
@@ -287,7 +314,8 @@ int FileCollection::detect_types(std::bitset<8>& flags)
       cs_min = std::min(class_find, struct_find);
     }
 
-    // cs_min is now at the start of 'class'/'struct'
+    /* cs_min is now at the start of 'class'/'struct' */
+
     int name_start = cs_min;
     while (!isspace(class_string[name_start])) { ++name_start; }
     ++name_start;
@@ -297,12 +325,13 @@ int FileCollection::detect_types(std::bitset<8>& flags)
 
     std::vector<Member> member_variables;
 
-    std::regex member_regex("/\\*\\s*[0-9]+([^;])*;"); // here it is annoying that .* does not include newlines
+    std::regex member_regex("/\\*\\s*[0-9]+([^;])*;"); /* here it is annoying that .* does not include newlines */
     std::smatch member_match;
     std::string member_string;
     while (regex_search(class_string, member_match, member_regex))
     {
-      // get name
+      /* get member name */
+
       member_string = member_match.str();
       int name_end = member_string.length() - 1;
       int name_start = name_end - 1;
@@ -318,7 +347,8 @@ int FileCollection::detect_types(std::bitset<8>& flags)
       ++name_start;
       std::string member_name = member_string.substr(name_start, name_end - name_start);
 
-      // get size
+      /* get member size */
+
       std::string size_string;
       int size_start = 2;
       while (isspace(member_string[size_start])) { ++size_start; }
@@ -330,7 +360,8 @@ int FileCollection::detect_types(std::bitset<8>& flags)
       while (isdigit(member_string[size_end])) { ++size_end; }
       size_t member_size = stoull(member_string.substr(size_start, size_end - size_start));
 
-      // get align...
+      /* get member alignment */
+
       int align_start = size_end;
       while (!isalpha(member_string[align_start])) { ++align_start; }
       int align_end = name_start;
@@ -366,7 +397,7 @@ int FileCollection::detect_types(std::bitset<8>& flags)
     classes_file = classes_file.substr(pos + 1);
   }
 
-  for (int i = 0; i < udtypes.size(); ++i) // can only get alignments when all udtype sizes are known
+  for (int i = 0; i < udtypes.size(); ++i) /* can only get alignments when all udtype sizes are known */
   {
     for (int j = 0; j < udtypes[i].member_variables.size(); ++j)
     {
@@ -377,70 +408,61 @@ int FileCollection::detect_types(std::bitset<8>& flags)
     }
   }
 
-  /*
-  for (int i = 0; i < udtypes.size(); ++i)
-  {
-    std::cout << "=== CLASS ===" << std::endl;
-    std::cout << "Name: " << udtypes[i].get_name() << std::endl;
-    std::cout << "Total size: " << udtypes[i].get_total_size() << std::endl;
-    for (int j = 0; j < udtypes[i].member_variables.size(); ++j)
-    {
-      std::cout << "== MEMBER ==" << std::endl;
-      std::cout << "Name: " << udtypes[i].member_variables[j].name << std::endl;
-      std::cout << "Size: " << udtypes[i].member_variables[j].size << std::endl;
-      std::cout << "Alignment type: " << udtypes[i].member_variables[j].align_string << std::endl;
-      std::cout << "Alignment: " << udtypes[i].member_variables[j].alignment << std::endl;
-    } 
-  }
-  */
-
   return 0;
 }
 
 size_t UDType::calculate_size()
 {
-    size_t curr_align = 0;
-    for (int i = 0; i < (int) member_variables.size() - 1; ++i)
-    {
-        curr_align += member_variables[i].size;
-        int align_target = member_variables[i + 1].alignment;
-        if (align_target == 0)
-        {
-            std::cout << "Alignment 0 error" << std::endl;
-            return 1;
-        }
-        while (curr_align % align_target != 0) { curr_align++; }
-    }
-    if (member_variables.size() > 0)
-    {
-      curr_align += member_variables[member_variables.size() - 1].alignment;
-    }
-    while (curr_align % 8 != 0) { curr_align++; }
-    int size = curr_align;
-    return size;
+  /*
+      calculate the total size of the class
+      without parent class members, vtable pointers, etc.
+  */
+  size_t curr_align = 0;
+  for (int i = 0; i < (int) member_variables.size() - 1; ++i)
+  {
+      curr_align += member_variables[i].size;
+      int align_target = member_variables[i + 1].alignment;
+      if (align_target == 0)
+      {
+          std::cout << "Alignment 0 error" << std::endl;
+          return 1;
+      }
+      while (curr_align % align_target != 0) { curr_align++; }
+  }
+  if (member_variables.size() > 0)
+  {
+    curr_align += member_variables[member_variables.size() - 1].alignment;
+  }
+  while (curr_align % 8 != 0) { curr_align++; }
+  int size = curr_align;
+  return size;
 }
 
 size_t UDType::calculate_size(std::vector<Member> proposed_types_list)
 {
-    size_t curr_align = 0;
-    for (int i = 0; i < (int) proposed_types_list.size() - 1; ++i)
-    {
-        curr_align += proposed_types_list[i].size;
-        int align_target = proposed_types_list[i + 1].alignment;
-        if (align_target == 0)
-        {
-            std::cout << "Alignment 0 error" << std::endl;
-            return 0;
-        }
-        while (curr_align % align_target != 0) { curr_align++; }
-    }
-    if (proposed_types_list.size() > 0)
-    {
-      curr_align += proposed_types_list[proposed_types_list.size() - 1].alignment;
-    }
-    while (curr_align % 8 != 0) { curr_align++; }
-    int size = curr_align;
-    return size;
+  /*
+      calculate the total size of a proposed data member ordering
+      without parent class members, vtable pointers, etc.
+  */
+  size_t curr_align = 0;
+  for (int i = 0; i < (int) proposed_types_list.size() - 1; ++i)
+  {
+      curr_align += proposed_types_list[i].size;
+      int align_target = proposed_types_list[i + 1].alignment;
+      if (align_target == 0)
+      {
+          std::cout << "Alignment 0 error" << std::endl;
+          return 0;
+      }
+      while (curr_align % align_target != 0) { curr_align++; }
+  }
+  if (proposed_types_list.size() > 0)
+  {
+    curr_align += proposed_types_list[proposed_types_list.size() - 1].alignment;
+  }
+  while (curr_align % 8 != 0) { curr_align++; }
+  int size = curr_align;
+  return size;
 }
 
 bool UDType::suggest_optimisation(int critical_stride)
@@ -458,6 +480,10 @@ bool UDType::suggest_optimisation(int critical_stride)
   std::vector<Member> new_ordering = member_variables;
   std::vector<Member> proposed_types_list = member_variables;
   int min_size = curr_size;
+  /*
+      orders data members by size
+      to see if total size would be reduced by doing so
+  */
   std::sort ( begin(proposed_types_list),
               end(proposed_types_list), 
               [](Member const& first, Member const& second)
@@ -488,6 +514,11 @@ bool UDType::suggest_optimisation(int critical_stride)
       std::cout << std::endl << "New size: " << min_size << std::endl << std::endl;
       std::cout << "This ordering saves " << curr_size - min_size << " bytes." << std::endl << std::endl;
   }
+  /*
+      calculate least common multiple of total size and critical stride
+      to see if there might be conflict between objects of the same class
+      in contiguous memory
+  */
   int lcm = std::lcm(total_size, critical_stride);
   if (total_size <= 0)
   {

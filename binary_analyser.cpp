@@ -10,7 +10,7 @@ int Binary::get_functions(UserOptions& uo)
         {
             exist_test.close();
             std::cout << std::endl << std::endl << "There is no existing temp (nm) file for the binary!" << std::endl;
-            return -1;
+            return 1;
         }
     }
     else
@@ -19,7 +19,7 @@ int Binary::get_functions(UserOptions& uo)
         if (ret_nm)
         {
             std::cout << "nm failed!" << std::endl;
-            return -1;
+            return 1;
         }
     }
     char buf[5][512];
@@ -35,7 +35,7 @@ int Binary::get_functions(UserOptions& uo)
         -- move constructors
         -- default/copy/move operator overloads (e.g., assignment)
         -- destructors
-        -- (templated functions?)
+        -- templated functions
         it will also avoid wasting time on functions that are written
         but are never called. these do not make their way into the binary
     */
@@ -55,13 +55,13 @@ int Binary::get_functions(UserOptions& uo)
         }
         nm_file >> buf[2];
         /*
-            type T: functions in the code section
-            type W: weak object, e.g., function in a class
+            type T: symbols in the code section
+            type W: weak symbol
         */
         nm_file >> std::ws;
         std::string name = "";
         char c = nm_file.get();
-        while (c != '(' && c != '/' && c != '\n' /*!isspace(c)*/)
+        while (c != '(' && c != '/' && c != '\n')
         {
             name += c;
             c = nm_file.get();
@@ -90,7 +90,7 @@ int Binary::get_functions(UserOptions& uo)
         }
         /*
             identify functions of user-defined classes.
-            uses the output of the class parser and the :: operator
+            uses the output of the class parser and the :: scope operator
         */
         bool UDT_func = false;
         for (size_t i = 0; i < user_types.size(); ++i)
@@ -136,7 +136,6 @@ int Binary::populate_competition_vectors(UserOptions& uo)
     /*
         identify functions that compete with each other for cache sets
     */
-
     int critical_stride = 0;
     if (uo.proc.l1i)
     {
@@ -210,8 +209,8 @@ int Binary::populate_coexecution_vectors(UserOptions& uo)
 {
     /*
         identify functions that call/are called by each other
-        (these are assumed to execute together and therefore
-        cache set conflicts become a problem)
+        these are taken to execute together and therefore
+        cache set conflicts become a problem
     */
     std::string objdump_cmd = "objdump -d -C -Mintel --no-show-raw-insn " + file_name + " > ./temp_files/objdumptmp.txt";
     std::string objdump_rm = "rm ./temp_files/objdumptmp.txt";
@@ -238,6 +237,10 @@ int Binary::populate_coexecution_vectors(UserOptions& uo)
     objdump_file.open("./temp_files/objdumptmp.txt");
     std::string line;
     objdump_file >> std::ws;
+    /*
+        find 'call' instructions that originate inside a relevant function
+        and call a relevant function
+    */
     while(getline(objdump_file, line))
     {
         size_t pos = 0;
@@ -266,12 +269,16 @@ int Binary::populate_coexecution_vectors(UserOptions& uo)
                 for (auto& i : functions_list)
                 {
                     long dec_addr_src = strtol(address.c_str(), nullptr, 16);
+
+                    /* if the source is within a relevant function... */
                     if ((dec_addr_src >= i.second.get_address()) && (dec_addr_src < i.second.get_address() + i.second.get_size()))
                     {
                         for (auto& j : functions_list)
                         {
                             if (j.first == i.first) { continue; }
                             long dec_addr_dest = strtol(call_dest.c_str(), nullptr, 16);
+
+                            /* ...and if the destination is a relevant function */
                             if (j.second.get_address() == dec_addr_dest)
                             {
                                 i.second.coexecutes_with.insert(dec_addr_dest);
@@ -500,10 +507,6 @@ int Binary::find_problem_function_groups(UserOptions& uo)
         ++ranking_num;
     }
 
-    // print some analysis including whether
-    // the number of functions in the groups indicate that there could be any jitter
-    // or indeed any serious competition for the cache
-
     if (problem_groups_ranked.size() > 1)
     {
         std::cout << std::endl << std::endl << "===== Description =====" << std::endl << std::endl;
@@ -523,8 +526,7 @@ int Binary::find_problem_function_groups(UserOptions& uo)
         {
             std::cout << "The size of this group of functions is well below the associativity of the L1 instruction cache, and should therefore not be a source of serious latency issues. It may still be worth trying to reduce the competition between these functions by following the suggestions below." << std::endl;
         }
-        // max group size
-        // number of groups that may cause jitter / cache evictions
+        
         std::cout << std::endl << std::endl << "===== Suggestions =====" << std::endl << std::endl;
         std::cout << "There are a number of things that programmers can do to mitigate problems that might be identified in this analysis." << std::endl << std::endl;
         std::cout << "(1) rewrite the functions to involve less code!" << std::endl;
