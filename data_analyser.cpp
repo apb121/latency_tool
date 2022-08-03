@@ -431,7 +431,7 @@ size_t UDType::calculate_size()
   }
   if (member_variables.size() > 0)
   {
-    curr_align += member_variables[member_variables.size() - 1].alignment;
+    curr_align += member_variables[member_variables.size() - 1].size;
   }
   while (curr_align % 8 != 0) { curr_align++; }
   int size = curr_align;
@@ -458,7 +458,7 @@ size_t UDType::calculate_size(std::vector<Member> proposed_types_list)
   }
   if (proposed_types_list.size() > 0)
   {
-    curr_align += proposed_types_list[proposed_types_list.size() - 1].alignment;
+    curr_align += proposed_types_list[proposed_types_list.size() - 1].size;
   }
   while (curr_align % 8 != 0) { curr_align++; }
   int size = curr_align;

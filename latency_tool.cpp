@@ -39,6 +39,12 @@ int main(int argc, char** argv)
     TemplateClass<char> c;
     char c_t = c.get_t();
 
+    Large l;
+    l.a[0] = 'a';
+
+    Inefficient in;
+    in.c = 'c';
+
     UserOptions uo;
 
     int ret = uo.parse_flags(argc, argv);
