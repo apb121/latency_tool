@@ -6,21 +6,6 @@ int UserOptions::check_requirements()
   int err = 0;
   if (!flags.test(CACHE_INFO_ONLY))
   {
-    if (!flags.test(NO_EMPIRICAL))
-    {
-      ret = system("g++ --version >> ./temp_files/debugtmp.txt");
-      if (ret)
-      {
-        std::cout << "You need g++ to use this tool with those options." << std::endl;
-        err = 1;
-      }
-      ret = system("perf --version >> ./temp_files/debugtmp.txt");
-      if (ret)
-      {
-        std::cout << "You need perf to use this tool with those options." << std::endl;
-        err = 1;
-      }
-    }
     if (file_names.size() > 1)
     {
       ret = system("gdb --version >> ./temp_files/debugtmp.txt");
@@ -40,6 +25,21 @@ int UserOptions::check_requirements()
     if (ret)
     {
       std::cout << "You need objdump to use this tool." << std::endl;
+      err = 1;
+    }
+  }
+  if (!flags.test(NO_EMPIRICAL))
+  {
+    ret = system("g++ --version >> ./temp_files/debugtmp.txt");
+    if (ret)
+    {
+      std::cout << "You need g++ to use this tool with those options." << std::endl;
+      err = 1;
+    }
+    ret = system("perf --version >> ./temp_files/debugtmp.txt");
+    if (ret)
+    {
+      std::cout << "You need perf to use this tool with those options." << std::endl;
       err = 1;
     }
   }
@@ -378,7 +378,7 @@ int UserOptions::run_cache_setup()
     if (proc.l1d->get_assoc() <= 0 && proc.l1d->get_critical_stride() <= 0)
     {
       std::cout << "The associativity and critical stride of the L1 data cache are both unknown." << std::endl;
-      std::cout << "They will now be tested empirically. This may take up to a minute." << std::endl;
+      std::cout << "They will now be tested empirically. This may take a couple of minutes." << std::endl;
 
       suggested_values[0] = proc.l1d->empirical_assoc_test(flags);
       if (suggested_values[0] <= 0)
@@ -418,7 +418,7 @@ int UserOptions::run_cache_setup()
     else if (proc.l1d->get_assoc() <= 0)
     {
       std::cout << "The associativity of the L1 data cache is unknown." << std::endl;
-      std::cout << "It will now be tested empirically. This may take up to a minute." << std::endl;
+      std::cout << "It will now be tested empirically. This may take a couple of minutes." << std::endl;
 
       suggested_values[0] = proc.l1d->empirical_assoc_test(flags);
       if (suggested_values[0] <= 0)
@@ -434,7 +434,7 @@ int UserOptions::run_cache_setup()
     else if (proc.l1d->get_critical_stride() <= 0)
     {
       std::cout << "The critical stride of the L1 data cache is unknown." << std::endl;
-      std::cout << "It will now be tested empirically. This may take up to a minute." << std::endl;
+      std::cout << "It will now be tested empirically. This may take a couple of minutes." << std::endl;
 
       suggested_values[1] = proc.l1d->empirical_stride_test(flags);
       if (suggested_values[1] <= 0)
@@ -450,7 +450,7 @@ int UserOptions::run_cache_setup()
     if (proc.l1i->get_assoc() <= 0 && proc.l1i->get_critical_stride() <= 0)
     {
       std::cout << "The associativity and critical stride of the L1 instruction-cache are both unknown." << std::endl;
-      std::cout << "They will now be tested empirically. This may take up to a minute." << std::endl;
+      std::cout << "They will now be tested empirically. This may take a couple of minutes." << std::endl;
 
       suggested_values[2] = proc.l1i->empirical_assoc_test(flags);
       if (suggested_values[2] <= 0)
@@ -492,7 +492,7 @@ int UserOptions::run_cache_setup()
     else if (proc.l1i->get_assoc() <= 0)
     {
       std::cout << "The associativity of the L1 instruction-cache is unknown." << std::endl;
-      std::cout << "It will now be tested empirically. This may take up to a minute." << std::endl;
+      std::cout << "It will now be tested empirically. This may take a couple of minutes." << std::endl;
 
       suggested_values[2] = proc.l1i->empirical_assoc_test(flags);
       if (suggested_values[2] <= 0)
@@ -508,7 +508,7 @@ int UserOptions::run_cache_setup()
     else if (proc.l1i->get_critical_stride() <= 0)
     {
       std::cout << "The critical stride of the L1 instruction-cache is unknown." << std::endl;
-      std::cout << "It will now be tested empirically. This may take up to a minute." << std::endl;
+      std::cout << "It will now be tested empirically. This may take a couple of minutes." << std::endl;
 
       suggested_values[3] = proc.l1i->empirical_stride_test(flags);
       if (suggested_values[3] <= 0)
@@ -544,7 +544,7 @@ int UserOptions::run_analysis()
     int src_ret = fc.detect_types(flags);
     if (src_ret)
     {
-      std::cout << "Error detecting types vectors." << std::endl;
+      std::cout << "Error detecting types." << std::endl;
       std::cout << "Exiting." << std::endl;
       return 1;
     }
@@ -566,6 +566,7 @@ int UserOptions::run_analysis()
       std::cout << std::endl << "===== Suggestions =====" << std::endl << std::endl;
       std::cout << "It is recommended, unless there is a specific reason to retain an inefficient ordering, that any reorderings identified above are implemented." << std::endl;
       std::cout << "If the overall size of a type may cause problems in the context of access patterns and the critical stride of the data cache, attempting to make the data structure smaller (perhaps by using different data types as sub-members or by using highly compact types like bitfields) is the ideal solution." << std::endl;
+      std::cout << "Another mitigation strategy to consider is to avoid contiguous allocations of entire objects when individual data members are accessed in sequence across many of those objects. Instead of these 'arrays of structs', it is sometimes better to organise this data in 'structs of arrays', that is, structs which point to arrays which contain only those data members that are accessed in strided access patterns. This compacts the consecutively accessed data, significantly reducing the risk of cache conflicts." << std::endl;
       std::cout << "Failing that, it may (counterintuitively) be worth trying to make the object slightly larger to reduce the chance of desired accesses evicting useful data from the cache by increasing the Least Common Multiple of the object size and the critical stride." << std::endl << std::endl;
     }
     else

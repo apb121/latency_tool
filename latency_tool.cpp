@@ -17,7 +17,7 @@
 /*
     normal usage:
 
-            ./latency_tool <binary_file> <source_files>
+            ./latency_tool <--options> <binary_file> <source_files>
 
     flags:
             -a, --all-functions {6} (?) (make sure to look at all functions with binary only)
@@ -33,6 +33,12 @@
 
 int main(int argc, char** argv)
 {
+    Inefficient_size a;
+
+    Inefficient_struct b;
+
+    UDType_old c;
+
     UserOptions uo;
 
     int ret = uo.parse_flags(argc, argv);

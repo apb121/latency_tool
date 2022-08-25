@@ -124,6 +124,8 @@ int Binary::get_functions(UserOptions& uo)
 
         /* (nm includes duplicates for some reason...) */
 
+        std::cout << "Function detected: " << name << std::endl;
+
         functions_list.insert({address, Function(address, size, name, location)});
         
         nm_file >> std::ws;

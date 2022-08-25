@@ -10,23 +10,33 @@ Cache::Cache(std::string name, int size, int linesize, int assoc)
     }
     else if (assoc <= 0)
     {
-        std::cout << "This processor does not specify the associativity of its " << name << " cache." << std::endl;
-    }
-    else if (assoc <= 0)
-    {
         std::cout << std::endl << "=== " << name << " cache ===" << std::endl << std::endl;
         std::cout << "Size: " << size << " bytes" << std::endl;
-        std::cout << "Associativity: " << assoc << std::endl;
-        std::cout << "This processor does not specify linesize of its " << name << " cache." << std::endl;
-        critical_stride = size / assoc;
-        std::cout << "Critical stride: " << critical_stride << " bytes" << std::endl;
+        std::cout << "Linesize: ";
+        if (linesize > 0)
+        {
+            std::cout << linesize << " bytes" << std::endl;
+        }
+        else
+        {
+            std::cout << "unknown." << std::endl;
+        }
+        std::cout << "This processor does not specify associativity of its " << name << " cache." << std::endl;
     }
     else
     {
         std::cout << std::endl << "=== " << name << " cache ===" << std::endl << std::endl;
         std::cout << "Size: " << size << " bytes" << std::endl;
+        std::cout << "Linesize: ";
+        if (linesize > 0)
+        {
+            std::cout << linesize << " bytes" << std::endl;
+        }
+        else
+        {
+            std::cout << "unknown." << std::endl;
+        }
         std::cout << "Associativity: " << assoc << std::endl;
-        std::cout << "Linesize: " << linesize << " bytes" << std::endl;
         critical_stride = size / assoc;
         std::cout << "Critical stride: " << critical_stride << " bytes" << std::endl;
     }
