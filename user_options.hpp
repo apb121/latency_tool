@@ -17,7 +17,6 @@
 #define KEEP_TEMP 2
 #define EXISTING_TEMP_FILES 1
 
-
 #include "cache_info.hpp"
 #include "data_analyser.hpp"
 #include "binary_analyser.hpp"

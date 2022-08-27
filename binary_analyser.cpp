@@ -121,10 +121,7 @@ int Binary::get_functions(UserOptions& uo)
             continue;
         }
         
-
         /* (nm includes duplicates for some reason...) */
-
-        std::cout << "Function detected: " << name << std::endl;
 
         functions_list.insert({address, Function(address, size, name, location)});
         
@@ -348,41 +345,24 @@ int Binary::find_problem_function_groups(UserOptions& uo)
     int jitter_risks = 0;
 
     int eviction_risks = 0;
+    
+    std::set<std::set<size_t>> current_groups;
 
-    for (int depth = 2 /*uo.proc.l1i->get_assoc() / 2*/; num_groups != 0; ++depth)
+    std::set<size_t> init_groups;
+
+    for (auto& i : functions_list)
     {
-        problem_groups.clear();
+        init_groups.insert(i.first);
+        current_groups.insert(init_groups);
+        init_groups.clear();
+    }
 
-        std::set<size_t> current_group;
+    while (current_groups.size() > 0)
+    {
+        std::set<std::set<size_t>> next_size_groups;
+        rec_problem_find(current_groups, next_size_groups);
 
-        /* perform recursive search for problem groups of functions */
-
-        for (auto& i : functions_list)
-        {
-            current_group.insert(i.first);
-            rec_problem_find(i.first, current_group, depth);
-            current_group.erase(current_group.find(i.first));
-        }
-
-        num_groups = problem_groups.size();
-
-        if (num_groups > 0)
-        {
-            max_group_size = depth;
-        }
-
-        if (depth > uo.proc.l1i->get_assoc() - 4 && depth <= uo.proc.l1i->get_assoc())
-        {
-            jitter_risks += num_groups;
-        }
-        else if (depth > uo.proc.l1i->get_assoc())
-        {
-            eviction_risks += num_groups;
-        }
-
-        /* rank problem groups */
-
-        for (auto& group : problem_groups)
+        for (auto& group : next_size_groups)
         {
             int overlap[4096];
             for (int o = 0; o < 4096; ++o)
@@ -459,6 +439,25 @@ int Binary::find_problem_function_groups(UserOptions& uo)
             }
             size_t group_score = (pow(2, group.size()) * overlap_extent) * coexecution_count;
             problem_groups_ranked.insert(std::pair<size_t, ProblemGroup>(group_score, ProblemGroup(group, coexecution_count, overlap_extent)));
+        }
+        current_groups.clear();
+        current_groups = next_size_groups;
+    }
+
+    for (auto& i : problem_groups_ranked)
+    {
+        if (i.second.functions.size() > uo.proc.l1i->get_assoc() - 4 && i.second.functions.size() <= uo.proc.l1i->get_assoc())
+        {
+            jitter_risks++;
+        }
+        else if (i.second.functions.size() > uo.proc.l1i->get_assoc())
+        {
+            eviction_risks++;
+        }
+
+        if (i.second.functions.size() > max_group_size)
+        {
+            max_group_size = i.second.functions.size();
         }
     }
 
@@ -541,42 +540,32 @@ int Binary::find_problem_function_groups(UserOptions& uo)
     return 0;
 }
 
-int Binary::rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth)
+int Binary::rec_problem_find(std::set<std::set<size_t>>& current_groups, std::set<std::set<size_t>>& new_groups)
 {
-    /*
-        recursively find groups of functions which
-        coexecute with each other and
-        compete for cache sets
-    */
-    for (auto& next_func : functions_list[current_addr].competes_and_coexecutes_with)
+    bool ret_val = false;
+    for (auto& curr_group : current_groups)
     {
-        if (current_group.find(next_func) != current_group.end())
+        for (auto& curr_func : curr_group)
         {
-            continue;
-        }
-        bool competes_and_coexecutes_with_all = true;
-        for (auto& group_funcs : current_group)
-        {
-            if (functions_list[group_funcs].competes_and_coexecutes_with.find(next_func) == functions_list[group_funcs].competes_and_coexecutes_with.end())
+            for (auto& new_func : functions_list[curr_func].competes_and_coexecutes_with)
             {
-                competes_and_coexecutes_with_all = false;
-                break;
+                bool competes_and_coexecutes_with_all = true;
+                for (auto& group_funcs : curr_group)
+                {
+                    if (group_funcs == new_func || functions_list[group_funcs].competes_and_coexecutes_with.find(new_func) == functions_list[group_funcs].competes_and_coexecutes_with.end())
+                    {
+                        competes_and_coexecutes_with_all = false;
+                        break;
+                    }
+                }
+                if (!competes_and_coexecutes_with_all) { continue; }
+                ret_val = true;
+                std::set<size_t> group_copy = curr_group;
+                group_copy.insert(new_func);
+                new_groups.insert(group_copy);
+                group_copy.erase(new_func);
             }
-        }
-        if (!competes_and_coexecutes_with_all) { continue; }
-        if (competes_and_coexecutes_with_all)
-        {
-            current_group.insert(next_func);
-            if (current_group.size() == max_depth)
-            {
-                problem_groups.insert(current_group);
-            }
-            else
-            {
-                rec_problem_find(next_func, current_group, max_depth);
-            }
-            current_group.erase(current_group.find(next_func));
         }
     }
-    return 0;
+    return ret_val;
 }

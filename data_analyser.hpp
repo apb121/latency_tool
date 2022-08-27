@@ -27,33 +27,6 @@
 #define KEEP_TEMP 2
 #define EXISTING_TEMP_FILES 1
 
-struct Inefficient_struct
-{
-    char char_element;
-    double double_element;
-    short short_element;
-    int int_element;
-};
-
-struct Inefficient_size
-{
-    char a[3072];
-};
-
-struct UDType_old
-{
-    std::string name;
-    std::string class_info;
-    std::vector<void*> types_list;
-    bool has_auto = false;
-    bool has_virtual = false;
-    size_t total_size;
-    bool is_child = false;
-    std::string parent_name = "";
-    UDType_old* parent_class = nullptr;
-};
-
-
 struct Member
 {
     std::string name;

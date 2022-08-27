@@ -2,13 +2,6 @@
 #include <bit>
 #include <bitset>
 
-#define ALL_FUNCTIONS 6
-#define CACHE_INFO_ONLY 5
-#define MANUAL_CACHE 4
-#define NO_EMPIRICAL 3
-#define KEEP_TEMP 2
-#define EXISTING_TEMP_FILES 1
-
 #include "cache_info.hpp"
 #include "data_analyser.hpp"
 #include "user_options.hpp"
@@ -33,12 +26,6 @@
 
 int main(int argc, char** argv)
 {
-    Inefficient_size a;
-
-    Inefficient_struct b;
-
-    UDType_old c;
-
     UserOptions uo;
 
     int ret = uo.parse_flags(argc, argv);

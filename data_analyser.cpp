@@ -222,7 +222,6 @@ int FileCollection::detect_types(std::bitset<8>& flags)
       int name_end = name_start;
       while (line[name_end] != ';') { ++name_end; }
       std::string type_name_full = line.substr(name_start, name_end - name_start);
-      std::cout << "Type detected: " << type_name_full << std::endl;
       types_full.push_back(type_name_full);
     }
     getline(full_types_file, line);

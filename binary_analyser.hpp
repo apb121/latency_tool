@@ -65,7 +65,7 @@ class Binary
     int populate_competition_vectors(UserOptions& uo);
     int populate_coexecution_vectors(UserOptions& uo);
     int find_problem_function_groups(UserOptions& uo);
-    int rec_problem_find(size_t current_addr, std::set<size_t>& current_group, int max_depth);
+    int rec_problem_find(std::set<std::set<size_t>>& current_group, std::set<std::set<size_t>>& next_size_groups);
 };
 
 #endif
