@@ -48,7 +48,7 @@ size_t FileCollection::get_alignment(std::string alignment_string)
 
   if (class_string.substr(0, 10) == "std::array")
   {
-    return get_alignment(class_string.substr(11));
+    return get_alignment(alignment_string.substr(11));
   }
 
   for (int i = 0; i < udtypes.size(); ++i) // check for alignment of user type
