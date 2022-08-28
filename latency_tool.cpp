@@ -9,7 +9,7 @@
             ./latency_tool <--options> <binary_file> <source_files>
 
     flags:
-            -a, --all-functions {6} (?) (make sure to look at all functions with binary only)
+            -a, --all-functions {6}
             -c, --cache-info-only {5}
             -m=..., --manual-cache=<size>:<associativity>:<linesize>::... {4}
             -n, --no-empirical-tests (default critical stride = 4096, default assocativity = 8) {3}
@@ -17,7 +17,7 @@
             -l= --coexecution-level= (default = 1)
             -t= --competition-threshold= (default = 256)
             -r= --ranking-length= (default = 10)
-            -e, --use-existing-cache-temp-files (automatically switches on -k flag) {1}s
+            -e, --use-existing-cache-temp-files (automatically switches on -k flag) {1}
 */
 
 int main(int argc, char** argv)
