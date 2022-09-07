@@ -508,7 +508,7 @@ int Binary::find_problem_function_groups(UserOptions& uo)
         ++ranking_num;
     }
 
-    if (problem_groups_ranked.size() > 1)
+    if (problem_groups_ranked.size() > 0)
     {
         std::cout << std::endl << std::endl << "===== Description =====" << std::endl << std::endl;
         std::cout << "The largest identified group of coexecuting functions that compete for cache space contains " << max_group_size << " functions." << std::endl << std::endl;

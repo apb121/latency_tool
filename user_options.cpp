@@ -377,7 +377,7 @@ int UserOptions::run_cache_setup()
     int suggested_values[4] = {0, 0, 0, 0};
     if (proc.l1d->get_assoc() <= 0 && proc.l1d->get_critical_stride() <= 0)
     {
-      std::cout << "The associativity and critical stride of the L1 data cache are both unknown." << std::endl;
+      std::cout << std::endl << "The associativity and critical stride of the L1 data cache are both unknown." << std::endl;
       std::cout << "They will now be tested empirically. This may take a couple of minutes." << std::endl;
 
       suggested_values[0] = proc.l1d->empirical_assoc_test(flags);
